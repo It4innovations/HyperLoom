@@ -1,0 +1,15 @@
+package loomplan;
+
+option optimize_for = LITE_RUNTIME;
+
+message Task {
+	required int32 task_type = 1;
+	required bytes config = 2;
+	repeated int32 input_ids = 3;
+}
+
+message Plan {
+	repeated string task_types = 1;
+	repeated Task tasks = 2;
+	repeated int32 result_ids = 3;
+}

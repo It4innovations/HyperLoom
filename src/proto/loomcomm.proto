@@ -1,0 +1,51 @@
+package loomcomm;
+
+option optimize_for = LITE_RUNTIME;
+
+message Register {
+	enum Type {
+		REGISTER_WORKER = 1;
+		REGISTER_CLIENT = 2;
+	}
+	required int32 protocol_version = 1;
+	required Type type = 2;
+	optional int32 port = 3;
+	repeated string task_types = 4;
+}
+
+message ServerMessage {
+	enum Type {
+		START_JOB = 1;
+	}
+}
+
+message WorkerCommand {
+	enum Type {
+		TASK = 1;
+		SEND = 2;
+	}
+	required Type type = 1;
+
+	optional int32 id = 2;
+
+	// TASK
+	optional int32 task_type = 3;
+	optional string task_config = 4;
+	repeated int32 task_inputs = 5;
+
+	// SEND
+	optional string address = 10;
+}
+
+message WorkerResponse {
+	optional int32 id = 2;
+}
+
+message Announce {
+	required int32 port = 1;
+}
+
+message Data {
+	required int32 id = 1;
+	required uint64 size = 2;
+}
