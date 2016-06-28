@@ -1,14 +1,15 @@
 #ifndef LOOM_CONNECTION_H
 #define LOOM_CONNECTION_H
 
-#include "loomcomm.pb.h"
 #include "utils.h"
+#include "sendbuffer.h"
 
 #include <uv.h>
 
 #include <string>
 #include <functional>
 #include <memory>
+#include <assert.h>
 
 
 namespace loom {
@@ -63,6 +64,7 @@ public:
     
     void connect(std::string host, int port);
     void send_message(::google::protobuf::MessageLite &message);
+    void send_buffer(SendBuffer *buffer);
 
     void close();
     void close_and_discard_remaining_data();
@@ -83,7 +85,7 @@ protected:
 
 private:
     static void _on_connection(uv_connect_t *connect, int status);
-    static void _on_fbb_write(uv_write_t *write_req, int status);
+    static void _on_write(uv_write_t *write_req, int status);
     static void _on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf);
     static void _on_close(uv_handle_t *handle);
     static void _buf_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);

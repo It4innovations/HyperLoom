@@ -1,14 +1,9 @@
 #include "connection.h"
 #include "utils.h"
 
-#include "log.h" // DEBUG
+#include <string.h>
 
 using namespace loom;
-
-struct SendBuffer {
-    uv_write_t write_req;
-    std::unique_ptr<char[]> data;
-};
 
 Connection::Connection(ConnectionCallback *callback, uv_loop_t *loop)
     : callback(callback),
@@ -121,28 +116,25 @@ void Connection::connect(std::string host, int port)
     UV_CHECK(uv_tcp_connect(connect, &socket, (const struct sockaddr *)&dest, _on_connection));
 }
 
-void Connection::_on_fbb_write(uv_write_t *write_req, int status)
+void Connection::_on_write(uv_write_t *write_req, int status)
 {
     UV_CHECK(status);
     SendBuffer *buffer = static_cast<SendBuffer *>(write_req->data);
-    delete buffer;
+    buffer->on_finish(status);
 }
 
 void Connection::send_message(google::protobuf::MessageLite &message)
 {
-    SendBuffer *buffer = new SendBuffer;
-    buffer->write_req.data = buffer;
+    SendBuffer *buffer = new SendBuffer();
+    buffer->add(message);
+    send_buffer(buffer);
+}
 
-    uint32_t size = message.ByteSize();
-    buffer->data = std::make_unique<char[]>(size + sizeof(size));
-
-    uv_buf_t buf;
-    buf.base = buffer->data.get();
-    buf.len = size + sizeof(size);
-    uint32_t *size_ptr = reinterpret_cast<uint32_t *>(buf.base);
-    *size_ptr = size;
-    message.SerializeToArray(buf.base + sizeof(size), size);
-    UV_CHECK(uv_write(&buffer->write_req, (uv_stream_t *) &socket, &buf, 1, _on_fbb_write));
+void Connection::send_buffer(SendBuffer *buffer)
+{
+    uv_buf_t *bufs = buffer->get_uv_bufs();
+    size_t count = buffer->get_uv_bufs_count();
+    UV_CHECK(uv_write(&buffer->request, (uv_stream_t *) &socket, bufs, count, _on_write));
 }
 
 void Connection::_on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)

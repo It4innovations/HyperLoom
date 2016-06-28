@@ -11,6 +11,7 @@ namespace loom {
 
 class Worker;
 class DataBuilder;
+class SendBuffer;
 
 class InterConnection : public SimpleConnectionCallback
 {
@@ -19,6 +20,7 @@ public:
     ~InterConnection();
 
     void send(std::shared_ptr<Data> &data);
+    void send(std::unique_ptr<SendBuffer> buffer);
     void accept(uv_tcp_t *listen_socket) {
         connection.accept(listen_socket);
     }
@@ -36,14 +38,7 @@ public:
 
 protected:
 
-    struct SendRecord {
-        uv_write_t request;
-        std::unique_ptr<char[]> raw_message;
-        size_t raw_message_size;
-        std::shared_ptr<Data> data;
-    };
-
-    void _send(SendRecord &record);
+    void _send(SendBuffer &buffer);
 
     void on_message(const char *buffer, size_t size);
     void on_data_chunk(const char *buffer, size_t size);
@@ -54,12 +49,11 @@ protected:
     Worker &worker;
     std::string address;
 
-    std::vector<std::unique_ptr<SendRecord>> send_records;
     std::unique_ptr<DataBuilder> data_builder;
 
-    static void _on_write(uv_write_t *write_req, int status);
-
     static std::string make_address(const std::string &host, int port);
+
+    std::vector<std::unique_ptr<SendBuffer>> early_sends;
 };
 
 }

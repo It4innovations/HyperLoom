@@ -15,8 +15,8 @@ add_library(libloom
             interconnect.cpp
             task.cpp
             task.h
-            fileservice.cpp
-            fileservice.h
+            sendbuffer.h
+            sendbuffer.cpp
             loomcomm.pb.h
             loomcomm.pb.cc
             loomplan.pb.h

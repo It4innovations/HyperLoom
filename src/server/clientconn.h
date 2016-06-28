@@ -3,6 +3,10 @@
 
 #include "libloom/connection.h"
 
+namespace loom {
+    class SendBuffer;
+}
+
 class Server;
 
 class ClientConnection : public loom::ConnectionCallback {
@@ -13,8 +17,12 @@ public:
     void on_message(const char *buffer, size_t size);
     void on_close();
 
-    void send(uv_write_t *request, uv_buf_t bufs[], unsigned int nbufs, uv_write_cb cb) {
+    /*void send(uv_write_t *request, uv_buf_t bufs[], unsigned int nbufs, uv_write_cb cb) {
         connection->send(request, bufs, nbufs, cb);
+    }*/
+
+    void send_buffer(loom::SendBuffer *buffer) {
+        connection->send_buffer(buffer);
     }
 
 protected:
