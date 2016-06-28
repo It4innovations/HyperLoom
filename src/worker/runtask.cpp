@@ -2,6 +2,7 @@
 #include "runtask.h"
 
 #include "libloom/worker.h"
+#include "libloom/rawdata.h"
 #include "libloom/log.h"
 #include "loomrun.pb.h"
 
@@ -73,8 +74,13 @@ void RunTask::start(DataVector &inputs)
             assert(map.input_index() >= 0 && map.input_index() < input_size);
             auto& input = *inputs[map.input_index()];
             std::string path = get_path(map.filename());
-            llog->debug("Creating symlink of data id={} to '{}'", input->get_id(), map.filename());
-            input->make_symlink(worker, path);
+            std::string filename = input->get_filename(worker);
+            llog->alert("FILENAME = {} {}", filename, (unsigned long) &input);
+            assert(!filename.empty());
+            llog->debug("Creating symlink of '{}'", map.filename());
+            if (symlink(filename.c_str(), path.c_str())) {
+                log_errno_abort("symlink");
+            }
 
             /* stdin */
             if (map.filename() == "+in") {
@@ -150,18 +156,12 @@ void RunTask::_on_close(uv_handle_t *handle)
         if (index == -2) {
             continue;
         }
-        Id id;
-        if (index == -1) {
-            id = task->get_id();
-        } else {
-            // TODO
-            assert(0);
-        }
-        auto data = std::make_unique<Data>(id);
+        auto data = std::make_unique<RawData>();
+        data->assign_file_id();
 
         std::string path = task->get_path(map.filename());
         std::string data_path = data->get_filename(task->worker);
-        llog->debug("Storing file '{}'' as data id={}", map.filename(), data->get_id());
+        llog->debug("Storing file '{}'' as index={}", map.filename(), i);
         //data->create(task->worker, 10);
         if (unlikely(rename(path.c_str(),
                             data_path.c_str()))) {

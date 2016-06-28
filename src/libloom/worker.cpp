@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "log.h"
 #include "types.h"
+#include "rawdata.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -62,6 +63,9 @@ Worker::Worker(uv_loop_t *loop,
 
         llog->info("Using '{}' as working directory", work_dir);
     }
+
+    add_unpacker(RawData::TYPE_ID,
+                 std::make_unique<SimpleUnpackFactory<RawDataUnpacker>>());
 
     resource_cpus = 1;
 }
@@ -174,10 +178,10 @@ void Worker::start_task(std::unique_ptr<Task> task)
     t->start();
 }*/
 
-void Worker::publish_data(std::unique_ptr<Data> data)
+void Worker::publish_data(Id id, std::unique_ptr<Data> data)
 {
-    llog->debug("Publishing data id={} size={}", data->get_id(), data->get_size());
-    public_data[data->get_id()] = std::move(data);
+    llog->debug("Publishing data id={} size={}", id, data->get_size());
+    public_data[id] = std::move(data);
     check_waiting_tasks();
 }
 
@@ -279,6 +283,20 @@ void Worker::set_cpus(int value)
     llog->info("Number of CPUs for worker: {}", value);
 }
 
+void Worker::add_unpacker(DataTypeId type_id, std::unique_ptr<UnpackFactory> factory)
+{
+    auto &f = unpack_factories[type_id];
+    assert(f.get() == nullptr);
+    f = std::move(factory);
+}
+
+std::unique_ptr<DataUnpacker> Worker::unpack(DataTypeId id)
+{
+    auto i = unpack_factories.find(id);    
+    assert(i != unpack_factories.end());
+    return i->second->make_unpacker();
+}
+
 void Worker::check_waiting_tasks()
 {
     bool something_new = false;
@@ -322,10 +340,10 @@ void Worker::task_finished(TaskInstance &task)
     check_ready_tasks();
 }
 
-void Worker::send_data(const std::string &address, std::shared_ptr<Data> &data)
+void Worker::send_data(const std::string &address, Id id, std::shared_ptr<Data> &data, bool with_size)
 {
     auto &connection = get_connection(address);;
-    connection.send(data);
+    connection.send(id, data, with_size);
 }
 
 ServerConnection::ServerConnection(Worker &worker)
@@ -378,7 +396,8 @@ void ServerConnection::on_message(const char *data, size_t size)
             msg.set_address(worker.get_server_address() + ":" + address.substr(2, std::string::npos));
         }
         llog->debug("Sending data {} to {}", msg.id(), msg.address());
-        assert(worker.send_data(msg.address(), msg.id()));
+        bool with_size = msg.has_with_size() && msg.with_size();
+        assert(worker.send_data(msg.address(), msg.id(), with_size));
         break;
     }
     default:

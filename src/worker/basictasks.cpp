@@ -1,6 +1,7 @@
 #include "basictasks.h"
 
 #include "libloom/databuilder.h"
+#include "libloom/rawdata.h"
 
 #include <string.h>
 
@@ -12,9 +13,10 @@ ConstTask::ConstTask(Worker &worker, std::unique_ptr<Task> task)
 
 }
 
-void ConstTask::start(DataVector &inputs) {
+void ConstTask::start(DataVector &inputs)
+{
     auto& config = task->get_config();
-    auto output = std::make_unique<Data>(get_id());
+    auto output = std::make_unique<RawData>();
     memcpy(output->init_empty_file(worker, config.size()), config.c_str(), config.size());
     finish(std::move(output));
 }
@@ -29,10 +31,17 @@ void MergeTask::start(DataVector &inputs) {
     size_t size = 0;
     for (auto& data : inputs) {
         size += (*data)->get_size();
-    }
-    DataBuilder builder(worker, get_id(), size, true);
+    }    
+    auto output = std::make_unique<RawData>();
+    output->init_empty_file(worker, size);
+    char *dst = output->get_raw_data(worker);
+
     for (auto& data : inputs) {
-        builder.add((*data)->get_data(worker), (*data)->get_size());
+        char *mem = (*data)->get_raw_data(worker);
+        assert(mem);
+        size_t size = (*data)->get_size();
+        memcpy(dst, mem, size);
+        dst += size;
     }
-    finish(builder.release_data());
+    finish(std::move(output));
 }

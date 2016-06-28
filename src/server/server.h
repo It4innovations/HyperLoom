@@ -5,10 +5,10 @@
 #include "clientconn.h"
 #include "freshconn.h"
 #include "taskmanager.h"
-
-#include "libloom/worker.h"
+#include "dummyworker.h"
 
 #include <vector>
+
 
 class Server {
 
@@ -27,11 +27,9 @@ public:
     void add_client_connection(std::unique_ptr<ClientConnection> conn);
     void remove_client_connection(ClientConnection &conn);
 
-    loom::Worker& get_dummy_worker() const {
-        return *dummy_worker;
+    DummyWorker& get_dummy_worker() {
+        return dummy_worker;
     }
-
-    std::string get_dummy_worker_address() const;
 
     void remove_freshconnection(FreshConnection &conn);
 
@@ -54,7 +52,6 @@ private:
     void start_listen();
 
     uv_loop_t *loop;
-    std::unique_ptr<loom::Worker> dummy_worker;
 
     std::vector<std::unique_ptr<WorkerConnection>> connections;
 
@@ -66,6 +63,7 @@ private:
     int listen_port;
 
     TaskManager task_manager;
+    DummyWorker dummy_worker;
 
     static void _on_new_connection(uv_stream_t *stream, int status);
 };

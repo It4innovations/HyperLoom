@@ -21,6 +21,7 @@ void protobuf_ShutdownFile_loomcomm_2eproto() {
   delete WorkerCommand::default_instance_;
   delete WorkerResponse::default_instance_;
   delete Announce::default_instance_;
+  delete DataPrologue::default_instance_;
   delete Data::default_instance_;
 }
 
@@ -41,12 +42,14 @@ void protobuf_AddDesc_loomcomm_2eproto() {
   WorkerCommand::default_instance_ = new WorkerCommand();
   WorkerResponse::default_instance_ = new WorkerResponse();
   Announce::default_instance_ = new Announce();
+  DataPrologue::default_instance_ = new DataPrologue();
   Data::default_instance_ = new Data();
   Register::default_instance_->InitAsDefaultInstance();
   ServerMessage::default_instance_->InitAsDefaultInstance();
   WorkerCommand::default_instance_->InitAsDefaultInstance();
   WorkerResponse::default_instance_->InitAsDefaultInstance();
   Announce::default_instance_->InitAsDefaultInstance();
+  DataPrologue::default_instance_->InitAsDefaultInstance();
   Data::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_loomcomm_2eproto);
 }
@@ -572,6 +575,7 @@ const int WorkerCommand::kTaskTypeFieldNumber;
 const int WorkerCommand::kTaskConfigFieldNumber;
 const int WorkerCommand::kTaskInputsFieldNumber;
 const int WorkerCommand::kAddressFieldNumber;
+const int WorkerCommand::kWithSizeFieldNumber;
 #endif  // !_MSC_VER
 
 WorkerCommand::WorkerCommand()
@@ -598,6 +602,7 @@ void WorkerCommand::SharedCtor() {
   task_type_ = 0;
   task_config_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   address_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  with_size_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -642,10 +647,20 @@ WorkerCommand* WorkerCommand::New() const {
 }
 
 void WorkerCommand::Clear() {
-  if (_has_bits_[0 / 32] & 47) {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<WorkerCommand*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  if (_has_bits_[0 / 32] & 111) {
+    ZR_(task_type_, with_size_);
     type_ = 1;
     id_ = 0;
-    task_type_ = 0;
     if (has_task_config()) {
       if (task_config_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         task_config_->clear();
@@ -657,6 +672,10 @@ void WorkerCommand::Clear() {
       }
     }
   }
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
   task_inputs_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->clear();
@@ -767,6 +786,21 @@ bool WorkerCommand::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(88)) goto parse_with_size;
+        break;
+      }
+
+      // optional bool with_size = 11;
+      case 11: {
+        if (tag == 88) {
+         parse_with_size:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &with_size_)));
+          set_has_with_size();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -830,6 +864,11 @@ void WorkerCommand::SerializeWithCachedSizes(
       10, this->address(), output);
   }
 
+  // optional bool with_size = 11;
+  if (has_with_size()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(11, this->with_size(), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomcomm.WorkerCommand)
@@ -871,6 +910,11 @@ int WorkerCommand::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->address());
+    }
+
+    // optional bool with_size = 11;
+    if (has_with_size()) {
+      total_size += 1 + 1;
     }
 
   }
@@ -916,6 +960,9 @@ void WorkerCommand::MergeFrom(const WorkerCommand& from) {
     if (from.has_address()) {
       set_address(from.address());
     }
+    if (from.has_with_size()) {
+      set_with_size(from.with_size());
+    }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
 }
@@ -940,6 +987,7 @@ void WorkerCommand::Swap(WorkerCommand* other) {
     std::swap(task_config_, other->task_config_);
     task_inputs_.Swap(&other->task_inputs_);
     std::swap(address_, other->address_);
+    std::swap(with_size_, other->with_size_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -1337,7 +1385,246 @@ void Announce::Swap(Announce* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int Data::kIdFieldNumber;
+const int DataPrologue::kIdFieldNumber;
+const int DataPrologue::kDataSizeFieldNumber;
+#endif  // !_MSC_VER
+
+DataPrologue::DataPrologue()
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:loomcomm.DataPrologue)
+}
+
+void DataPrologue::InitAsDefaultInstance() {
+}
+
+DataPrologue::DataPrologue(const DataPrologue& from)
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:loomcomm.DataPrologue)
+}
+
+void DataPrologue::SharedCtor() {
+  _cached_size_ = 0;
+  id_ = 0;
+  data_size_ = GOOGLE_ULONGLONG(0);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+DataPrologue::~DataPrologue() {
+  // @@protoc_insertion_point(destructor:loomcomm.DataPrologue)
+  SharedDtor();
+}
+
+void DataPrologue::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
+  if (this != default_instance_) {
+  #endif
+  }
+}
+
+void DataPrologue::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const DataPrologue& DataPrologue::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_loomcomm_2eproto();
+#else
+  if (default_instance_ == NULL) protobuf_AddDesc_loomcomm_2eproto();
+#endif
+  return *default_instance_;
+}
+
+DataPrologue* DataPrologue::default_instance_ = NULL;
+
+DataPrologue* DataPrologue::New() const {
+  return new DataPrologue;
+}
+
+void DataPrologue::Clear() {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<DataPrologue*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  ZR_(data_size_, id_);
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->clear();
+}
+
+bool DataPrologue::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  ::google::protobuf::io::StringOutputStream unknown_fields_string(
+      mutable_unknown_fields());
+  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(
+      &unknown_fields_string);
+  // @@protoc_insertion_point(parse_start:loomcomm.DataPrologue)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // required int32 id = 1;
+      case 1: {
+        if (tag == 8) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &id_)));
+          set_has_id();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(24)) goto parse_data_size;
+        break;
+      }
+
+      // optional uint64 data_size = 3;
+      case 3: {
+        if (tag == 24) {
+         parse_data_size:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &data_size_)));
+          set_has_data_size();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(
+            input, tag, &unknown_fields_stream));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:loomcomm.DataPrologue)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:loomcomm.DataPrologue)
+  return false;
+#undef DO_
+}
+
+void DataPrologue::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:loomcomm.DataPrologue)
+  // required int32 id = 1;
+  if (has_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->id(), output);
+  }
+
+  // optional uint64 data_size = 3;
+  if (has_data_size()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->data_size(), output);
+  }
+
+  output->WriteRaw(unknown_fields().data(),
+                   unknown_fields().size());
+  // @@protoc_insertion_point(serialize_end:loomcomm.DataPrologue)
+}
+
+int DataPrologue::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required int32 id = 1;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->id());
+    }
+
+    // optional uint64 data_size = 3;
+    if (has_data_size()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->data_size());
+    }
+
+  }
+  total_size += unknown_fields().size();
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void DataPrologue::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const DataPrologue*>(&from));
+}
+
+void DataPrologue::MergeFrom(const DataPrologue& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_id()) {
+      set_id(from.id());
+    }
+    if (from.has_data_size()) {
+      set_data_size(from.data_size());
+    }
+  }
+  mutable_unknown_fields()->append(from.unknown_fields());
+}
+
+void DataPrologue::CopyFrom(const DataPrologue& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DataPrologue::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+
+  return true;
+}
+
+void DataPrologue::Swap(DataPrologue* other) {
+  if (other != this) {
+    std::swap(id_, other->id_);
+    std::swap(data_size_, other->data_size_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.swap(other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::std::string DataPrologue::GetTypeName() const {
+  return "loomcomm.DataPrologue";
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int Data::kTypeIdFieldNumber;
 const int Data::kSizeFieldNumber;
 #endif  // !_MSC_VER
 
@@ -1359,7 +1646,7 @@ Data::Data(const Data& from)
 
 void Data::SharedCtor() {
   _cached_size_ = 0;
-  id_ = 0;
+  type_id_ = 0;
   size_ = GOOGLE_ULONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -1409,7 +1696,7 @@ void Data::Clear() {
     ::memset(&first, 0, n);                                \
   } while (0)
 
-  ZR_(size_, id_);
+  ZR_(size_, type_id_);
 
 #undef OFFSET_OF_FIELD_
 #undef ZR_
@@ -1432,13 +1719,13 @@ bool Data::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required int32 id = 1;
+      // required int32 type_id = 1;
       case 1: {
         if (tag == 8) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &id_)));
-          set_has_id();
+                 input, &type_id_)));
+          set_has_type_id();
         } else {
           goto handle_unusual;
         }
@@ -1446,7 +1733,7 @@ bool Data::MergePartialFromCodedStream(
         break;
       }
 
-      // required uint64 size = 2;
+      // optional uint64 size = 2;
       case 2: {
         if (tag == 16) {
          parse_size:
@@ -1486,12 +1773,12 @@ failure:
 void Data::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:loomcomm.Data)
-  // required int32 id = 1;
-  if (has_id()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->id(), output);
+  // required int32 type_id = 1;
+  if (has_type_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->type_id(), output);
   }
 
-  // required uint64 size = 2;
+  // optional uint64 size = 2;
   if (has_size()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->size(), output);
   }
@@ -1505,14 +1792,14 @@ int Data::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required int32 id = 1;
-    if (has_id()) {
+    // required int32 type_id = 1;
+    if (has_type_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->id());
+          this->type_id());
     }
 
-    // required uint64 size = 2;
+    // optional uint64 size = 2;
     if (has_size()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
@@ -1536,8 +1823,8 @@ void Data::CheckTypeAndMergeFrom(
 void Data::MergeFrom(const Data& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_id()) {
-      set_id(from.id());
+    if (from.has_type_id()) {
+      set_type_id(from.type_id());
     }
     if (from.has_size()) {
       set_size(from.size());
@@ -1553,14 +1840,14 @@ void Data::CopyFrom(const Data& from) {
 }
 
 bool Data::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
 
   return true;
 }
 
 void Data::Swap(Data* other) {
   if (other != this) {
-    std::swap(id_, other->id_);
+    std::swap(type_id_, other->type_id_);
     std::swap(size_, other->size_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);

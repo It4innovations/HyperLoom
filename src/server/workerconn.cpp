@@ -73,7 +73,7 @@ void WorkerConnection::send_task(TaskNode *task)
     connection->send_message(msg);
 }
 
-void WorkerConnection::send_data(Id id, const std::string &address)
+void WorkerConnection::send_data(Id id, const std::string &address, bool with_size)
 {
     llog->debug("Command for {}: SEND id={} address={}", this->address, id, address);
 
@@ -81,6 +81,9 @@ void WorkerConnection::send_data(Id id, const std::string &address)
     msg.set_type(loomcomm::WorkerCommand_Type_SEND);
     msg.set_id(id);
     msg.set_address(address);
+    if (with_size) {
+        msg.set_with_size(with_size);
+    }
     connection->send_message(msg);
 
 }

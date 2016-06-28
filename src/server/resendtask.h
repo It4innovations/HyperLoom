@@ -1,4 +1,4 @@
-#ifndef LOOM_SERVER_RESENDJOB_H
+/*#ifndef LOOM_SERVER_RESENDJOB_H
 #define LOOM_SERVER_RESENDJOB_H
 
 #include "libloom/taskinstance.h"
@@ -45,3 +45,4 @@ private:
 
 
 #endif // LOOM_SERVER_RESENDJOB_H
+*/

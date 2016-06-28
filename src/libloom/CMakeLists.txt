@@ -11,6 +11,10 @@ add_library(libloom
             databuilder.h
             data.cpp
             data.h
+            unpacking.cpp
+            unpacking.h
+            rawdata.h
+            rawdata.cpp
             interconnect.h
             interconnect.cpp
             task.cpp

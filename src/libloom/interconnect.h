@@ -19,7 +19,7 @@ public:
     InterConnection(Worker &worker);
     ~InterConnection();
 
-    void send(std::shared_ptr<Data> &data);
+    void send(Id id, std::shared_ptr<Data> &data, bool with_size);
     void send(std::unique_ptr<SendBuffer> buffer);
     void accept(uv_tcp_t *listen_socket) {
         connection.accept(listen_socket);
@@ -46,10 +46,13 @@ protected:
     void on_connection();
     void on_close();
 
+    void finish_data();
+
     Worker &worker;
     std::string address;
 
-    std::unique_ptr<DataBuilder> data_builder;
+    std::unique_ptr<DataUnpacker> data_unpacker;
+    Id data_id;
 
     static std::string make_address(const std::string &host, int port);
 

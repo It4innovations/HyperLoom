@@ -1,4 +1,4 @@
-#ifndef LIBLOOM_DATABUILDER_H
+/*#ifndef LIBLOOM_DATABUILDER_H
 #define LIBLOOM_DATABUILDER_H
 
 #include "data.h"
@@ -44,3 +44,4 @@ public:
 }
 
 #endif // LIBLOOM_DATABUILDER_H
+*/

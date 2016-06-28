@@ -65,8 +65,7 @@ void TaskManager::on_task_finished(TaskNode &task)
         llog->debug("Job id={} [RESULT] finished", id);
         const auto &owners = task.get_owners();
         assert(owners.size());
-        owners[0]->send_data(id, server.get_dummy_worker_address());
-        server.add_resend_task(id);
+        owners[0]->send_data(id, server.get_dummy_worker().get_address(), true);
     } else {
         llog->debug("Job id={} finished", id);
     }
@@ -135,7 +134,7 @@ void TaskManager::distribute_work(TaskNode::Vector &tasks)
                 if (!input->is_owner(load.connection)) {
                     assert(input->get_owners().size() >= 1);
                     WorkerConnection *owner = input->get_owners()[0];
-                    owner->send_data(input->get_id(), load.connection.get_address());
+                    owner->send_data(input->get_id(), load.connection.get_address(), false);
                 }
             }
             load.connection.send_task(task);

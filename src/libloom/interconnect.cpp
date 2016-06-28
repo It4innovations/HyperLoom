@@ -10,7 +10,7 @@
 using namespace loom;
 
 InterConnection::InterConnection(Worker &worker)
-    : SimpleConnectionCallback(worker.get_loop()), worker(worker)
+    : SimpleConnectionCallback(worker.get_loop()), worker(worker), data_id(-1)
 {
 
 }
@@ -40,19 +40,42 @@ void InterConnection::on_close()
     worker.unregister_connection(*this);
 }
 
+void InterConnection::finish_data()
+{
+    llog->debug("Data {} sucessfully received", data_id);
+    worker.publish_data(data_id,
+                        data_unpacker->release_data());
+    data_unpacker.reset();
+    data_id = -1;
+}
+
 void InterConnection::on_message(const char *buffer, size_t size)
 {
-    if (address.size()) {
+    if (data_unpacker.get()) {
+        data_unpacker->on_message(connection, buffer, size);;
+        return;
+    }
+    if (data_id > 0) {
+        assert(data_unpacker.get() == nullptr);
         loomcomm::Data msg;
         msg.ParseFromArray(buffer, size);
+        data_unpacker = worker.unpack(msg.type_id());
+        if (data_unpacker->init(worker, connection, msg)) {
+            finish_data();
+        }
+        return;
+    } else if (address.size()) {
+        loomcomm::DataPrologue msg;
+        msg.ParseFromArray(buffer, size);
         auto id = msg.id();
-        auto size = msg.size();
-        llog->debug("Receiving data id={} size={}", id, size);
-        assert(data_builder.get() == nullptr);
-        bool map_file = !worker.get_work_dir().empty();
-        data_builder = std::make_unique<DataBuilder>(worker, id, size, map_file);
-        connection.set_raw_read(size);
+        data_id = id;
+        if (msg.has_data_size()) {
+            llog->debug("Receiving data id={} (data_size={})", id, msg.data_size());
+        } else {
+            llog->debug("Receiving data id={}", id);
+        }
     } else {
+        // First message
         loomcomm::Announce msg;
         msg.ParseFromArray(buffer, size);
         std::stringstream s;
@@ -64,30 +87,34 @@ void InterConnection::on_message(const char *buffer, size_t size)
 
 void InterConnection::on_data_chunk(const char *buffer, size_t size)
 {
-    assert(data_builder.get());
-    data_builder->add(buffer, size);
+    assert(data_unpacker.get());
+    data_unpacker->on_data_chunk(buffer, size);
 }
 
 void InterConnection::on_data_finish()
 {
-    std::unique_ptr<Data> data = data_builder->release_data();
-    data_builder.reset();
-    llog->debug("Data {} sucessfully received", data->get_id());
-    assert(data.get());
-    worker.publish_data(std::move(data));
+    assert(data_unpacker.get());
+    if (data_unpacker->on_data_finish(connection)) {
+        finish_data();
+    }
 }
 
-void InterConnection::send(std::shared_ptr<Data> &data)
+void InterConnection::send(Id id, std::shared_ptr<Data> &data, bool with_size)
 {
-    loomcomm::Data msg;
-
-    msg.set_id(data->get_id());
-    msg.set_size(data->get_size());
-
-
     SendBuffer *buffer = new SendBuffer();
-    buffer->add(msg);
-    buffer->add(data, data->get_data(worker), data->get_size());
+    loomcomm::DataPrologue msg;
+    msg.set_id(id);
+
+    if (!with_size) {
+        buffer->add(msg);
+    }
+
+    data->serialize(worker, *buffer, data);
+
+    if (with_size) {
+        msg.set_data_size(buffer->get_size());
+        buffer->insert(0, msg);
+    }
 
     Connection::State state = connection.get_state();
     assert(state == Connection::ConnectionOpen ||

@@ -28,8 +28,7 @@ const std::string TaskInstance::get_task_dir()
 
 void TaskInstance::finish(std::unique_ptr<Data> output)
 {
-    assert (output->get_id() == get_id());
-    worker.publish_data(std::move(output));
+    worker.publish_data(get_id(), std::move(output));
     worker.task_finished(*this);
 }
 

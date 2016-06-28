@@ -1,4 +1,4 @@
-from loomcomm_pb2 import Register, Data
+from loomcomm_pb2 import Register, Data, DataPrologue
 
 import socket
 from connection import Connection
@@ -40,13 +40,19 @@ class Client(object):
         data = {}
         while expected != len(data):
             msg = self.connection.receive_message()
-            msg_data = Data()
-            msg_data.ParseFromString(msg)
-            data[msg_data.id] = self.connection.read_data(msg_data.size)
+            prologue = DataPrologue()
+            prologue.ParseFromString(msg)
+            data[prologue.id] = self._receive_data()
         if single_result:
             return data[results.id]
         else:
             return [data[task.id] for task in results]
+
+    def _receive_data(self):
+        msg_data = Data()
+        msg_data.ParseFromString(self.connection.receive_message())
+        assert msg_data.type_id == 300
+        return self.connection.read_data(msg_data.size)
 
     def _send_message(self, message):
         data = message.SerializeToString()

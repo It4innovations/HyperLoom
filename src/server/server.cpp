@@ -11,7 +11,9 @@ using namespace loom;
 Server::Server(uv_loop_t *loop, int port)
     : loop(loop),
       listen_port(port),
-      task_manager(*this)
+      task_manager(*this),
+      dummy_worker(*this)
+
 {
     if (loop != NULL) {
         UV_CHECK(uv_tcp_init(loop, &listen_socket));
@@ -20,9 +22,9 @@ Server::Server(uv_loop_t *loop, int port)
 
         llog->info("Starting server on {}", port);
 
-        dummy_worker = std::make_unique<Worker>(loop, "", 0, "");
-        dummy_worker->add_task_factory(std::make_unique<ResendTaskFactory>(*this));
-        loom::llog->debug("Dummy worker started at {}", dummy_worker->get_listen_port());
+
+        dummy_worker.start_listen();
+        loom::llog->debug("Dummy worker started at {}", dummy_worker.get_listen_port());
     }
 }
 
@@ -50,13 +52,6 @@ void Server::remove_client_connection(ClientConnection &conn)
     client_connection.reset();
 }
 
-std::string Server::get_dummy_worker_address() const
-{
-    std::stringstream s;
-    s << "!:" << dummy_worker->get_listen_port();
-    return s.str();
-}
-
 void Server::remove_freshconnection(FreshConnection &conn)
 {
     auto i = std::find_if(
@@ -65,13 +60,6 @@ void Server::remove_freshconnection(FreshConnection &conn)
                 [&](auto& p) { return p.get() == &conn; } );
     assert(i != fresh_connections.end());
     fresh_connections.erase(i);
-}
-
-void Server::add_resend_task(Id id)
-{
-    std::unique_ptr<Task> task = std::make_unique<Task>(-1, 0, "");
-    task->add_input(id);
-    dummy_worker->new_task(std::move(task));
 }
 
 void Server::start_listen()

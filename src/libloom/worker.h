@@ -3,7 +3,7 @@
 
 #include "interconnect.h"
 #include "taskinstance.h"
-#include "data.h"
+#include "unpacking.h"
 #include "taskfactory.h"
 
 #include <uv.h>
@@ -16,6 +16,7 @@
 namespace loom {
 
 class Worker;
+class DataUnpacker;
 
 class ServerConnection : public SimpleConnectionCallback {
     
@@ -50,18 +51,18 @@ public:
     }
     
     void new_task(std::unique_ptr<Task> task);
-    void send_data(const std::string &address, std::shared_ptr<Data> &data);
-    bool send_data(const std::string &address, Id id) {
+    void send_data(const std::string &address, Id id, std::shared_ptr<Data> &data, bool with_size);
+    bool send_data(const std::string &address, Id id, bool with_size) {
         auto& data = public_data[id];
         if (data.get() == nullptr) {
             return false;
         }
-        send_data(address, data);
+        send_data(address, id, data, with_size);
         return true;
     }
 
     void task_finished(TaskInstance &task_instance);
-    void publish_data(std::unique_ptr<Data> data);
+    void publish_data(Id id, std::unique_ptr<Data> data);
 
     bool has_data(Id id) const
     {
@@ -111,6 +112,8 @@ public:
     void check_ready_tasks();
 
     void set_cpus(int value);
+    void add_unpacker(DataTypeId type_id, std::unique_ptr<UnpackFactory> factory);    
+    std::unique_ptr<DataUnpacker> unpack(DataTypeId id);
 
 private:
     void register_worker();
@@ -127,9 +130,12 @@ private:
     std::vector<std::unique_ptr<TaskInstance>> active_tasks;
     std::vector<std::unique_ptr<Task>> ready_tasks;
     std::vector<std::unique_ptr<Task>> waiting_tasks;
-    std::unordered_map<int, std::shared_ptr<Data>> public_data;
-
     std::vector<std::unique_ptr<TaskFactory>> task_factories;
+
+    std::unordered_map<int, std::shared_ptr<Data>> public_data;
+    std::string work_dir;
+
+    std::unordered_map<DataTypeId, std::unique_ptr<UnpackFactory>> unpack_factories;
 
     ServerConnection server_conn;
     std::unordered_map<std::string, std::unique_ptr<InterConnection>> connections;
@@ -140,9 +146,6 @@ private:
 
     uv_tcp_t listen_socket;
     int listen_port;
-
-    std::string work_dir;
-
 
     static void _on_new_connection(uv_stream_t *stream, int status);
     static void _on_getaddrinfo(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);

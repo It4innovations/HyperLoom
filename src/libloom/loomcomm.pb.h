@@ -37,6 +37,7 @@ class ServerMessage;
 class WorkerCommand;
 class WorkerResponse;
 class Announce;
+class DataPrologue;
 class Data;
 
 enum Register_Type {
@@ -432,6 +433,13 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   inline ::std::string* release_address();
   inline void set_allocated_address(::std::string* address);
 
+  // optional bool with_size = 11;
+  inline bool has_with_size() const;
+  inline void clear_with_size();
+  static const int kWithSizeFieldNumber = 11;
+  inline bool with_size() const;
+  inline void set_with_size(bool value);
+
   // @@protoc_insertion_point(class_scope:loomcomm.WorkerCommand)
  private:
   inline void set_has_type();
@@ -444,6 +452,8 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   inline void clear_has_task_config();
   inline void set_has_address();
   inline void clear_has_address();
+  inline void set_has_with_size();
+  inline void clear_has_with_size();
 
   ::std::string _unknown_fields_;
 
@@ -453,8 +463,9 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 id_;
   ::std::string* task_config_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > task_inputs_;
-  ::std::string* address_;
   ::google::protobuf::int32 task_type_;
+  bool with_size_;
+  ::std::string* address_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -650,6 +661,107 @@ class Announce : public ::google::protobuf::MessageLite {
 };
 // -------------------------------------------------------------------
 
+class DataPrologue : public ::google::protobuf::MessageLite {
+ public:
+  DataPrologue();
+  virtual ~DataPrologue();
+
+  DataPrologue(const DataPrologue& from);
+
+  inline DataPrologue& operator=(const DataPrologue& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::std::string& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::std::string* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const DataPrologue& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const DataPrologue* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
+
+  void Swap(DataPrologue* other);
+
+  // implements Message ----------------------------------------------
+
+  DataPrologue* New() const;
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+  void CopyFrom(const DataPrologue& from);
+  void MergeFrom(const DataPrologue& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  void DiscardUnknownFields();
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::std::string GetTypeName() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required int32 id = 1;
+  inline bool has_id() const;
+  inline void clear_id();
+  static const int kIdFieldNumber = 1;
+  inline ::google::protobuf::int32 id() const;
+  inline void set_id(::google::protobuf::int32 value);
+
+  // optional uint64 data_size = 3;
+  inline bool has_data_size() const;
+  inline void clear_data_size();
+  static const int kDataSizeFieldNumber = 3;
+  inline ::google::protobuf::uint64 data_size() const;
+  inline void set_data_size(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:loomcomm.DataPrologue)
+ private:
+  inline void set_has_id();
+  inline void clear_has_id();
+  inline void set_has_data_size();
+  inline void clear_has_data_size();
+
+  ::std::string _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::uint64 data_size_;
+  ::google::protobuf::int32 id_;
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
+  #else
+  friend void  protobuf_AddDesc_loomcomm_2eproto();
+  #endif
+  friend void protobuf_AssignDesc_loomcomm_2eproto();
+  friend void protobuf_ShutdownFile_loomcomm_2eproto();
+
+  void InitAsDefaultInstance();
+  static DataPrologue* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class Data : public ::google::protobuf::MessageLite {
  public:
   Data();
@@ -711,14 +823,14 @@ class Data : public ::google::protobuf::MessageLite {
 
   // accessors -------------------------------------------------------
 
-  // required int32 id = 1;
-  inline bool has_id() const;
-  inline void clear_id();
-  static const int kIdFieldNumber = 1;
-  inline ::google::protobuf::int32 id() const;
-  inline void set_id(::google::protobuf::int32 value);
+  // required int32 type_id = 1;
+  inline bool has_type_id() const;
+  inline void clear_type_id();
+  static const int kTypeIdFieldNumber = 1;
+  inline ::google::protobuf::int32 type_id() const;
+  inline void set_type_id(::google::protobuf::int32 value);
 
-  // required uint64 size = 2;
+  // optional uint64 size = 2;
   inline bool has_size() const;
   inline void clear_size();
   static const int kSizeFieldNumber = 2;
@@ -727,8 +839,8 @@ class Data : public ::google::protobuf::MessageLite {
 
   // @@protoc_insertion_point(class_scope:loomcomm.Data)
  private:
-  inline void set_has_id();
-  inline void clear_has_id();
+  inline void set_has_type_id();
+  inline void clear_has_type_id();
   inline void set_has_size();
   inline void clear_has_size();
 
@@ -737,7 +849,7 @@ class Data : public ::google::protobuf::MessageLite {
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::google::protobuf::uint64 size_;
-  ::google::protobuf::int32 id_;
+  ::google::protobuf::int32 type_id_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -1146,6 +1258,30 @@ inline void WorkerCommand::set_allocated_address(::std::string* address) {
   // @@protoc_insertion_point(field_set_allocated:loomcomm.WorkerCommand.address)
 }
 
+// optional bool with_size = 11;
+inline bool WorkerCommand::has_with_size() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void WorkerCommand::set_has_with_size() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void WorkerCommand::clear_has_with_size() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void WorkerCommand::clear_with_size() {
+  with_size_ = false;
+  clear_has_with_size();
+}
+inline bool WorkerCommand::with_size() const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerCommand.with_size)
+  return with_size_;
+}
+inline void WorkerCommand::set_with_size(bool value) {
+  set_has_with_size();
+  with_size_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerCommand.with_size)
+}
+
 // -------------------------------------------------------------------
 
 // WorkerResponse
@@ -1204,33 +1340,85 @@ inline void Announce::set_port(::google::protobuf::int32 value) {
 
 // -------------------------------------------------------------------
 
-// Data
+// DataPrologue
 
 // required int32 id = 1;
-inline bool Data::has_id() const {
+inline bool DataPrologue::has_id() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Data::set_has_id() {
+inline void DataPrologue::set_has_id() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void Data::clear_has_id() {
+inline void DataPrologue::clear_has_id() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void Data::clear_id() {
+inline void DataPrologue::clear_id() {
   id_ = 0;
   clear_has_id();
 }
-inline ::google::protobuf::int32 Data::id() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Data.id)
+inline ::google::protobuf::int32 DataPrologue::id() const {
+  // @@protoc_insertion_point(field_get:loomcomm.DataPrologue.id)
   return id_;
 }
-inline void Data::set_id(::google::protobuf::int32 value) {
+inline void DataPrologue::set_id(::google::protobuf::int32 value) {
   set_has_id();
   id_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Data.id)
+  // @@protoc_insertion_point(field_set:loomcomm.DataPrologue.id)
 }
 
-// required uint64 size = 2;
+// optional uint64 data_size = 3;
+inline bool DataPrologue::has_data_size() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void DataPrologue::set_has_data_size() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void DataPrologue::clear_has_data_size() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void DataPrologue::clear_data_size() {
+  data_size_ = GOOGLE_ULONGLONG(0);
+  clear_has_data_size();
+}
+inline ::google::protobuf::uint64 DataPrologue::data_size() const {
+  // @@protoc_insertion_point(field_get:loomcomm.DataPrologue.data_size)
+  return data_size_;
+}
+inline void DataPrologue::set_data_size(::google::protobuf::uint64 value) {
+  set_has_data_size();
+  data_size_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.DataPrologue.data_size)
+}
+
+// -------------------------------------------------------------------
+
+// Data
+
+// required int32 type_id = 1;
+inline bool Data::has_type_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void Data::set_has_type_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void Data::clear_has_type_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void Data::clear_type_id() {
+  type_id_ = 0;
+  clear_has_type_id();
+}
+inline ::google::protobuf::int32 Data::type_id() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Data.type_id)
+  return type_id_;
+}
+inline void Data::set_type_id(::google::protobuf::int32 value) {
+  set_has_type_id();
+  type_id_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Data.type_id)
+}
+
+// optional uint64 size = 2;
 inline bool Data::has_size() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }

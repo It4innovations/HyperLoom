@@ -1,4 +1,4 @@
-#include "resendtask.h"
+/*#include "resendtask.h"
 #include "server.h"
 
 #include "libloom/loomcomm.pb.h"
@@ -17,14 +17,20 @@ void ResendTask::start(DataVector &input_data)
 {
     assert(input_data.size() == 1);
     auto data = *input_data[0];
-    llog->debug("Resending data id={} to client", data->get_id());
+    Id id = -get_id();
+    llog->debug("Resending data id={} to client", id);
 
-    loomcomm::Data msg;
-    msg.set_id(data->get_id());
-    msg.set_size(data->get_size());
-
+    loomcomm::DataPrologue msg;
+    msg.set_id(id);
     buffer.add(msg);
-    buffer.add(data, data->get_data(worker), data->get_size());
+    data->serialize(worker, buffer, data);
+
+//    loomcomm::Data msg;
+//    msg.set_id(id);
+//    msg.set_size(data->get_size());
+//
+//    buffer.add(msg);
+//    buffer.add(data, data->get_data(worker), data->get_size());
 
     auto &connection = server.get_client_connection();
     connection.send_buffer(&buffer);
@@ -52,3 +58,4 @@ void ResendTask::_SendBuffer::on_finish(int status)
     llog->debug("Resend task id={} finished", task.get_id());
     task.finish_without_data();
 }
+*/

@@ -11,7 +11,7 @@ namespace loom {
 #define UV_CHECK(call) \
     { int _uv_r = (call); \
       if (unlikely(_uv_r)) { \
-        report_uv_error(_uv_r, __LINE__, __FILE__); \
+        loom::report_uv_error(_uv_r, __LINE__, __FILE__); \
       } \
     }
 

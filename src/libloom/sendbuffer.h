@@ -38,12 +38,21 @@ public:
         raw_memory.push_back(std::move(data));
     }
 
+    void insert(int index, std::unique_ptr<char[]> data, size_t size) {
+        bufs.emplace(bufs.begin() + index, uv_buf_t {data.get(), size});
+        raw_memory.push_back(std::move(data));
+    }
+
+
     void add(std::shared_ptr<Data> &data, char *data_ptr, size_t size) {
         bufs.emplace_back(uv_buf_t {data_ptr, size});
         data_vector.push_back(data);
     }
 
     void add(::google::protobuf::MessageLite &message);
+    void insert(int index, ::google::protobuf::MessageLite &message);
+
+    size_t get_size() const;
 
     uv_write_t request;
 

@@ -7,6 +7,7 @@ const int PROTOCOL_VERSION = 1;
 
 typedef int Id;
 typedef int TaskId;
+typedef int DataTypeId;
 
 }
 
