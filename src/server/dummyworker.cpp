@@ -76,7 +76,11 @@ void DWConnection::on_message(const char *buffer, size_t size)
     loomcomm::DataPrologue msg;
     msg.ParseFromArray(buffer, size);
 
-    send_buffer->add(msg);
+    loomcomm::ClientMessage cmsg;
+    cmsg.set_type(loomcomm::ClientMessage_Type_DATA);
+    *cmsg.mutable_data() = msg;
+
+    send_buffer->add(cmsg);
 
     assert(msg.has_data_size());
     size_t data_size = msg.data_size();

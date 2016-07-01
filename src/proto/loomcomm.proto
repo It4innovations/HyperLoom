@@ -56,3 +56,18 @@ message Data
 	required int32 type_id = 1;
 	optional uint64 size = 2;
 }
+
+message Feedback {
+	required int32 id = 1;
+	required string worker = 2;
+}
+
+message ClientMessage {
+	enum Type {
+		DATA = 1;
+		FEEDBACK = 2;
+	}
+	required Type type = 1;
+	optional DataPrologue data = 2;
+	optional Feedback feedback = 3;
+}

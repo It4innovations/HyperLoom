@@ -1,4 +1,4 @@
-from loomcomm_pb2 import Register, Data, DataPrologue
+from loomcomm_pb2 import Register, Data, ClientMessage
 
 import socket
 from connection import Connection
@@ -40,8 +40,10 @@ class Client(object):
         data = {}
         while expected != len(data):
             msg = self.connection.receive_message()
-            prologue = DataPrologue()
-            prologue.ParseFromString(msg)
+            cmsg = ClientMessage()
+            cmsg.ParseFromString(msg)
+            assert cmsg.type == ClientMessage.DATA
+            prologue = cmsg.data
             data[prologue.id] = self._receive_data()
         if single_result:
             return data[results.id]

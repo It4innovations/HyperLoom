@@ -23,6 +23,8 @@ void protobuf_ShutdownFile_loomcomm_2eproto() {
   delete Announce::default_instance_;
   delete DataPrologue::default_instance_;
   delete Data::default_instance_;
+  delete Feedback::default_instance_;
+  delete ClientMessage::default_instance_;
 }
 
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
@@ -44,6 +46,8 @@ void protobuf_AddDesc_loomcomm_2eproto() {
   Announce::default_instance_ = new Announce();
   DataPrologue::default_instance_ = new DataPrologue();
   Data::default_instance_ = new Data();
+  Feedback::default_instance_ = new Feedback();
+  ClientMessage::default_instance_ = new ClientMessage();
   Register::default_instance_->InitAsDefaultInstance();
   ServerMessage::default_instance_->InitAsDefaultInstance();
   WorkerCommand::default_instance_->InitAsDefaultInstance();
@@ -51,6 +55,8 @@ void protobuf_AddDesc_loomcomm_2eproto() {
   Announce::default_instance_->InitAsDefaultInstance();
   DataPrologue::default_instance_->InitAsDefaultInstance();
   Data::default_instance_->InitAsDefaultInstance();
+  Feedback::default_instance_->InitAsDefaultInstance();
+  ClientMessage::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_loomcomm_2eproto);
 }
 
@@ -1857,6 +1863,548 @@ void Data::Swap(Data* other) {
 
 ::std::string Data::GetTypeName() const {
   return "loomcomm.Data";
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int Feedback::kIdFieldNumber;
+const int Feedback::kWorkerFieldNumber;
+#endif  // !_MSC_VER
+
+Feedback::Feedback()
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:loomcomm.Feedback)
+}
+
+void Feedback::InitAsDefaultInstance() {
+}
+
+Feedback::Feedback(const Feedback& from)
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:loomcomm.Feedback)
+}
+
+void Feedback::SharedCtor() {
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  id_ = 0;
+  worker_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+Feedback::~Feedback() {
+  // @@protoc_insertion_point(destructor:loomcomm.Feedback)
+  SharedDtor();
+}
+
+void Feedback::SharedDtor() {
+  if (worker_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete worker_;
+  }
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
+  if (this != default_instance_) {
+  #endif
+  }
+}
+
+void Feedback::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const Feedback& Feedback::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_loomcomm_2eproto();
+#else
+  if (default_instance_ == NULL) protobuf_AddDesc_loomcomm_2eproto();
+#endif
+  return *default_instance_;
+}
+
+Feedback* Feedback::default_instance_ = NULL;
+
+Feedback* Feedback::New() const {
+  return new Feedback;
+}
+
+void Feedback::Clear() {
+  if (_has_bits_[0 / 32] & 3) {
+    id_ = 0;
+    if (has_worker()) {
+      if (worker_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        worker_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->clear();
+}
+
+bool Feedback::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  ::google::protobuf::io::StringOutputStream unknown_fields_string(
+      mutable_unknown_fields());
+  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(
+      &unknown_fields_string);
+  // @@protoc_insertion_point(parse_start:loomcomm.Feedback)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // required int32 id = 1;
+      case 1: {
+        if (tag == 8) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &id_)));
+          set_has_id();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_worker;
+        break;
+      }
+
+      // required string worker = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_worker:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_worker()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(
+            input, tag, &unknown_fields_stream));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:loomcomm.Feedback)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:loomcomm.Feedback)
+  return false;
+#undef DO_
+}
+
+void Feedback::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:loomcomm.Feedback)
+  // required int32 id = 1;
+  if (has_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->id(), output);
+  }
+
+  // required string worker = 2;
+  if (has_worker()) {
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      2, this->worker(), output);
+  }
+
+  output->WriteRaw(unknown_fields().data(),
+                   unknown_fields().size());
+  // @@protoc_insertion_point(serialize_end:loomcomm.Feedback)
+}
+
+int Feedback::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required int32 id = 1;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->id());
+    }
+
+    // required string worker = 2;
+    if (has_worker()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->worker());
+    }
+
+  }
+  total_size += unknown_fields().size();
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void Feedback::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const Feedback*>(&from));
+}
+
+void Feedback::MergeFrom(const Feedback& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_id()) {
+      set_id(from.id());
+    }
+    if (from.has_worker()) {
+      set_worker(from.worker());
+    }
+  }
+  mutable_unknown_fields()->append(from.unknown_fields());
+}
+
+void Feedback::CopyFrom(const Feedback& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Feedback::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+
+  return true;
+}
+
+void Feedback::Swap(Feedback* other) {
+  if (other != this) {
+    std::swap(id_, other->id_);
+    std::swap(worker_, other->worker_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.swap(other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::std::string Feedback::GetTypeName() const {
+  return "loomcomm.Feedback";
+}
+
+
+// ===================================================================
+
+bool ClientMessage_Type_IsValid(int value) {
+  switch(value) {
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#ifndef _MSC_VER
+const ClientMessage_Type ClientMessage::DATA;
+const ClientMessage_Type ClientMessage::FEEDBACK;
+const ClientMessage_Type ClientMessage::Type_MIN;
+const ClientMessage_Type ClientMessage::Type_MAX;
+const int ClientMessage::Type_ARRAYSIZE;
+#endif  // _MSC_VER
+#ifndef _MSC_VER
+const int ClientMessage::kTypeFieldNumber;
+const int ClientMessage::kDataFieldNumber;
+const int ClientMessage::kFeedbackFieldNumber;
+#endif  // !_MSC_VER
+
+ClientMessage::ClientMessage()
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:loomcomm.ClientMessage)
+}
+
+void ClientMessage::InitAsDefaultInstance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  data_ = const_cast< ::loomcomm::DataPrologue*>(
+      ::loomcomm::DataPrologue::internal_default_instance());
+#else
+  data_ = const_cast< ::loomcomm::DataPrologue*>(&::loomcomm::DataPrologue::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  feedback_ = const_cast< ::loomcomm::Feedback*>(
+      ::loomcomm::Feedback::internal_default_instance());
+#else
+  feedback_ = const_cast< ::loomcomm::Feedback*>(&::loomcomm::Feedback::default_instance());
+#endif
+}
+
+ClientMessage::ClientMessage(const ClientMessage& from)
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:loomcomm.ClientMessage)
+}
+
+void ClientMessage::SharedCtor() {
+  _cached_size_ = 0;
+  type_ = 1;
+  data_ = NULL;
+  feedback_ = NULL;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ClientMessage::~ClientMessage() {
+  // @@protoc_insertion_point(destructor:loomcomm.ClientMessage)
+  SharedDtor();
+}
+
+void ClientMessage::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
+  if (this != default_instance_) {
+  #endif
+    delete data_;
+    delete feedback_;
+  }
+}
+
+void ClientMessage::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ClientMessage& ClientMessage::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_loomcomm_2eproto();
+#else
+  if (default_instance_ == NULL) protobuf_AddDesc_loomcomm_2eproto();
+#endif
+  return *default_instance_;
+}
+
+ClientMessage* ClientMessage::default_instance_ = NULL;
+
+ClientMessage* ClientMessage::New() const {
+  return new ClientMessage;
+}
+
+void ClientMessage::Clear() {
+  if (_has_bits_[0 / 32] & 7) {
+    type_ = 1;
+    if (has_data()) {
+      if (data_ != NULL) data_->::loomcomm::DataPrologue::Clear();
+    }
+    if (has_feedback()) {
+      if (feedback_ != NULL) feedback_->::loomcomm::Feedback::Clear();
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->clear();
+}
+
+bool ClientMessage::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  ::google::protobuf::io::StringOutputStream unknown_fields_string(
+      mutable_unknown_fields());
+  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(
+      &unknown_fields_string);
+  // @@protoc_insertion_point(parse_start:loomcomm.ClientMessage)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // required .loomcomm.ClientMessage.Type type = 1;
+      case 1: {
+        if (tag == 8) {
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::loomcomm::ClientMessage_Type_IsValid(value)) {
+            set_type(static_cast< ::loomcomm::ClientMessage_Type >(value));
+          } else {
+            unknown_fields_stream.WriteVarint32(tag);
+            unknown_fields_stream.WriteVarint32(value);
+          }
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_data;
+        break;
+      }
+
+      // optional .loomcomm.DataPrologue data = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_data:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_data()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_feedback;
+        break;
+      }
+
+      // optional .loomcomm.Feedback feedback = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_feedback:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_feedback()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(
+            input, tag, &unknown_fields_stream));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:loomcomm.ClientMessage)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:loomcomm.ClientMessage)
+  return false;
+#undef DO_
+}
+
+void ClientMessage::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:loomcomm.ClientMessage)
+  // required .loomcomm.ClientMessage.Type type = 1;
+  if (has_type()) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      1, this->type(), output);
+  }
+
+  // optional .loomcomm.DataPrologue data = 2;
+  if (has_data()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
+      2, this->data(), output);
+  }
+
+  // optional .loomcomm.Feedback feedback = 3;
+  if (has_feedback()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
+      3, this->feedback(), output);
+  }
+
+  output->WriteRaw(unknown_fields().data(),
+                   unknown_fields().size());
+  // @@protoc_insertion_point(serialize_end:loomcomm.ClientMessage)
+}
+
+int ClientMessage::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required .loomcomm.ClientMessage.Type type = 1;
+    if (has_type()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
+    }
+
+    // optional .loomcomm.DataPrologue data = 2;
+    if (has_data()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->data());
+    }
+
+    // optional .loomcomm.Feedback feedback = 3;
+    if (has_feedback()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->feedback());
+    }
+
+  }
+  total_size += unknown_fields().size();
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ClientMessage::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const ClientMessage*>(&from));
+}
+
+void ClientMessage::MergeFrom(const ClientMessage& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_type()) {
+      set_type(from.type());
+    }
+    if (from.has_data()) {
+      mutable_data()->::loomcomm::DataPrologue::MergeFrom(from.data());
+    }
+    if (from.has_feedback()) {
+      mutable_feedback()->::loomcomm::Feedback::MergeFrom(from.feedback());
+    }
+  }
+  mutable_unknown_fields()->append(from.unknown_fields());
+}
+
+void ClientMessage::CopyFrom(const ClientMessage& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ClientMessage::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+
+  if (has_data()) {
+    if (!this->data().IsInitialized()) return false;
+  }
+  if (has_feedback()) {
+    if (!this->feedback().IsInitialized()) return false;
+  }
+  return true;
+}
+
+void ClientMessage::Swap(ClientMessage* other) {
+  if (other != this) {
+    std::swap(type_, other->type_);
+    std::swap(data_, other->data_);
+    std::swap(feedback_, other->feedback_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.swap(other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::std::string ClientMessage::GetTypeName() const {
+  return "loomcomm.ClientMessage";
 }
 
 
