@@ -1,6 +1,7 @@
 
 import loomplan_pb2
 import loomrun_pb2
+import struct
 
 
 class Task(object):
@@ -45,6 +46,16 @@ class OpenTask(Task):
 
     def __init__(self, filename):
         self.config = filename
+
+
+class SplitLinesTask(Task):
+
+    task_type = "split_lines"
+    struct = u32 = struct.Struct("<QQ")
+
+    def __init__(self, input, start, end):
+        self.config = self.struct.pack(start, end)
+        self.inputs = (input,)
 
 
 class RunTask(Task):
@@ -141,6 +152,9 @@ class Plan(object):
 
     def task_merge(self, inputs):
         return self.add(MergeTask(inputs))
+
+    def task_split_lines(self, input, start, end):
+        return self.add(SplitLinesTask(input, start, end))
 
     def task_run(self, args, stdin=None, stdout=None, variable=None):
         return self.add(

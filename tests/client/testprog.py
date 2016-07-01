@@ -3,6 +3,7 @@ import time
 import sys
 from datetime import datetime
 
+
 def main():
     parser = argparse.ArgumentParser(
         description='Simple program called in test')

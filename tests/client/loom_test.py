@@ -148,7 +148,7 @@ def test_run_files(loom_env):
     assert result == "cdef" * 100
 
 
-def test_open(loom_env):
+def test_open_and_merge(loom_env):
     p = loom_env.plan()
     a = p.task_open(FILE1)
     b = p.task_open(FILE2)
@@ -158,4 +158,29 @@ def test_open(loom_env):
     expect = ("This is file 1\n" +
               "\n".join("Line {}".format(i) for i in xrange(1, 13)) +
               "\n")
+    assert result == expect
+
+
+def test_open_and_splitlines(loom_env):
+    loom_env.start(1)
+
+    p = loom_env.plan()
+    a = p.task_open(FILE2)
+    c = p.task_split_lines(a, 2, 6)
+    result = loom_env.submit(p, c)
+    expect = "\n".join("Line {}".format(i) for i in xrange(3, 7)) + "\n"
+    assert result == expect
+
+    p = loom_env.plan()
+    a = p.task_open(FILE2)
+    c = p.task_split_lines(a, 0, 6)
+    result = loom_env.submit(p, c)
+    expect = "\n".join("Line {}".format(i) for i in xrange(1, 7)) + "\n"
+    assert result == expect
+
+    p = loom_env.plan()
+    a = p.task_open(FILE2)
+    c = p.task_split_lines(a, 3, 60)
+    result = loom_env.submit(p, c)
+    expect = "\n".join("Line {}".format(i) for i in xrange(4, 13)) + "\n"
     assert result == expect

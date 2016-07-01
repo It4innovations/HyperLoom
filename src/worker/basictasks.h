@@ -6,7 +6,7 @@
 class ConstTask : public loom::TaskInstance
 {
 public:
-    ConstTask(loom::Worker &worker, std::unique_ptr<loom::Task> task);
+    using TaskInstance::TaskInstance;
     void start(loom::DataVector &inputs);
 };
 
@@ -14,14 +14,23 @@ public:
 class MergeTask : public loom::TaskInstance
 {
 public:
-    MergeTask(loom::Worker &worker, std::unique_ptr<loom::Task> task);
+    using TaskInstance::TaskInstance;
     void start(loom::DataVector &inputs);
 };
+
 
 class OpenTask : public loom::TaskInstance
 {
 public:
-    OpenTask(loom::Worker &worker, std::unique_ptr<loom::Task> task);
+    using TaskInstance::TaskInstance;
+    void start(loom::DataVector &inputs);
+};
+
+
+class LineSplitTask : public loom::TaskInstance
+{
+public:
+    using TaskInstance::TaskInstance;
     void start(loom::DataVector &inputs);
 };
 
