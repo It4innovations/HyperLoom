@@ -77,9 +77,11 @@ class RunTask(Task):
 
     def map_file_in(self, task, filename):
         self.file_ins.append((task, filename))
+        return self
 
     def map_file_out(self, filename):
         self.file_outs.append(filename)
+        return self
 
     @property
     def inputs(self):

@@ -75,7 +75,6 @@ void RunTask::start(DataVector &inputs)
             auto& input = *inputs[map.input_index()];
             std::string path = get_path(map.filename());
             std::string filename = input->get_filename(worker);
-            llog->alert("FILENAME = {} {}", filename, (unsigned long) &input);
             assert(!filename.empty());
             llog->debug("Creating symlink of '{}'", map.filename());
             if (symlink(filename.c_str(), path.c_str())) {

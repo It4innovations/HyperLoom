@@ -6,7 +6,7 @@ import os
 FILE1 = os.path.join(LOOM_TEST_DATA_DIR, "file1")
 FILE2 = os.path.join(LOOM_TEST_DATA_DIR, "file2")
 
-dir(loom_env)  # silence flake8
+loom_env  # silence flake8
 
 
 def pytestprog(sleep, op="copy", stamp=False, file_out=None, file_in=None):
