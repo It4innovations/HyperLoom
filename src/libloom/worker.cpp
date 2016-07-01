@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "log.h"
 #include "types.h"
-#include "rawdata.h"
+#include "data/rawdata.h"
 
 #include <stdlib.h>
 #include <sstream>

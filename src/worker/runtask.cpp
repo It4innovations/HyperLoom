@@ -2,7 +2,7 @@
 #include "runtask.h"
 
 #include "libloom/worker.h"
-#include "libloom/rawdata.h"
+#include "libloom/data/rawdata.h"
 #include "libloom/log.h"
 #include "loomrun.pb.h"
 

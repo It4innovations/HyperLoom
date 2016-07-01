@@ -17,6 +17,7 @@ LOOM_CLIENT = os.path.join(LOOM_ROOT, "src")
 LOOM_TEST_BUILD_DIR = os.path.join(LOOM_TESTDIR, "build")
 
 LOOM_TESTPROG = os.path.join(LOOM_TESTDIR, "testprog.py")
+LOOM_TEST_DATA_DIR = os.path.join(LOOM_TESTDIR, "testdata")
 
 sys.path.insert(0, LOOM_CLIENT)
 

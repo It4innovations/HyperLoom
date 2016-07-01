@@ -1,5 +1,9 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g -Wall")
 add_library(libloom
+            data/externfile.cpp
+            data/externfile.h
+            data/rawdata.h
+            data/rawdata.cpp
             connection.cpp
             connection.h
             worker.cpp
@@ -13,8 +17,6 @@ add_library(libloom
             data.h
             unpacking.cpp
             unpacking.h
-            rawdata.h
-            rawdata.cpp
             interconnect.h
             interconnect.cpp
             task.cpp

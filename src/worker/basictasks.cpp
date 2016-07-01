@@ -1,7 +1,8 @@
 #include "basictasks.h"
 
 #include "libloom/databuilder.h"
-#include "libloom/rawdata.h"
+#include "libloom/data/rawdata.h"
+#include "libloom/data/externfile.h"
 
 #include <string.h>
 
@@ -44,4 +45,15 @@ void MergeTask::start(DataVector &inputs) {
         dst += size;
     }
     finish(std::move(output));
+}
+
+OpenTask::OpenTask(Worker &worker, std::unique_ptr<Task> task)
+    : TaskInstance(worker, std::move(task))
+{
+
+}
+
+void OpenTask::start(DataVector &inputs)
+{
+    finish(std::make_unique<ExternFile>(task->get_config()));
 }

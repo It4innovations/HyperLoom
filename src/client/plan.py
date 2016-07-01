@@ -39,6 +39,14 @@ class MergeTask(Task):
         self.inputs = inputs
 
 
+class OpenTask(Task):
+
+    task_type = "open"
+
+    def __init__(self, filename):
+        self.config = filename
+
+
 class RunTask(Task):
 
     task_type = "run"
@@ -127,6 +135,9 @@ class Plan(object):
 
     def task_const(self, data):
         return self.add(ConstTask(data))
+
+    def task_open(self, filename):
+        return self.add(OpenTask(filename))
 
     def task_merge(self, inputs):
         return self.add(MergeTask(inputs))

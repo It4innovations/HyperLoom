@@ -1,6 +1,10 @@
-from loomenv import loom_env, LOOM_TESTPROG  # noqa
+from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
 
 from datetime import datetime
+import os
+
+FILE1 = os.path.join(LOOM_TEST_DATA_DIR, "file1")
+FILE2 = os.path.join(LOOM_TEST_DATA_DIR, "file2")
 
 dir(loom_env)  # silence flake8
 
@@ -142,3 +146,16 @@ def test_run_files(loom_env):
     result = loom_env.submit(p, c1)
 
     assert result == "cdef" * 100
+
+
+def test_open(loom_env):
+    p = loom_env.plan()
+    a = p.task_open(FILE1)
+    b = p.task_open(FILE2)
+    c = p.task_merge((a, b))
+    loom_env.start(1)
+    result = loom_env.submit(p, c)
+    expect = ("This is file 1\n" +
+              "\n".join("Line {}".format(i) for i in xrange(1, 13)) +
+              "\n")
+    assert result == expect

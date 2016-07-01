@@ -1,8 +1,8 @@
 #include "rawdata.h"
 
-#include "log.h"
-#include "utils.h"
-#include "worker.h"
+#include "../log.h"
+#include "../utils.h"
+#include "../worker.h"
 
 #include <sstream>
 #include <assert.h>
@@ -106,13 +106,6 @@ void RawData::open(Worker &worker)
         llog->critical("Cannot open data {}", get_filename(worker));
         log_errno_abort("open");
     }
-    struct stat finfo;
-    memset(&finfo, 0, sizeof(finfo));
-    if (fstat(fd, &finfo) == -1)
-    {
-        log_errno_abort("fstat");
-    }
-    size = finfo.st_size;
     map(fd, false);
     ::close(fd);
 }
@@ -130,6 +123,7 @@ void RawData::map(int fd, bool write)
     }
     data = (char*) mmap(0, size, flags, MAP_SHARED, fd, 0);
     if (data == MAP_FAILED) {
+        llog->critical("Cannot mmap data file_id={}", file_id);
         log_errno_abort("mmap");
     }
 }

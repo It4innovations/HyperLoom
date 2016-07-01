@@ -1,7 +1,7 @@
 #ifndef LIBLOOM_RAWDATA_H
 #define LIBLOOM_RAWDATA_H
 
-#include "data.h"
+#include "../data.h"
 
 namespace loom {
 
@@ -37,7 +37,6 @@ public:
     void init_from_file(Worker &worker);
 
     std::string get_filename(Worker &worker) const;
-    int get_fd(Worker &worker) const;
 
 private:
 
@@ -51,6 +50,7 @@ private:
     static size_t file_id_counter;
 
 };
+
 
 class RawDataUnpacker : public DataUnpacker
 {

@@ -116,6 +116,8 @@ int main(int argc, char **argv)
                 std::make_unique<SimpleTaskFactory<ConstTask>>("const"));
     worker.add_task_factory(
                 std::make_unique<SimpleTaskFactory<MergeTask>>("merge"));
+    worker.add_task_factory(
+                std::make_unique<SimpleTaskFactory<OpenTask>>("open"));
     worker.set_cpus(config.cpus);
     //worker.add_task_factory<MergeTask>("merge");
     uv_run(&loop, UV_RUN_DEFAULT);

@@ -18,5 +18,12 @@ public:
     void start(loom::DataVector &inputs);
 };
 
+class OpenTask : public loom::TaskInstance
+{
+public:
+    OpenTask(loom::Worker &worker, std::unique_ptr<loom::Task> task);
+    void start(loom::DataVector &inputs);
+};
+
 
 #endif // LOOM_WORKER_BASICTASKS_H
