@@ -1,6 +1,8 @@
 
 import loomplan_pb2
 import loomrun_pb2
+import gv
+
 import struct
 
 
@@ -173,3 +175,12 @@ class Plan(object):
             t = msg.tasks.add()
             task.set_message(t, task_types)
         return msg
+
+    def write_dot(self, filename):
+        graph = gv.Graph()
+        for task in self.tasks:
+            node = graph.node(task.id)
+            node.label = "{}\n{}".format(str(task.id), task.task_type)
+            for inp in task.inputs:
+                graph.node(inp.id).add_arc(node)
+        graph.write(filename)

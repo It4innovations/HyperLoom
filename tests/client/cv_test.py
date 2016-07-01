@@ -38,6 +38,7 @@ def test_cv_iris(loom_env):
             task.map_file_in(model, "model")
             predict.append(task)
 
+        #  p.write_dot("test.dot")
         results = loom_env.submit(p, predict)
         assert len(results) == CHUNKS
         for line in results:
