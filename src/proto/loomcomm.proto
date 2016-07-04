@@ -9,8 +9,14 @@ message Register {
 	}
 	required int32 protocol_version = 1;
 	required Type type = 2;
+
+	// Worker
 	optional int32 port = 3;
 	repeated string task_types = 4;
+	optional int32 cpus = 5;
+
+	// Client
+	optional bool info = 10;
 }
 
 message ServerMessage {
@@ -57,7 +63,7 @@ message Data
 	optional uint64 size = 2;
 }
 
-message Feedback {
+message Info {
 	required int32 id = 1;
 	required string worker = 2;
 }
@@ -65,9 +71,9 @@ message Feedback {
 message ClientMessage {
 	enum Type {
 		DATA = 1;
-		FEEDBACK = 2;
+		INFO = 2;
 	}
 	required Type type = 1;
 	optional DataPrologue data = 2;
-	optional Feedback feedback = 3;
+	optional Info info = 3;
 }

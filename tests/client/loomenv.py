@@ -47,9 +47,14 @@ class Env():
 class LoomEnv(Env):
 
     PORT = 19010
+    info = False
+    _client = None
 
     def start(self, workers_count, cpus=1):
-        self.kill_all()
+        if self.processes:
+            self._client = None
+            self.kill_all()
+            time.sleep(0.2)
         server_args = (LOOM_SERVER_BIN,
                        "--debug",
                        "--port=" + str(self.PORT))
@@ -79,11 +84,14 @@ class LoomEnv(Env):
     def plan(self):
         return client.Plan()
 
+    @property
     def client(self):
-        return client.Client("localhost", self.PORT)
+        if self._client is None:
+            self._client = client.Client("localhost", self.PORT, self.info)
+        return self._client
 
     def submit(self, plan, results):
-        return self.client().submit(plan, results)
+        return self.client.submit(plan, results)
 
 
 @pytest.yield_fixture(autouse=True, scope="function")

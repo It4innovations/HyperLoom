@@ -39,7 +39,7 @@ class WorkerResponse;
 class Announce;
 class DataPrologue;
 class Data;
-class Feedback;
+class Info;
 class ClientMessage;
 
 enum Register_Type {
@@ -70,11 +70,11 @@ const int WorkerCommand_Type_Type_ARRAYSIZE = WorkerCommand_Type_Type_MAX + 1;
 
 enum ClientMessage_Type {
   ClientMessage_Type_DATA = 1,
-  ClientMessage_Type_FEEDBACK = 2
+  ClientMessage_Type_INFO = 2
 };
 bool ClientMessage_Type_IsValid(int value);
 const ClientMessage_Type ClientMessage_Type_Type_MIN = ClientMessage_Type_DATA;
-const ClientMessage_Type ClientMessage_Type_Type_MAX = ClientMessage_Type_FEEDBACK;
+const ClientMessage_Type ClientMessage_Type_Type_MAX = ClientMessage_Type_INFO;
 const int ClientMessage_Type_Type_ARRAYSIZE = ClientMessage_Type_Type_MAX + 1;
 
 // ===================================================================
@@ -190,6 +190,20 @@ class Register : public ::google::protobuf::MessageLite {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& task_types() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_task_types();
 
+  // optional int32 cpus = 5;
+  inline bool has_cpus() const;
+  inline void clear_cpus();
+  static const int kCpusFieldNumber = 5;
+  inline ::google::protobuf::int32 cpus() const;
+  inline void set_cpus(::google::protobuf::int32 value);
+
+  // optional bool info = 10;
+  inline bool has_info() const;
+  inline void clear_info();
+  static const int kInfoFieldNumber = 10;
+  inline bool info() const;
+  inline void set_info(bool value);
+
   // @@protoc_insertion_point(class_scope:loomcomm.Register)
  private:
   inline void set_has_protocol_version();
@@ -198,6 +212,10 @@ class Register : public ::google::protobuf::MessageLite {
   inline void clear_has_type();
   inline void set_has_port();
   inline void clear_has_port();
+  inline void set_has_cpus();
+  inline void clear_has_cpus();
+  inline void set_has_info();
+  inline void clear_has_info();
 
   ::std::string _unknown_fields_;
 
@@ -207,6 +225,8 @@ class Register : public ::google::protobuf::MessageLite {
   int type_;
   ::google::protobuf::RepeatedPtrField< ::std::string> task_types_;
   ::google::protobuf::int32 port_;
+  ::google::protobuf::int32 cpus_;
+  bool info_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -874,14 +894,14 @@ class Data : public ::google::protobuf::MessageLite {
 };
 // -------------------------------------------------------------------
 
-class Feedback : public ::google::protobuf::MessageLite {
+class Info : public ::google::protobuf::MessageLite {
  public:
-  Feedback();
-  virtual ~Feedback();
+  Info();
+  virtual ~Info();
 
-  Feedback(const Feedback& from);
+  Info(const Info& from);
 
-  inline Feedback& operator=(const Feedback& from) {
+  inline Info& operator=(const Info& from) {
     CopyFrom(from);
     return *this;
   }
@@ -894,26 +914,26 @@ class Feedback : public ::google::protobuf::MessageLite {
     return &_unknown_fields_;
   }
 
-  static const Feedback& default_instance();
+  static const Info& default_instance();
 
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   // Returns the internal default instance pointer. This function can
   // return NULL thus should not be used by the user. This is intended
   // for Protobuf internal code. Please use default_instance() declared
   // above instead.
-  static inline const Feedback* internal_default_instance() {
+  static inline const Info* internal_default_instance() {
     return default_instance_;
   }
   #endif
 
-  void Swap(Feedback* other);
+  void Swap(Info* other);
 
   // implements Message ----------------------------------------------
 
-  Feedback* New() const;
+  Info* New() const;
   void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const Feedback& from);
-  void MergeFrom(const Feedback& from);
+  void CopyFrom(const Info& from);
+  void MergeFrom(const Info& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -954,7 +974,7 @@ class Feedback : public ::google::protobuf::MessageLite {
   inline ::std::string* release_worker();
   inline void set_allocated_worker(::std::string* worker);
 
-  // @@protoc_insertion_point(class_scope:loomcomm.Feedback)
+  // @@protoc_insertion_point(class_scope:loomcomm.Info)
  private:
   inline void set_has_id();
   inline void clear_has_id();
@@ -976,7 +996,7 @@ class Feedback : public ::google::protobuf::MessageLite {
   friend void protobuf_ShutdownFile_loomcomm_2eproto();
 
   void InitAsDefaultInstance();
-  static Feedback* default_instance_;
+  static Info* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -1041,7 +1061,7 @@ class ClientMessage : public ::google::protobuf::MessageLite {
 
   typedef ClientMessage_Type Type;
   static const Type DATA = ClientMessage_Type_DATA;
-  static const Type FEEDBACK = ClientMessage_Type_FEEDBACK;
+  static const Type INFO = ClientMessage_Type_INFO;
   static inline bool Type_IsValid(int value) {
     return ClientMessage_Type_IsValid(value);
   }
@@ -1070,14 +1090,14 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   inline ::loomcomm::DataPrologue* release_data();
   inline void set_allocated_data(::loomcomm::DataPrologue* data);
 
-  // optional .loomcomm.Feedback feedback = 3;
-  inline bool has_feedback() const;
-  inline void clear_feedback();
-  static const int kFeedbackFieldNumber = 3;
-  inline const ::loomcomm::Feedback& feedback() const;
-  inline ::loomcomm::Feedback* mutable_feedback();
-  inline ::loomcomm::Feedback* release_feedback();
-  inline void set_allocated_feedback(::loomcomm::Feedback* feedback);
+  // optional .loomcomm.Info info = 3;
+  inline bool has_info() const;
+  inline void clear_info();
+  static const int kInfoFieldNumber = 3;
+  inline const ::loomcomm::Info& info() const;
+  inline ::loomcomm::Info* mutable_info();
+  inline ::loomcomm::Info* release_info();
+  inline void set_allocated_info(::loomcomm::Info* info);
 
   // @@protoc_insertion_point(class_scope:loomcomm.ClientMessage)
  private:
@@ -1085,15 +1105,15 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   inline void clear_has_type();
   inline void set_has_data();
   inline void clear_has_data();
-  inline void set_has_feedback();
-  inline void clear_has_feedback();
+  inline void set_has_info();
+  inline void clear_has_info();
 
   ::std::string _unknown_fields_;
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::loomcomm::DataPrologue* data_;
-  ::loomcomm::Feedback* feedback_;
+  ::loomcomm::Info* info_;
   int type_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
@@ -1238,6 +1258,54 @@ inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 Register::mutable_task_types() {
   // @@protoc_insertion_point(field_mutable_list:loomcomm.Register.task_types)
   return &task_types_;
+}
+
+// optional int32 cpus = 5;
+inline bool Register::has_cpus() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void Register::set_has_cpus() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void Register::clear_has_cpus() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void Register::clear_cpus() {
+  cpus_ = 0;
+  clear_has_cpus();
+}
+inline ::google::protobuf::int32 Register::cpus() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Register.cpus)
+  return cpus_;
+}
+inline void Register::set_cpus(::google::protobuf::int32 value) {
+  set_has_cpus();
+  cpus_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Register.cpus)
+}
+
+// optional bool info = 10;
+inline bool Register::has_info() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void Register::set_has_info() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void Register::clear_has_info() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void Register::clear_info() {
+  info_ = false;
+  clear_has_info();
+}
+inline bool Register::info() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Register.info)
+  return info_;
+}
+inline void Register::set_info(bool value) {
+  set_has_info();
+  info_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Register.info)
 }
 
 // -------------------------------------------------------------------
@@ -1689,85 +1757,85 @@ inline void Data::set_size(::google::protobuf::uint64 value) {
 
 // -------------------------------------------------------------------
 
-// Feedback
+// Info
 
 // required int32 id = 1;
-inline bool Feedback::has_id() const {
+inline bool Info::has_id() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Feedback::set_has_id() {
+inline void Info::set_has_id() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void Feedback::clear_has_id() {
+inline void Info::clear_has_id() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void Feedback::clear_id() {
+inline void Info::clear_id() {
   id_ = 0;
   clear_has_id();
 }
-inline ::google::protobuf::int32 Feedback::id() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Feedback.id)
+inline ::google::protobuf::int32 Info::id() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Info.id)
   return id_;
 }
-inline void Feedback::set_id(::google::protobuf::int32 value) {
+inline void Info::set_id(::google::protobuf::int32 value) {
   set_has_id();
   id_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Feedback.id)
+  // @@protoc_insertion_point(field_set:loomcomm.Info.id)
 }
 
 // required string worker = 2;
-inline bool Feedback::has_worker() const {
+inline bool Info::has_worker() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Feedback::set_has_worker() {
+inline void Info::set_has_worker() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void Feedback::clear_has_worker() {
+inline void Info::clear_has_worker() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void Feedback::clear_worker() {
+inline void Info::clear_worker() {
   if (worker_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     worker_->clear();
   }
   clear_has_worker();
 }
-inline const ::std::string& Feedback::worker() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Feedback.worker)
+inline const ::std::string& Info::worker() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Info.worker)
   return *worker_;
 }
-inline void Feedback::set_worker(const ::std::string& value) {
+inline void Info::set_worker(const ::std::string& value) {
   set_has_worker();
   if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     worker_ = new ::std::string;
   }
   worker_->assign(value);
-  // @@protoc_insertion_point(field_set:loomcomm.Feedback.worker)
+  // @@protoc_insertion_point(field_set:loomcomm.Info.worker)
 }
-inline void Feedback::set_worker(const char* value) {
+inline void Info::set_worker(const char* value) {
   set_has_worker();
   if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     worker_ = new ::std::string;
   }
   worker_->assign(value);
-  // @@protoc_insertion_point(field_set_char:loomcomm.Feedback.worker)
+  // @@protoc_insertion_point(field_set_char:loomcomm.Info.worker)
 }
-inline void Feedback::set_worker(const char* value, size_t size) {
+inline void Info::set_worker(const char* value, size_t size) {
   set_has_worker();
   if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     worker_ = new ::std::string;
   }
   worker_->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:loomcomm.Feedback.worker)
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.Info.worker)
 }
-inline ::std::string* Feedback::mutable_worker() {
+inline ::std::string* Info::mutable_worker() {
   set_has_worker();
   if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     worker_ = new ::std::string;
   }
-  // @@protoc_insertion_point(field_mutable:loomcomm.Feedback.worker)
+  // @@protoc_insertion_point(field_mutable:loomcomm.Info.worker)
   return worker_;
 }
-inline ::std::string* Feedback::release_worker() {
+inline ::std::string* Info::release_worker() {
   clear_has_worker();
   if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
@@ -1777,7 +1845,7 @@ inline ::std::string* Feedback::release_worker() {
     return temp;
   }
 }
-inline void Feedback::set_allocated_worker(::std::string* worker) {
+inline void Info::set_allocated_worker(::std::string* worker) {
   if (worker_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete worker_;
   }
@@ -1788,7 +1856,7 @@ inline void Feedback::set_allocated_worker(::std::string* worker) {
     clear_has_worker();
     worker_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
-  // @@protoc_insertion_point(field_set_allocated:loomcomm.Feedback.worker)
+  // @@protoc_insertion_point(field_set_allocated:loomcomm.Info.worker)
 }
 
 // -------------------------------------------------------------------
@@ -1865,49 +1933,49 @@ inline void ClientMessage::set_allocated_data(::loomcomm::DataPrologue* data) {
   // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientMessage.data)
 }
 
-// optional .loomcomm.Feedback feedback = 3;
-inline bool ClientMessage::has_feedback() const {
+// optional .loomcomm.Info info = 3;
+inline bool ClientMessage::has_info() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void ClientMessage::set_has_feedback() {
+inline void ClientMessage::set_has_info() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void ClientMessage::clear_has_feedback() {
+inline void ClientMessage::clear_has_info() {
   _has_bits_[0] &= ~0x00000004u;
 }
-inline void ClientMessage::clear_feedback() {
-  if (feedback_ != NULL) feedback_->::loomcomm::Feedback::Clear();
-  clear_has_feedback();
+inline void ClientMessage::clear_info() {
+  if (info_ != NULL) info_->::loomcomm::Info::Clear();
+  clear_has_info();
 }
-inline const ::loomcomm::Feedback& ClientMessage::feedback() const {
-  // @@protoc_insertion_point(field_get:loomcomm.ClientMessage.feedback)
+inline const ::loomcomm::Info& ClientMessage::info() const {
+  // @@protoc_insertion_point(field_get:loomcomm.ClientMessage.info)
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return feedback_ != NULL ? *feedback_ : *default_instance().feedback_;
+  return info_ != NULL ? *info_ : *default_instance().info_;
 #else
-  return feedback_ != NULL ? *feedback_ : *default_instance_->feedback_;
+  return info_ != NULL ? *info_ : *default_instance_->info_;
 #endif
 }
-inline ::loomcomm::Feedback* ClientMessage::mutable_feedback() {
-  set_has_feedback();
-  if (feedback_ == NULL) feedback_ = new ::loomcomm::Feedback;
-  // @@protoc_insertion_point(field_mutable:loomcomm.ClientMessage.feedback)
-  return feedback_;
+inline ::loomcomm::Info* ClientMessage::mutable_info() {
+  set_has_info();
+  if (info_ == NULL) info_ = new ::loomcomm::Info;
+  // @@protoc_insertion_point(field_mutable:loomcomm.ClientMessage.info)
+  return info_;
 }
-inline ::loomcomm::Feedback* ClientMessage::release_feedback() {
-  clear_has_feedback();
-  ::loomcomm::Feedback* temp = feedback_;
-  feedback_ = NULL;
+inline ::loomcomm::Info* ClientMessage::release_info() {
+  clear_has_info();
+  ::loomcomm::Info* temp = info_;
+  info_ = NULL;
   return temp;
 }
-inline void ClientMessage::set_allocated_feedback(::loomcomm::Feedback* feedback) {
-  delete feedback_;
-  feedback_ = feedback;
-  if (feedback) {
-    set_has_feedback();
+inline void ClientMessage::set_allocated_info(::loomcomm::Info* info) {
+  delete info_;
+  info_ = info;
+  if (info) {
+    set_has_info();
   } else {
-    clear_has_feedback();
+    clear_has_info();
   }
-  // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientMessage.feedback)
+  // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientMessage.info)
 }
 
 

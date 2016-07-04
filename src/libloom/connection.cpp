@@ -51,9 +51,10 @@ void Connection::close_and_discard_remaining_data()
 }
 
 void Connection::accept(uv_tcp_t *listen_socket)
-{
+{    
     UV_CHECK(uv_accept((uv_stream_t*) listen_socket, (uv_stream_t*) &socket));
     uv_read_start((uv_stream_t *)&socket, _buf_alloc, _on_read);
+    state = ConnectionOpen;
 }
 
 void Connection::start_read()

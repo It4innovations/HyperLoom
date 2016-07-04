@@ -12,6 +12,7 @@ def test_cv_iris(loom_env):
         CHUNK_SIZE = 150 / CHUNKS  # There are 150 irises
 
         loom_env.start(2)
+        loom_env.info = True
 
         p = loom_env.plan()
         a = p.task_open(IRIS_DATA)
@@ -38,8 +39,10 @@ def test_cv_iris(loom_env):
             task.map_file_in(model, "model")
             predict.append(task)
 
-        #  p.write_dot("test.dot")
         results = loom_env.submit(p, predict)
+
         assert len(results) == CHUNKS
         for line in results:
             assert line.startswith("Accuracy = ")
+
+        p.write_dot("test.dot", loom_env.client.info)

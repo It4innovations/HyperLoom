@@ -126,11 +126,6 @@ void InterConnection::send(Id id, std::shared_ptr<Data> &data, bool with_size)
     }
 }
 
-void InterConnection::send(std::unique_ptr<SendBuffer> buffer)
-{
-
-}
-
 std::string InterConnection::make_address(const std::string &host, int port)
 {
     std::stringstream s;

@@ -15,7 +15,8 @@ public:
     WorkerConnection(Server &server,
                      std::unique_ptr<loom::Connection> connection,
                      const std::string& address,
-                     const std::vector<std::string> &task_types);
+                     const std::vector<std::string> &task_types,
+                     int resource_cpus);
     void on_message(const char *buffer, size_t size);
     void on_close();
 
@@ -41,10 +42,15 @@ public:
         assert(0);
     }
 
+    int get_resource_cpus() const {
+        return resource_cpus;
+    }
+
 private:
     Server &server;
     std::unique_ptr<loom::Connection> connection;
     std::unordered_map<loom::Id, TaskNode*> tasks;
+    int resource_cpus;
     std::string address;
 
     std::vector<int> task_type_translates;

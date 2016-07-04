@@ -9,16 +9,22 @@ LOOM_PROTOCOL_VERSION = 1
 
 class Client(object):
 
-    def __init__(self, address, port):
+    def __init__(self, address, port, info=False):
         self.server_address = address
         self.server_port = port
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((address, port))
         self.connection = Connection(s)
 
+        if info:
+            self.info = []
+        else:
+            self.info = None
+
         msg = Register()
         msg.type = Register.REGISTER_CLIENT
         msg.protocol_version = LOOM_PROTOCOL_VERSION
+        msg.info = info
         self._send_message(msg)
 
     def submit(self, plan, results):
@@ -42,13 +48,20 @@ class Client(object):
             msg = self.connection.receive_message()
             cmsg = ClientMessage()
             cmsg.ParseFromString(msg)
-            assert cmsg.type == ClientMessage.DATA
-            prologue = cmsg.data
-            data[prologue.id] = self._receive_data()
+            if cmsg.type == ClientMessage.DATA:
+                prologue = cmsg.data
+                data[prologue.id] = self._receive_data()
+            else:
+                assert cmsg.type == ClientMessage.INFO
+                self.add_info(cmsg.info)
+
         if single_result:
             return data[results.id]
         else:
             return [data[task.id] for task in results]
+
+    def add_info(self, info):
+        self.info.append((info.id, info.worker))
 
     def _receive_data(self):
         msg_data = Data()

@@ -132,6 +132,7 @@ void Worker::register_worker()
     msg.set_protocol_version(PROTOCOL_VERSION);
 
     msg.set_port(get_listen_port());
+    msg.set_cpus(resource_cpus);
 
     for (auto& factory : task_factories) {
         msg.add_task_types(factory->get_name());

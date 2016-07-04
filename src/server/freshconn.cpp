@@ -46,15 +46,18 @@ void FreshConnection::on_message(const char *buffer, size_t size)
         auto wconn = std::make_unique<WorkerConnection>(server,
                                                         std::move(connection),
                                                         address.str(),
-                                                        task_types);
+                                                        task_types,
+                                                        msg.cpus());
 
         server.add_worker_connection(std::move(wconn));
         server.remove_freshconnection(*this);
         return;
     }
     if (msg.type() == loomcomm::Register_Type_REGISTER_CLIENT) {
+        bool info_flag = msg.has_info() && msg.info();
         auto cconn = std::make_unique<ClientConnection>(server,
-                                                        std::move(connection));
+                                                        std::move(connection),
+                                                        info_flag);
         server.add_client_connection(std::move(cconn));
         assert(connection.get() == nullptr);
         server.remove_freshconnection(*this);

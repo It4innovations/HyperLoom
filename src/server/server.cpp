@@ -3,6 +3,7 @@
 
 #include "libloom/utils.h"
 #include "libloom/log.h"
+#include "libloom/loomcomm.pb.h"
 
 #include <sstream>
 
@@ -60,6 +61,26 @@ void Server::remove_freshconnection(FreshConnection &conn)
                 [&](auto& p) { return p.get() == &conn; } );
     assert(i != fresh_connections.end());
     fresh_connections.erase(i);
+}
+
+void Server::on_task_finished(TaskNode &task)
+{
+    assert(client_connection);
+    if (client_connection->has_info_flag()) {
+        loomcomm::ClientMessage cmsg;
+        cmsg.set_type(loomcomm::ClientMessage_Type_INFO);
+        loomcomm::Info *info = cmsg.mutable_info();
+        info->set_id(task.get_id());
+        const auto& owners = task.get_owners();
+        assert(owners.size());
+        info->set_worker(owners.back()->get_address());
+
+        SendBuffer *buffer = new SendBuffer;
+        buffer->add(cmsg);
+
+        client_connection->send_buffer(buffer);
+    }
+    task_manager.on_task_finished(task);
 }
 
 void Server::start_listen()

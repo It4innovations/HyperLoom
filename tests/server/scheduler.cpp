@@ -9,7 +9,8 @@ typedef
     std::unordered_map<WorkerConnection*, TaskSet>
     DistMap;
 
-DistMap to_distmap(TaskManager::WorkDistribution dist)
+static DistMap
+to_distmap(TaskManager::WorkDistribution dist)
 {
     DistMap map;
     for (auto &load : dist) {
@@ -21,6 +22,14 @@ DistMap to_distmap(TaskManager::WorkDistribution dist)
     }
     return map;
 }
+
+static std::unique_ptr<WorkerConnection>
+simple_worker(Server &server, const std::string &name, int cpus=1)
+{
+    std::vector<std::string> tt;
+    return std::make_unique<WorkerConnection>(server, nullptr, name, tt, cpus);
+}
+
 
 TEST_CASE( "Server scheduling - separate tasks", "[scheduling]" ) {
     Server server(NULL, 0);
@@ -42,14 +51,14 @@ TEST_CASE( "Server scheduling - separate tasks", "[scheduling]" ) {
 
     std::vector<std::string> tt;
 
-    auto wconn = std::make_unique<WorkerConnection>(server, nullptr, "w1", tt);
+    auto wconn = simple_worker(server, "w1");
     WorkerConnection *w1 = wconn.get();
     server.add_worker_connection(std::move(wconn));
 
     auto d2 = to_distmap(manager.compute_distribution(v));
     CHECK(d2.size() == 1);
 
-    wconn = std::make_unique<WorkerConnection>(server, nullptr, "w2", tt);
+    wconn = simple_worker(server, "w1");
     WorkerConnection *w2 = wconn.get();
     server.add_worker_connection(std::move(wconn));
     CHECK(server.get_connections().size() == 2);

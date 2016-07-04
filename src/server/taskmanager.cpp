@@ -5,6 +5,7 @@
 #include "libloom/log.h"
 
 #include <algorithm>
+#include <limits.h>
 
 using namespace loom;
 
@@ -74,6 +75,11 @@ void TaskManager::on_task_finished(TaskNode &task)
     distribute_work(ready);
 }
 
+struct _TaskInfo {
+    int priority;
+    TaskNode::Vector new_tasks;
+};
+
 TaskManager::WorkDistribution TaskManager::compute_distribution(TaskNode::Vector &tasks)
 {
     WorkDistribution distribution;
@@ -83,27 +89,44 @@ TaskManager::WorkDistribution TaskManager::compute_distribution(TaskNode::Vector
         return distribution;
     }
 
-    std::unordered_map<WorkerConnection*, TaskNode::Vector> map;
+    std::unordered_map<WorkerConnection*, _TaskInfo> map;
 
-    int c = 0;
-    size_t size = connections.size();
+    for (auto &connection : connections) {
+        int size = connection->get_tasks().size();
+        int cpus = connection->get_resource_cpus();
+        map[connection.get()].priority = size - cpus;
+    }
+
     for (TaskNode* task : tasks) {
         auto &inputs = task->get_inputs();
-        bool done = false;
+        WorkerConnection *found = nullptr;
+        int best_priority = INT_MAX;
+
         for (TaskNode *inp : inputs) {
+
             auto &owners = inp->get_owners();
-            if (owners.size()) {
-                map[owners[0]].push_back(task);
-                done = true;
-                break;
+            for (WorkerConnection *owner : owners) {
+                auto &info = map[owner];
+                if (info.priority < best_priority) {
+                    best_priority = info.priority;
+                    found = owner;
+                }
             }
         }
-        if (done) {
-            continue;
+
+        if (best_priority >= 0) {
+            for (auto &i : map) {
+                _TaskInfo &info = i.second;
+                if (info.priority < best_priority) {
+                    best_priority = info.priority;
+                    found = i.first;
+                }
+            }
         }
-        map[connections[c].get()].push_back(task);
-        c += 1;
-        c %= size;
+
+        auto &info = map[found];
+        info.new_tasks.push_back(task);
+        info.priority += 1;
     }
 
     /*std::sort(connections.begin(), connections.end(),
@@ -113,9 +136,11 @@ TaskManager::WorkDistribution TaskManager::compute_distribution(TaskNode::Vector
     });*/
 
 
-    distribution.reserve(map.size());
+    //distribution.reserve(map.size());
     for (auto& pair : map) {
-        distribution.emplace_back(WorkerLoad{*pair.first, std::move(pair.second)});
+        if (!pair.second.new_tasks.empty()) {
+            distribution.emplace_back(WorkerLoad{*pair.first, std::move(pair.second.new_tasks)});
+        }
     }
     return distribution;
 }

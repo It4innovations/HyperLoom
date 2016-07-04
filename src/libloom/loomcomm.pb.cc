@@ -23,7 +23,7 @@ void protobuf_ShutdownFile_loomcomm_2eproto() {
   delete Announce::default_instance_;
   delete DataPrologue::default_instance_;
   delete Data::default_instance_;
-  delete Feedback::default_instance_;
+  delete Info::default_instance_;
   delete ClientMessage::default_instance_;
 }
 
@@ -46,7 +46,7 @@ void protobuf_AddDesc_loomcomm_2eproto() {
   Announce::default_instance_ = new Announce();
   DataPrologue::default_instance_ = new DataPrologue();
   Data::default_instance_ = new Data();
-  Feedback::default_instance_ = new Feedback();
+  Info::default_instance_ = new Info();
   ClientMessage::default_instance_ = new ClientMessage();
   Register::default_instance_->InitAsDefaultInstance();
   ServerMessage::default_instance_->InitAsDefaultInstance();
@@ -55,7 +55,7 @@ void protobuf_AddDesc_loomcomm_2eproto() {
   Announce::default_instance_->InitAsDefaultInstance();
   DataPrologue::default_instance_->InitAsDefaultInstance();
   Data::default_instance_->InitAsDefaultInstance();
-  Feedback::default_instance_->InitAsDefaultInstance();
+  Info::default_instance_->InitAsDefaultInstance();
   ClientMessage::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_loomcomm_2eproto);
 }
@@ -99,6 +99,8 @@ const int Register::kProtocolVersionFieldNumber;
 const int Register::kTypeFieldNumber;
 const int Register::kPortFieldNumber;
 const int Register::kTaskTypesFieldNumber;
+const int Register::kCpusFieldNumber;
+const int Register::kInfoFieldNumber;
 #endif  // !_MSC_VER
 
 Register::Register()
@@ -123,6 +125,8 @@ void Register::SharedCtor() {
   protocol_version_ = 0;
   type_ = 1;
   port_ = 0;
+  cpus_ = 0;
+  info_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -161,11 +165,25 @@ Register* Register::New() const {
 }
 
 void Register::Clear() {
-  if (_has_bits_[0 / 32] & 7) {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<Register*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  if (_has_bits_[0 / 32] & 55) {
+    ZR_(port_, info_);
     protocol_version_ = 0;
     type_ = 1;
-    port_ = 0;
   }
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
   task_types_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->clear();
@@ -245,6 +263,36 @@ bool Register::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(34)) goto parse_task_types;
+        if (input->ExpectTag(40)) goto parse_cpus;
+        break;
+      }
+
+      // optional int32 cpus = 5;
+      case 5: {
+        if (tag == 40) {
+         parse_cpus:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &cpus_)));
+          set_has_cpus();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(80)) goto parse_info;
+        break;
+      }
+
+      // optional bool info = 10;
+      case 10: {
+        if (tag == 80) {
+         parse_info:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &info_)));
+          set_has_info();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -296,6 +344,16 @@ void Register::SerializeWithCachedSizes(
       4, this->task_types(i), output);
   }
 
+  // optional int32 cpus = 5;
+  if (has_cpus()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->cpus(), output);
+  }
+
+  // optional bool info = 10;
+  if (has_info()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(10, this->info(), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomcomm.Register)
@@ -323,6 +381,18 @@ int Register::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->port());
+    }
+
+    // optional int32 cpus = 5;
+    if (has_cpus()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->cpus());
+    }
+
+    // optional bool info = 10;
+    if (has_info()) {
+      total_size += 1 + 1;
     }
 
   }
@@ -359,6 +429,12 @@ void Register::MergeFrom(const Register& from) {
     if (from.has_port()) {
       set_port(from.port());
     }
+    if (from.has_cpus()) {
+      set_cpus(from.cpus());
+    }
+    if (from.has_info()) {
+      set_info(from.info());
+    }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
 }
@@ -381,6 +457,8 @@ void Register::Swap(Register* other) {
     std::swap(type_, other->type_);
     std::swap(port_, other->port_);
     task_types_.Swap(&other->task_types_);
+    std::swap(cpus_, other->cpus_);
+    std::swap(info_, other->info_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -1869,27 +1947,27 @@ void Data::Swap(Data* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int Feedback::kIdFieldNumber;
-const int Feedback::kWorkerFieldNumber;
+const int Info::kIdFieldNumber;
+const int Info::kWorkerFieldNumber;
 #endif  // !_MSC_VER
 
-Feedback::Feedback()
+Info::Info()
   : ::google::protobuf::MessageLite() {
   SharedCtor();
-  // @@protoc_insertion_point(constructor:loomcomm.Feedback)
+  // @@protoc_insertion_point(constructor:loomcomm.Info)
 }
 
-void Feedback::InitAsDefaultInstance() {
+void Info::InitAsDefaultInstance() {
 }
 
-Feedback::Feedback(const Feedback& from)
+Info::Info(const Info& from)
   : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
-  // @@protoc_insertion_point(copy_constructor:loomcomm.Feedback)
+  // @@protoc_insertion_point(copy_constructor:loomcomm.Info)
 }
 
-void Feedback::SharedCtor() {
+void Info::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   id_ = 0;
@@ -1897,12 +1975,12 @@ void Feedback::SharedCtor() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
-Feedback::~Feedback() {
-  // @@protoc_insertion_point(destructor:loomcomm.Feedback)
+Info::~Info() {
+  // @@protoc_insertion_point(destructor:loomcomm.Info)
   SharedDtor();
 }
 
-void Feedback::SharedDtor() {
+void Info::SharedDtor() {
   if (worker_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete worker_;
   }
@@ -1914,12 +1992,12 @@ void Feedback::SharedDtor() {
   }
 }
 
-void Feedback::SetCachedSize(int size) const {
+void Info::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const Feedback& Feedback::default_instance() {
+const Info& Info::default_instance() {
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   protobuf_AddDesc_loomcomm_2eproto();
 #else
@@ -1928,13 +2006,13 @@ const Feedback& Feedback::default_instance() {
   return *default_instance_;
 }
 
-Feedback* Feedback::default_instance_ = NULL;
+Info* Info::default_instance_ = NULL;
 
-Feedback* Feedback::New() const {
-  return new Feedback;
+Info* Info::New() const {
+  return new Info;
 }
 
-void Feedback::Clear() {
+void Info::Clear() {
   if (_has_bits_[0 / 32] & 3) {
     id_ = 0;
     if (has_worker()) {
@@ -1947,7 +2025,7 @@ void Feedback::Clear() {
   mutable_unknown_fields()->clear();
 }
 
-bool Feedback::MergePartialFromCodedStream(
+bool Info::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
@@ -1955,7 +2033,7 @@ bool Feedback::MergePartialFromCodedStream(
       mutable_unknown_fields());
   ::google::protobuf::io::CodedOutputStream unknown_fields_stream(
       &unknown_fields_string);
-  // @@protoc_insertion_point(parse_start:loomcomm.Feedback)
+  // @@protoc_insertion_point(parse_start:loomcomm.Info)
   for (;;) {
     ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
     tag = p.first;
@@ -2002,17 +2080,17 @@ bool Feedback::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:loomcomm.Feedback)
+  // @@protoc_insertion_point(parse_success:loomcomm.Info)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:loomcomm.Feedback)
+  // @@protoc_insertion_point(parse_failure:loomcomm.Info)
   return false;
 #undef DO_
 }
 
-void Feedback::SerializeWithCachedSizes(
+void Info::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:loomcomm.Feedback)
+  // @@protoc_insertion_point(serialize_start:loomcomm.Info)
   // required int32 id = 1;
   if (has_id()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->id(), output);
@@ -2026,10 +2104,10 @@ void Feedback::SerializeWithCachedSizes(
 
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
-  // @@protoc_insertion_point(serialize_end:loomcomm.Feedback)
+  // @@protoc_insertion_point(serialize_end:loomcomm.Info)
 }
 
-int Feedback::ByteSize() const {
+int Info::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
@@ -2056,12 +2134,12 @@ int Feedback::ByteSize() const {
   return total_size;
 }
 
-void Feedback::CheckTypeAndMergeFrom(
+void Info::CheckTypeAndMergeFrom(
     const ::google::protobuf::MessageLite& from) {
-  MergeFrom(*::google::protobuf::down_cast<const Feedback*>(&from));
+  MergeFrom(*::google::protobuf::down_cast<const Info*>(&from));
 }
 
-void Feedback::MergeFrom(const Feedback& from) {
+void Info::MergeFrom(const Info& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_id()) {
@@ -2074,19 +2152,19 @@ void Feedback::MergeFrom(const Feedback& from) {
   mutable_unknown_fields()->append(from.unknown_fields());
 }
 
-void Feedback::CopyFrom(const Feedback& from) {
+void Info::CopyFrom(const Info& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool Feedback::IsInitialized() const {
+bool Info::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
 
   return true;
 }
 
-void Feedback::Swap(Feedback* other) {
+void Info::Swap(Info* other) {
   if (other != this) {
     std::swap(id_, other->id_);
     std::swap(worker_, other->worker_);
@@ -2096,8 +2174,8 @@ void Feedback::Swap(Feedback* other) {
   }
 }
 
-::std::string Feedback::GetTypeName() const {
-  return "loomcomm.Feedback";
+::std::string Info::GetTypeName() const {
+  return "loomcomm.Info";
 }
 
 
@@ -2115,7 +2193,7 @@ bool ClientMessage_Type_IsValid(int value) {
 
 #ifndef _MSC_VER
 const ClientMessage_Type ClientMessage::DATA;
-const ClientMessage_Type ClientMessage::FEEDBACK;
+const ClientMessage_Type ClientMessage::INFO;
 const ClientMessage_Type ClientMessage::Type_MIN;
 const ClientMessage_Type ClientMessage::Type_MAX;
 const int ClientMessage::Type_ARRAYSIZE;
@@ -2123,7 +2201,7 @@ const int ClientMessage::Type_ARRAYSIZE;
 #ifndef _MSC_VER
 const int ClientMessage::kTypeFieldNumber;
 const int ClientMessage::kDataFieldNumber;
-const int ClientMessage::kFeedbackFieldNumber;
+const int ClientMessage::kInfoFieldNumber;
 #endif  // !_MSC_VER
 
 ClientMessage::ClientMessage()
@@ -2140,10 +2218,10 @@ void ClientMessage::InitAsDefaultInstance() {
   data_ = const_cast< ::loomcomm::DataPrologue*>(&::loomcomm::DataPrologue::default_instance());
 #endif
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  feedback_ = const_cast< ::loomcomm::Feedback*>(
-      ::loomcomm::Feedback::internal_default_instance());
+  info_ = const_cast< ::loomcomm::Info*>(
+      ::loomcomm::Info::internal_default_instance());
 #else
-  feedback_ = const_cast< ::loomcomm::Feedback*>(&::loomcomm::Feedback::default_instance());
+  info_ = const_cast< ::loomcomm::Info*>(&::loomcomm::Info::default_instance());
 #endif
 }
 
@@ -2158,7 +2236,7 @@ void ClientMessage::SharedCtor() {
   _cached_size_ = 0;
   type_ = 1;
   data_ = NULL;
-  feedback_ = NULL;
+  info_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -2174,7 +2252,7 @@ void ClientMessage::SharedDtor() {
   if (this != default_instance_) {
   #endif
     delete data_;
-    delete feedback_;
+    delete info_;
   }
 }
 
@@ -2204,8 +2282,8 @@ void ClientMessage::Clear() {
     if (has_data()) {
       if (data_ != NULL) data_->::loomcomm::DataPrologue::Clear();
     }
-    if (has_feedback()) {
-      if (feedback_ != NULL) feedback_->::loomcomm::Feedback::Clear();
+    if (has_info()) {
+      if (info_ != NULL) info_->::loomcomm::Info::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -2255,16 +2333,16 @@ bool ClientMessage::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_feedback;
+        if (input->ExpectTag(26)) goto parse_info;
         break;
       }
 
-      // optional .loomcomm.Feedback feedback = 3;
+      // optional .loomcomm.Info info = 3;
       case 3: {
         if (tag == 26) {
-         parse_feedback:
+         parse_info:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_feedback()));
+               input, mutable_info()));
         } else {
           goto handle_unusual;
         }
@@ -2309,10 +2387,10 @@ void ClientMessage::SerializeWithCachedSizes(
       2, this->data(), output);
   }
 
-  // optional .loomcomm.Feedback feedback = 3;
-  if (has_feedback()) {
+  // optional .loomcomm.Info info = 3;
+  if (has_info()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
-      3, this->feedback(), output);
+      3, this->info(), output);
   }
 
   output->WriteRaw(unknown_fields().data(),
@@ -2337,11 +2415,11 @@ int ClientMessage::ByteSize() const {
           this->data());
     }
 
-    // optional .loomcomm.Feedback feedback = 3;
-    if (has_feedback()) {
+    // optional .loomcomm.Info info = 3;
+    if (has_info()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->feedback());
+          this->info());
     }
 
   }
@@ -2367,8 +2445,8 @@ void ClientMessage::MergeFrom(const ClientMessage& from) {
     if (from.has_data()) {
       mutable_data()->::loomcomm::DataPrologue::MergeFrom(from.data());
     }
-    if (from.has_feedback()) {
-      mutable_feedback()->::loomcomm::Feedback::MergeFrom(from.feedback());
+    if (from.has_info()) {
+      mutable_info()->::loomcomm::Info::MergeFrom(from.info());
     }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
@@ -2386,8 +2464,8 @@ bool ClientMessage::IsInitialized() const {
   if (has_data()) {
     if (!this->data().IsInitialized()) return false;
   }
-  if (has_feedback()) {
-    if (!this->feedback().IsInitialized()) return false;
+  if (has_info()) {
+    if (!this->info().IsInitialized()) return false;
   }
   return true;
 }
@@ -2396,7 +2474,7 @@ void ClientMessage::Swap(ClientMessage* other) {
   if (other != this) {
     std::swap(type_, other->type_);
     std::swap(data_, other->data_);
-    std::swap(feedback_, other->feedback_);
+    std::swap(info_, other->info_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

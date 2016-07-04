@@ -11,13 +11,15 @@ using namespace loom;
 WorkerConnection::WorkerConnection(Server &server,
                                    std::unique_ptr<Connection> connection,
                                    const std::string& address,
-                                   const std::vector<std::string> &task_types)
+                                   const std::vector<std::string> &task_types,
+                                   int resource_cpus)
     : server(server),
       connection(std::move(connection)),
-      address(address)
+      resource_cpus(resource_cpus),
+      address(address)      
 {
 
-    llog->info("Worker {} connected", address);
+    llog->info("Worker {} connected (cpus={})", address, resource_cpus);
     if (this->connection.get()) {
         this->connection->set_callback(this);
     }
@@ -34,13 +36,14 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
     loomcomm::WorkerResponse msg;
     msg.ParseFromArray(buffer, size);
 
-    auto it = tasks.find(msg.id());
-    assert(it != tasks.end());
-
+    const auto it = tasks.find(msg.id());
+    assert(it != tasks.end());   
     TaskNode *task = it->second;
+    tasks.erase(it);
+
     task->add_owner(this);
     task->set_finished();
-    server.get_task_manager().on_task_finished(*task);
+    server.on_task_finished(*task);
 }
 
 void WorkerConnection::on_close()

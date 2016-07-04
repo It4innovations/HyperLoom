@@ -6,8 +6,8 @@
 
 using namespace loom;
 
-ClientConnection::ClientConnection(Server &server, std::unique_ptr<loom::Connection> connection)
-    : server(server), connection(std::move(connection))
+ClientConnection::ClientConnection(Server &server, std::unique_ptr<loom::Connection> connection, bool info_flag)
+    : server(server), connection(std::move(connection)), info_flag(info_flag)
 {
     this->connection->set_callback(this);
     llog->info("Client {} connected", this->connection->get_peername());

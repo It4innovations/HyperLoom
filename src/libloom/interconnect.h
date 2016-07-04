@@ -19,8 +19,7 @@ public:
     InterConnection(Worker &worker);
     ~InterConnection();
 
-    void send(Id id, std::shared_ptr<Data> &data, bool with_size);
-    void send(std::unique_ptr<SendBuffer> buffer);
+    void send(Id id, std::shared_ptr<Data> &data, bool with_size);    
     void accept(uv_tcp_t *listen_socket) {
         connection.accept(listen_socket);
     }

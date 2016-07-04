@@ -48,6 +48,8 @@ public:
 
     void add_resend_task(loom::Id id);
 
+    void on_task_finished(TaskNode &task);
+
 private:
     void start_listen();
 
