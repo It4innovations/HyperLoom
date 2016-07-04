@@ -75,7 +75,7 @@ public:
         owners.push_back(wconn);
     }
 
-    const auto& get_owners() const {
+    const std::vector<WorkerConnection*>& get_owners() const {
         return owners;
     }
 
@@ -88,7 +88,7 @@ public:
         state = FINISHED;
     }
 
-    const auto& get_inputs() {
+    const Vector& get_inputs() {
         return inputs;
     }
 

@@ -1,5 +1,6 @@
 #include "basictasks.h"
 
+#include "libloom/compat.h"
 #include "libloom/databuilder.h"
 #include "libloom/data/rawdata.h"
 #include "libloom/data/externfile.h"

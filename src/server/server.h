@@ -37,7 +37,7 @@ public:
         return task_manager;
     }
 
-    auto& get_connections() {
+    const std::vector<std::unique_ptr<WorkerConnection>>& get_connections() {
         return connections;
     }
 

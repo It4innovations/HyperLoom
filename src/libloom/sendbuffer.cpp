@@ -3,7 +3,7 @@
 #include "utils.h"
 
 #include "loomcomm.pb.h"
-
+#include "compat.h"
 
 using namespace loom;
 

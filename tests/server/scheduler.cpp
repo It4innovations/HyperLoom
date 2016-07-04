@@ -1,7 +1,11 @@
 #include "catch/catch.hpp"
-#include <uv.h>
+
 #include "src/server/server.h"
+
+#include "libloom/compat.h"
 #include "libloom/loomplan.pb.h"
+
+#include <uv.h>
 
 typedef std::unordered_set<TaskNode*> TaskSet;
 

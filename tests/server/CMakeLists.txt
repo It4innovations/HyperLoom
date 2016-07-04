@@ -1,4 +1,4 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -Wall")
 
 add_library(Catch INTERFACE)
 target_include_directories(Catch INTERFACE ${PROJECT_SOURCE_DIR}/tests)

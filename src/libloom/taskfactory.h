@@ -3,6 +3,7 @@
 
 #include "data.h"
 #include "task.h"
+#include "compat.h"
 
 #include<uv.h>
 

@@ -1,6 +1,7 @@
 #include "server.h"
 #include "resendtask.h"
 
+#include "libloom/compat.h"
 #include "libloom/utils.h"
 #include "libloom/log.h"
 #include "libloom/loomcomm.pb.h"
@@ -34,7 +35,7 @@ void Server::remove_worker_connection(WorkerConnection &conn)
     auto i = std::find_if(
                 connections.begin(),
                 connections.end(),
-                [&](auto& p) { return p.get() == &conn; } );
+                [&](std::unique_ptr<WorkerConnection>& p) { return p.get() == &conn; } );
     assert(i != connections.end());
     connections.erase(i);
 }
@@ -58,7 +59,7 @@ void Server::remove_freshconnection(FreshConnection &conn)
     auto i = std::find_if(
                 fresh_connections.begin(),
                 fresh_connections.end(),
-                [&](auto& p) { return p.get() == &conn; } );
+                [&](std::unique_ptr<FreshConnection>& p) { return p.get() == &conn; } );
     assert(i != fresh_connections.end());
     fresh_connections.erase(i);
 }

@@ -34,7 +34,7 @@ public:
         return task->get_id();
     }
 
-    const auto& get_inputs() {
+    const std::vector<Id>& get_inputs() {
         return task->get_inputs();
     }
 

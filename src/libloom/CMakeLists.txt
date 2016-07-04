@@ -1,4 +1,4 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -Wall")
 add_library(libloom
             data/externfile.cpp
             data/externfile.h
@@ -27,6 +27,7 @@ add_library(libloom
             loomcomm.pb.cc
             loomplan.pb.h
             loomplan.pb.cc
+            compat.h
             log.h
             log.cpp
             types.h

@@ -1,6 +1,7 @@
 #include "taskmanager.h"
 #include "server.h"
 
+#include "libloom/compat.h"
 #include "libloom/loomplan.pb.h"
 #include "libloom/log.h"
 

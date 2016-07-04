@@ -233,7 +233,7 @@ void Worker::register_connection(InterConnection &connection)
     auto i = std::find_if(
                 nonregistered_connections.begin(),
                 nonregistered_connections.end(),
-                [&](auto& p) { return p.get() == &connection; });
+                [&](std::unique_ptr<InterConnection>& p) { return p.get() == &connection; });
     assert(i != nonregistered_connections.end());
     c = std::move(*i);
     nonregistered_connections.erase(i);
@@ -246,7 +246,7 @@ void Worker::unregister_connection(InterConnection &connection)
         auto i = std::find_if(
                     nonregistered_connections.begin(),
                     nonregistered_connections.end(),
-                    [&](auto& p) { return p.get() == &connection; });
+                    [&](std::unique_ptr<InterConnection>& p) { return p.get() == &connection; });
         assert(i != nonregistered_connections.end());
         nonregistered_connections.erase(i);
         return;

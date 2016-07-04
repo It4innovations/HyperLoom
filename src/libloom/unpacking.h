@@ -2,6 +2,7 @@
 #define LIBLOOM_UNPACKING_H
 
 #include "data.h"
+#include "compat.h"
 
 #include <memory>
 

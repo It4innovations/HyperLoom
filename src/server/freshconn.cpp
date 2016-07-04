@@ -3,6 +3,7 @@
 #include "clientconn.h"
 #include "server.h"
 
+#include "libloom/compat.h"
 #include "libloom/log.h"
 #include "libloom/loomcomm.pb.h"
 
