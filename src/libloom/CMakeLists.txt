@@ -33,5 +33,6 @@ add_library(libloom
             types.h
             utils.h
             utils.cpp)
+
 target_include_directories(libloom PUBLIC ${PROJECT_SOURCE_DIR}/src)
 

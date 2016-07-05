@@ -7,7 +7,10 @@ add_executable(server-test
                $<TARGET_OBJECTS:loom-server-lib>
                scheduler.cpp
                main.cpp)
-target_link_libraries(server-test Catch  libloom uv protobuf pthread)
+
+target_link_libraries(server-test Catch libloom ${LIBUV_LIBRARY} pthread)
+target_link_libraries(server-test ${PROTOBUF_LIBRARIES})
+
 target_include_directories(server-test PUBLIC ${PROJECT_SOURCE_DIR})
 
 add_test(NAME server-test COMMAND server-test)

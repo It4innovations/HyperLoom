@@ -23,4 +23,7 @@ add_executable(loom-server
                $<TARGET_OBJECTS:loom-server-lib>
                main.cpp)
 
-target_link_libraries(loom-server libloom uv protobuf pthread)
+target_link_libraries(loom-server libloom ${LIBUV_LIBRARY} pthread)
+target_link_libraries(loom-server ${PROTOBUF_LIBRARIES})
+
+install (TARGETS loom-server DESTINATION bin)
