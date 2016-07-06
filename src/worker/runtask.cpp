@@ -155,11 +155,12 @@ void RunTask::_on_close(uv_handle_t *handle)
         if (index == -2) {
             continue;
         }
-        auto data = std::make_unique<RawData>();
-        data->assign_file_id();
+        std::shared_ptr<Data> data_ptr = std::make_shared<RawData>();
+        RawData& data = static_cast<RawData&>(*data_ptr);
+        data.assign_file_id();
 
         std::string path = task->get_path(map.filename());
-        std::string data_path = data->get_filename(task->worker);
+        std::string data_path = data.get_filename(task->worker);
         llog->debug("Storing file '{}'' as index={}", map.filename(), i);
         //data->create(task->worker, 10);
         if (unlikely(rename(path.c_str(),
@@ -168,8 +169,8 @@ void RunTask::_on_close(uv_handle_t *handle)
                            path, data_path);
             log_errno_abort("rename");
         }
-        data->init_from_file(task->worker);
-        task->finish(std::move(data));
+        data.init_from_file(task->worker);
+        task->finish(data_ptr);
         return;
     }
 }

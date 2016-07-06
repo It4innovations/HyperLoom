@@ -44,7 +44,7 @@ void InterConnection::finish_data()
 {
     llog->debug("Data {} sucessfully received", data_id);
     worker.publish_data(data_id,
-                        data_unpacker->release_data());
+                        data_unpacker->get_data());
     data_unpacker.reset();
     data_id = -1;
 }

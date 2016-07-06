@@ -43,8 +43,7 @@ public:
     virtual void start(DataVector &input_data) = 0;
 
 protected:
-
-    void finish(std::unique_ptr<Data> output);
+    void finish(std::shared_ptr<Data> &output);
     void finish_without_data();
 
     Worker &worker;

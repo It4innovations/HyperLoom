@@ -66,8 +66,12 @@ class Client(object):
     def _receive_data(self):
         msg_data = Data()
         msg_data.ParseFromString(self.connection.receive_message())
-        assert msg_data.type_id == 300
-        return self.connection.read_data(msg_data.size)
+        type_id = msg_data.type_id
+        if type_id == 300:  # Data
+            return self.connection.read_data(msg_data.arg0_u64)
+        if type_id == 400:  # Array
+            return [self._receive_data() for i in xrange(msg_data.arg0_u64)]
+        assert 0
 
     def _send_message(self, message):
         data = message.SerializeToString()

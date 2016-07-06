@@ -12,16 +12,16 @@ void Data::serialize(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &
 {
     loomcomm::Data msg;
     msg.set_type_id(get_type_id());
-    msg.set_size(get_size());
-    //init_message(worker, msg);
+    //msg.set_size(get_size());
+    init_message(worker, msg);
     buffer.add(msg);
     serialize_data(worker, buffer, data_ptr);
 }
 
-/*void init_message(Worker &worker, loomcomm::Data &msg)
+void Data::init_message(Worker &worker, loomcomm::Data &msg) const
 {
 
-}*/
+}
 
 char *Data::get_raw_data(Worker &worker)
 {
@@ -30,7 +30,7 @@ char *Data::get_raw_data(Worker &worker)
 
 std::string Data::get_filename(Worker &worker) const
 {
-    return "";
+   return "";
 }
 
 DataUnpacker::~DataUnpacker()

@@ -61,16 +61,15 @@ char* RawData::init_empty_file(Worker &worker, size_t size)
     }
 
     if (size > 0) {
-        if (!lseek(fd, size - 1, SEEK_SET)) {
+        if (lseek(fd, size - 1, SEEK_SET) == -1) {
             log_errno_abort("lseek");
         }
         if (write(fd, "", 1) != 1) {
             log_errno_abort("write");
         }
+        map(fd, true);
     }
-    map(fd, true);
     ::close(fd);
-
     return data;
 }
 
@@ -99,8 +98,11 @@ std::string RawData::get_filename(Worker &worker) const
 
 void RawData::open(Worker &worker)
 {
-    assert(file_id);
+   if (size == 0) {
+      return;
+   }
 
+    assert(file_id);
     int fd = ::open(get_filename(worker).c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
     if (fd < 0) {
         llog->critical("Cannot open data {}", get_filename(worker));
@@ -130,13 +132,13 @@ void RawData::map(int fd, bool write)
 
 std::string RawData::get_info()
 {
-    return "RawData";
+   return "RawData";
 }
 
-/*void RawData::init_message(Worker &worker, loomcomm::Data &msg)
+void RawData::init_message(Worker &worker, loomcomm::Data &msg) const
 {
-
-}*/
+   msg.set_arg0_u64(size);
+}
 
 void RawData::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
@@ -150,11 +152,11 @@ RawDataUnpacker::~RawDataUnpacker()
 
 bool RawDataUnpacker::init(Worker &worker, Connection &connection, const loomcomm::Data &msg)
 {
-    auto data = std::make_unique<RawData>();
-    assert(msg.has_size());
-    auto size = msg.size();
-    pointer = data->init_empty_file(worker, size);
-    this->data = std::move(data);
+    this->data = std::make_shared<RawData>();
+    RawData &data = static_cast<RawData&>(*this->data);
+    assert(msg.has_arg0_u64());
+    auto size = msg.arg0_u64();
+    pointer = data.init_empty_file(worker, size);
     if (size == 0) {
         return true;
     }

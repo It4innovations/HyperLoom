@@ -26,11 +26,12 @@ public:
     virtual std::string get_info() = 0;
 
     void serialize(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
-    //virtual void init_message(Worker &worker, loomcomm::Data &msg);
+    virtual void init_message(Worker &worker, loomcomm::Data &msg) const;
     virtual void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) = 0;
 
     virtual char *get_raw_data(Worker &worker);
     virtual std::string get_filename(Worker &worker) const;
+
 };
 
 class DataUnpacker
@@ -42,12 +43,12 @@ public:
     virtual void on_data_chunk(const char *data, size_t size);
     virtual bool on_data_finish(Connection &connection);
 
-    std::unique_ptr<Data> release_data() {
-        return std::move(data);
+    std::shared_ptr<Data>& get_data() {
+        return data;
     }
 
 protected:
-    std::unique_ptr<Data> data;
+    std::shared_ptr<Data> data;
 };
 
 }

@@ -22,8 +22,6 @@ Connection::~Connection()
     assert(state == ConnectionClosed);
 }
 
-
-
 std::string Connection::get_peername()
 {
     sockaddr_in addr;
