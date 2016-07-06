@@ -51,5 +51,6 @@ def test_array_same_value(loom_env):
     p = loom_env.plan()
     a = p.task_const("ABC")
     b = p.task_array_make((a, a, a, a))
+    p.write_dot("test.dot")
     loom_env.start(1)
     assert ["ABC"] * 4 == loom_env.submit(p, b)
