@@ -17,26 +17,24 @@ def test_cv_iris(loom_env):
         p = loom_env.plan()
         a = p.task_open(IRIS_DATA)
 
-        b = p.task_run(("sort", "--random-sort", "-"), stdin=a)
+        b = p.task_run(("sort", "--random-sort", "-"), [(a, None)])
 
         chunks = [p.task_split_lines(b, i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
                   for i in xrange(CHUNKS)]
 
-        trainsets = [p.task_merge(chunks[:i] + chunks[i+1:])
+        trainsets = [p.task_merge(chunks[:i] + chunks[i + 1:])
                      for i in xrange(CHUNKS)]
 
         models = []
         for ts in trainsets:
-            model = p.task_run("svm-train data")
-            model.map_file_in(ts, "data")
-            model.map_file_out("data.model")
+            model = p.task_run("svm-train data",
+                               [(ts, "data")], ["data.model"])
             models.append(model)
 
         predict = []
         for chunk, model in zip(chunks, models):
-            task = p.task_run("svm-predict testdata model out")
-            task.map_file_in(chunk, "testdata")
-            task.map_file_in(model, "model")
+            task = p.task_run("svm-predict testdata model out",
+                              [(chunk, "testdata"), (model, "model")])
             predict.append(task)
 
         results = loom_env.submit(p, predict)

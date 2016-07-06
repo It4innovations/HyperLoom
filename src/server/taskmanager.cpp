@@ -175,7 +175,6 @@ void TaskManager::distribute_work(TaskNode::Vector &tasks)
                     input->add_owner(&load.connection);
                 }
             }
-            llog->alert("X = {}", task->get_id());
             load.connection.send_task(task);
         }
     }

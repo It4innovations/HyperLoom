@@ -139,6 +139,8 @@ class Plan(object):
 
     TASK_ARRAY_MAKE = "array/make"
     TASK_ARRAY_GET = "array/get"
+    TASK_RUN = "run"
+
     u64 = struct.Struct("<Q")
 
     def __init__(self):
@@ -164,9 +166,23 @@ class Plan(object):
     def task_split_lines(self, input, start, end):
         return self.add(SplitLinesTask(input, start, end))
 
-    def task_run(self, args, stdin=None, stdout=None, variable=None):
-        return self.add(
-            RunTask(args, stdin=stdin, stdout=stdout, variable=variable))
+    def task_run(self, args, inputs=(), outputs=(None,)):
+        if isinstance(args, str):
+            args = args.split()
+
+        task = Task()
+        task.task_type = self.TASK_RUN
+        task.inputs = tuple(i for i, fname in inputs)
+
+        msg = loomrun_pb2.Run()
+        msg.args.extend(args)
+
+        msg.map_inputs.extend(fname if fname else "+in"
+                              for i, fname in inputs)
+        msg.map_outputs.extend(fname if fname else "+out"
+                               for fname in outputs)
+        task.config = msg.SerializeToString()
+        return self.add(task)
 
     def task_array_make(self, inputs):
         task = Task()

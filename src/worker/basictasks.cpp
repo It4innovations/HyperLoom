@@ -32,8 +32,8 @@ void MergeTask::start(DataVector &inputs) {
 
     for (auto& data : inputs) {
         char *mem = (*data)->get_raw_data(worker);
-        assert(mem);
         size_t size = (*data)->get_size();
+        assert(mem || size == 0);
         memcpy(dst, mem, size);
         dst += size;
     }

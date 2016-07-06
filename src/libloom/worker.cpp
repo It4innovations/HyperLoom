@@ -4,6 +4,7 @@
 #include "log.h"
 #include "types.h"
 #include "data/rawdata.h"
+#include "data/array.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -66,6 +67,10 @@ Worker::Worker(uv_loop_t *loop,
 
     add_unpacker(RawData::TYPE_ID,
                  std::make_unique<SimpleUnpackFactory<RawDataUnpacker>>());
+
+    add_unpacker(Array::TYPE_ID,
+                 std::make_unique<SimpleUnpackFactory<ArrayUnpacker>>());
+
 
     resource_cpus = 1;
 }
