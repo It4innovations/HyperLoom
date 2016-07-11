@@ -134,7 +134,7 @@ void Worker::register_worker()
     msg.set_port(get_listen_port());
     msg.set_cpus(resource_cpus);
 
-    for (auto& factory : task_factories) {
+    for (auto& factory : unregistered_task_factories) {
         msg.add_task_types(factory->get_name());
     }
 
@@ -154,9 +154,9 @@ void Worker::new_task(std::unique_ptr<Task> task)
 void Worker::start_task(std::unique_ptr<Task> task)
 {
     llog->debug("Starting task id={} task_type={}", task->get_id(), task->get_task_type());
-    auto task_type = task->get_task_type();
-    assert(task_type >= 0 && task_type < (int) task_factories.size());
-    auto task_instance = task_factories[task_type]->make_instance(*this, std::move(task));
+    auto i = task_factories.find(task->get_task_type());
+    assert(i != task_factories.end());
+    auto task_instance = i->second->make_instance(*this, std::move(task));
     TaskInstance *t = task_instance.get();
     active_tasks.push_back(std::move(task_instance));
 
@@ -306,6 +306,14 @@ std::unique_ptr<DataUnpacker> Worker::unpack(DataTypeId id)
     return i->second->make_unpacker();
 }
 
+void Worker::on_dictionary_updated()
+{
+    for (auto &f : unregistered_task_factories) {
+        loom::Id id = dictionary.lookup_symbol(f->get_name());
+        task_factories[id] = std::move(f);
+    }
+}
+
 void Worker::check_waiting_tasks()
 {
     bool something_new = false;
@@ -412,6 +420,16 @@ void ServerConnection::on_message(const char *data, size_t size)
         assert(worker.send_data(msg.address(), msg.id(), with_size));
         break;
     }
+    case loomcomm::WorkerCommand_Type_DICTIONARY: {
+        auto count = msg.symbols_size();
+        llog->debug("New dictionary ({} symbols)", count);
+        Dictionary &dictionary = worker.get_dictionary();
+        for (int i = 0; i < count; i++) {
+            dictionary.find_or_create(msg.symbols(i));
+        }
+        worker.on_dictionary_updated();
+
+    } break;
     default:
         llog->critical("Invalid message");
         exit(1);

@@ -37,11 +37,12 @@ void FreshConnection::on_message(const char *buffer, size_t size)
         std::stringstream address;
         address << this->connection->get_peername() << ":" << msg.port();
 
-        std::vector<std::string> task_types;
+        std::vector<int> task_types;
         task_types.reserve(msg.task_types_size());
+        Dictionary &dictionary = server.get_dictionary();
 
         for (int i = 0; i < msg.task_types_size(); i++) {
-            task_types.push_back(msg.task_types(i));
+            task_types.push_back(dictionary.find_or_create(msg.task_types(i)));
         }
 
         auto wconn = std::make_unique<WorkerConnection>(server,

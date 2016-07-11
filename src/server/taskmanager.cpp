@@ -21,8 +21,9 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
     int tt_size = plan.task_types_size();
     int type_task_translation[tt_size];
 
+    Dictionary &dictionary = server.get_dictionary();
     for (int i = 0; i < tt_size; i++) {
-        type_task_translation[i] = translate_task_type(plan.task_types(i));
+        type_task_translation[i] = dictionary.find_or_create(plan.task_types(i));
     }
 
     auto task_size = plan.tasks_size();
@@ -190,15 +191,4 @@ void TaskManager::distribute_work(TaskNode::Vector &tasks)
             load.connection.send_task(task);
         }
     }
-}
-
-int TaskManager::_translate(std::vector<std::string> &table, const std::string &item)
-{
-    auto it = std::find(table.begin(), table.end(), item);
-    if (it == table.end()) {
-        int result = table.size();
-        table.push_back(item);
-        return result;
-    }
-    return std::distance(table.begin(), it);
 }

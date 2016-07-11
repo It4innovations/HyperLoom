@@ -62,11 +62,12 @@ const int ServerMessage_Type_Type_ARRAYSIZE = ServerMessage_Type_Type_MAX + 1;
 enum WorkerCommand_Type {
   WorkerCommand_Type_TASK = 1,
   WorkerCommand_Type_SEND = 2,
-  WorkerCommand_Type_REMOVE = 3
+  WorkerCommand_Type_REMOVE = 3,
+  WorkerCommand_Type_DICTIONARY = 4
 };
 bool WorkerCommand_Type_IsValid(int value);
 const WorkerCommand_Type WorkerCommand_Type_Type_MIN = WorkerCommand_Type_TASK;
-const WorkerCommand_Type WorkerCommand_Type_Type_MAX = WorkerCommand_Type_REMOVE;
+const WorkerCommand_Type WorkerCommand_Type_Type_MAX = WorkerCommand_Type_DICTIONARY;
 const int WorkerCommand_Type_Type_ARRAYSIZE = WorkerCommand_Type_Type_MAX + 1;
 
 enum ClientMessage_Type {
@@ -397,6 +398,7 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   static const Type TASK = WorkerCommand_Type_TASK;
   static const Type SEND = WorkerCommand_Type_SEND;
   static const Type REMOVE = WorkerCommand_Type_REMOVE;
+  static const Type DICTIONARY = WorkerCommand_Type_DICTIONARY;
   static inline bool Type_IsValid(int value) {
     return WorkerCommand_Type_IsValid(value);
   }
@@ -473,6 +475,22 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   inline bool with_size() const;
   inline void set_with_size(bool value);
 
+  // repeated string symbols = 100;
+  inline int symbols_size() const;
+  inline void clear_symbols();
+  static const int kSymbolsFieldNumber = 100;
+  inline const ::std::string& symbols(int index) const;
+  inline ::std::string* mutable_symbols(int index);
+  inline void set_symbols(int index, const ::std::string& value);
+  inline void set_symbols(int index, const char* value);
+  inline void set_symbols(int index, const char* value, size_t size);
+  inline ::std::string* add_symbols();
+  inline void add_symbols(const ::std::string& value);
+  inline void add_symbols(const char* value);
+  inline void add_symbols(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& symbols() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_symbols();
+
   // @@protoc_insertion_point(class_scope:loomcomm.WorkerCommand)
  private:
   inline void set_has_type();
@@ -499,6 +517,7 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 task_type_;
   bool with_size_;
   ::std::string* address_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> symbols_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -1595,6 +1614,60 @@ inline void WorkerCommand::set_with_size(bool value) {
   set_has_with_size();
   with_size_ = value;
   // @@protoc_insertion_point(field_set:loomcomm.WorkerCommand.with_size)
+}
+
+// repeated string symbols = 100;
+inline int WorkerCommand::symbols_size() const {
+  return symbols_.size();
+}
+inline void WorkerCommand::clear_symbols() {
+  symbols_.Clear();
+}
+inline const ::std::string& WorkerCommand::symbols(int index) const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerCommand.symbols)
+  return symbols_.Get(index);
+}
+inline ::std::string* WorkerCommand::mutable_symbols(int index) {
+  // @@protoc_insertion_point(field_mutable:loomcomm.WorkerCommand.symbols)
+  return symbols_.Mutable(index);
+}
+inline void WorkerCommand::set_symbols(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerCommand.symbols)
+  symbols_.Mutable(index)->assign(value);
+}
+inline void WorkerCommand::set_symbols(int index, const char* value) {
+  symbols_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomcomm.WorkerCommand.symbols)
+}
+inline void WorkerCommand::set_symbols(int index, const char* value, size_t size) {
+  symbols_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.WorkerCommand.symbols)
+}
+inline ::std::string* WorkerCommand::add_symbols() {
+  return symbols_.Add();
+}
+inline void WorkerCommand::add_symbols(const ::std::string& value) {
+  symbols_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:loomcomm.WorkerCommand.symbols)
+}
+inline void WorkerCommand::add_symbols(const char* value) {
+  symbols_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:loomcomm.WorkerCommand.symbols)
+}
+inline void WorkerCommand::add_symbols(const char* value, size_t size) {
+  symbols_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:loomcomm.WorkerCommand.symbols)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+WorkerCommand::symbols() const {
+  // @@protoc_insertion_point(field_list:loomcomm.WorkerCommand.symbols)
+  return symbols_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+WorkerCommand::mutable_symbols() {
+  // @@protoc_insertion_point(field_mutable_list:loomcomm.WorkerCommand.symbols)
+  return &symbols_;
 }
 
 // -------------------------------------------------------------------

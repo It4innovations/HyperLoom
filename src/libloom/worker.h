@@ -5,6 +5,7 @@
 #include "taskinstance.h"
 #include "unpacking.h"
 #include "taskfactory.h"
+#include "dictionary.h"
 
 #include <uv.h>
 
@@ -78,8 +79,8 @@ public:
     }
 
     void add_task_factory(std::unique_ptr<TaskFactory> factory)
-    {
-        task_factories.push_back(std::move(factory));
+    {        
+        unregistered_task_factories.push_back(std::move(factory));
     }
 
     InterConnection &get_connection(const std::string &address);
@@ -116,6 +117,12 @@ public:
     void add_unpacker(DataTypeId type_id, std::unique_ptr<UnpackFactory> factory);    
     std::unique_ptr<DataUnpacker> unpack(DataTypeId id);
 
+    Dictionary& get_dictionary() {
+        return dictionary;
+    }
+
+    void on_dictionary_updated();
+
 private:
     void register_worker();
     void start_listen();
@@ -131,7 +138,7 @@ private:
     std::vector<std::unique_ptr<TaskInstance>> active_tasks;
     std::vector<std::unique_ptr<Task>> ready_tasks;
     std::vector<std::unique_ptr<Task>> waiting_tasks;
-    std::vector<std::unique_ptr<TaskFactory>> task_factories;
+    std::unordered_map<Id, std::unique_ptr<TaskFactory>> task_factories;
 
     std::unordered_map<int, std::shared_ptr<Data>> public_data;
     std::string work_dir;
@@ -142,11 +149,15 @@ private:
     std::unordered_map<std::string, std::unique_ptr<InterConnection>> connections;
     std::vector<std::unique_ptr<InterConnection>> nonregistered_connections;
 
+    Dictionary dictionary;
+
     std::string server_address;
     int server_port;
 
     uv_tcp_t listen_socket;
     int listen_port;
+
+    std::vector<std::unique_ptr<TaskFactory>> unregistered_task_factories;
 
     static void _on_new_connection(uv_stream_t *stream, int status);
     static void _on_getaddrinfo(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);

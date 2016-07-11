@@ -30,7 +30,7 @@ to_distmap(TaskManager::WorkDistribution dist)
 static std::unique_ptr<WorkerConnection>
 simple_worker(Server &server, const std::string &name, int cpus=1)
 {
-    std::vector<std::string> tt;
+    std::vector<loom::Id> tt;
     return std::make_unique<WorkerConnection>(server, nullptr, name, tt, cpus);
 }
 

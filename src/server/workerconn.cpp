@@ -11,24 +11,38 @@ using namespace loom;
 WorkerConnection::WorkerConnection(Server &server,
                                    std::unique_ptr<Connection> connection,
                                    const std::string& address,
-                                   const std::vector<std::string> &task_types,
+                                   const std::vector<loom::Id> &task_types,
                                    int resource_cpus)
     : server(server),
       connection(std::move(connection)),
       resource_cpus(resource_cpus),
-      address(address)      
+      address(address),
+      task_types(task_types)
 {
 
     llog->info("Worker {} connected (cpus={})", address, resource_cpus);
-    if (this->connection.get()) {
+    if (this->connection) {
         this->connection->set_callback(this);
+        loomcomm::WorkerCommand msg;
+        msg.set_type(loomcomm::WorkerCommand_Type_DICTIONARY);
+        std::vector<std::string> symbols = server.get_dictionary().get_all_symbols();
+        for (std::string &symbol : symbols) {
+            std::string *s = msg.add_symbols();
+            *s = symbol;
+        }
+        SendBuffer *send_buffer = new SendBuffer();
+        send_buffer->add(msg);
+        this->connection->send_buffer(send_buffer);
     }
 
-    task_type_translates.resize(task_types.size());
-    auto &manager = server.get_task_manager();
+    if (unlikely(task_types.size() == 0)) {
+        llog->warn("No task_type has been registered by worker");
+    }
+
+    /*auto &manager = server.get_task_manager();
     for (size_t i = 0; i < task_types.size(); i++) {
         task_type_translates[i] = manager.translate_task_type(task_types[i]);
-    }
+    }*/
 }
 
 void WorkerConnection::on_message(const char *buffer, size_t size)
@@ -65,8 +79,7 @@ void WorkerConnection::send_task(TaskNode *task)
     msg.set_type(loomcomm::WorkerCommand_Type_TASK);
 
     msg.set_id(id);
-    msg.set_task_type(
-        translate_task_type_id(task->get_task_type()));
+    msg.set_task_type(task->get_task_type());
     msg.set_task_config(task->get_config());
 
     for (TaskNode *t : task->get_inputs()) {

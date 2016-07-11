@@ -7,6 +7,8 @@
 #include "taskmanager.h"
 #include "dummyworker.h"
 
+#include "libloom/dictionary.h"
+
 #include <vector>
 
 
@@ -50,6 +52,10 @@ public:
 
     void on_task_finished(TaskNode &task);
 
+    loom::Dictionary& get_dictionary() {
+        return dictionary;
+    }
+
 private:
     void start_listen();
 
@@ -66,6 +72,8 @@ private:
 
     TaskManager task_manager;
     DummyWorker dummy_worker;
+
+    loom::Dictionary dictionary;
 
     static void _on_new_connection(uv_stream_t *stream, int status);
 };

@@ -15,11 +15,11 @@ public:
     Task(Id id, int task_type, const std::string &config)
         : id(id), task_type(task_type), config(config) {}
 
-    int get_id() const {
+    Id get_id() const {
         return id;
     }
 
-    int get_task_type() const {
+    Id get_task_type() const {
         return task_type;
     }
 
@@ -39,7 +39,7 @@ public:
 
 protected:
     Id id;
-    int task_type;
+    Id task_type;
     std::vector<Id> inputs;
     std::string config;
 };

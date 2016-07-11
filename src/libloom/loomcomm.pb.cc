@@ -640,6 +640,7 @@ bool WorkerCommand_Type_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
       return true;
     default:
       return false;
@@ -650,6 +651,7 @@ bool WorkerCommand_Type_IsValid(int value) {
 const WorkerCommand_Type WorkerCommand::TASK;
 const WorkerCommand_Type WorkerCommand::SEND;
 const WorkerCommand_Type WorkerCommand::REMOVE;
+const WorkerCommand_Type WorkerCommand::DICTIONARY;
 const WorkerCommand_Type WorkerCommand::Type_MIN;
 const WorkerCommand_Type WorkerCommand::Type_MAX;
 const int WorkerCommand::Type_ARRAYSIZE;
@@ -662,6 +664,7 @@ const int WorkerCommand::kTaskConfigFieldNumber;
 const int WorkerCommand::kTaskInputsFieldNumber;
 const int WorkerCommand::kAddressFieldNumber;
 const int WorkerCommand::kWithSizeFieldNumber;
+const int WorkerCommand::kSymbolsFieldNumber;
 #endif  // !_MSC_VER
 
 WorkerCommand::WorkerCommand()
@@ -763,6 +766,7 @@ void WorkerCommand::Clear() {
 #undef ZR_
 
   task_inputs_.Clear();
+  symbols_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->clear();
 }
@@ -777,7 +781,7 @@ bool WorkerCommand::MergePartialFromCodedStream(
       &unknown_fields_string);
   // @@protoc_insertion_point(parse_start:loomcomm.WorkerCommand)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -887,6 +891,20 @@ bool WorkerCommand::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(802)) goto parse_symbols;
+        break;
+      }
+
+      // repeated string symbols = 100;
+      case 100: {
+        if (tag == 802) {
+         parse_symbols:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_symbols()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(802)) goto parse_symbols;
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -955,6 +973,12 @@ void WorkerCommand::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(11, this->with_size(), output);
   }
 
+  // repeated string symbols = 100;
+  for (int i = 0; i < this->symbols_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      100, this->symbols(i), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomcomm.WorkerCommand)
@@ -1014,6 +1038,13 @@ int WorkerCommand::ByteSize() const {
     total_size += 1 * this->task_inputs_size() + data_size;
   }
 
+  // repeated string symbols = 100;
+  total_size += 2 * this->symbols_size();
+  for (int i = 0; i < this->symbols_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->symbols(i));
+  }
+
   total_size += unknown_fields().size();
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -1030,6 +1061,7 @@ void WorkerCommand::CheckTypeAndMergeFrom(
 void WorkerCommand::MergeFrom(const WorkerCommand& from) {
   GOOGLE_CHECK_NE(&from, this);
   task_inputs_.MergeFrom(from.task_inputs_);
+  symbols_.MergeFrom(from.symbols_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_type()) {
       set_type(from.type());
@@ -1074,6 +1106,7 @@ void WorkerCommand::Swap(WorkerCommand* other) {
     task_inputs_.Swap(&other->task_inputs_);
     std::swap(address_, other->address_);
     std::swap(with_size_, other->with_size_);
+    symbols_.Swap(&other->symbols_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

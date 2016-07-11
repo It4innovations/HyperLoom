@@ -15,7 +15,7 @@ public:
     WorkerConnection(Server &server,
                      std::unique_ptr<loom::Connection> connection,
                      const std::string& address,
-                     const std::vector<std::string> &task_types,
+                     const std::vector<loom::Id> &task_types,
                      int resource_cpus);
     void on_message(const char *buffer, size_t size);
     void on_close();
@@ -33,16 +33,6 @@ public:
         return address;
     }
 
-    loom::TaskId translate_task_type_id(loom::TaskId task_type_id) {
-        loom::TaskId size = task_type_translates.size();
-        for (loom::TaskId i = 0; i < size; i++) {
-            if (task_type_translates[i] == task_type_id) {
-                return i;
-            }
-        }
-        assert(0);
-    }
-
     int get_resource_cpus() const {
         return resource_cpus;
     }
@@ -54,7 +44,7 @@ private:
     int resource_cpus;
     std::string address;
 
-    std::vector<int> task_type_translates;
+    std::vector<int> task_types;
 };
 
 #endif // LOOM_SERVER_WORKERCONN

@@ -11,6 +11,8 @@ add_library(libloom
             taskinstance.cpp
             taskinstance.h
             taskfactory.h
+            dictionary.cpp
+            dictionary.h
             databuilder.cpp
             databuilder.h
             data.cpp

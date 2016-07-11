@@ -30,7 +30,7 @@ message WorkerCommand {
 		TASK = 1;
 		SEND = 2;
 		REMOVE = 3;
-
+		DICTIONARY = 4;
 	}
 	required Type type = 1;
 
@@ -45,6 +45,9 @@ message WorkerCommand {
 	// SEND
 	optional string address = 10;
 	optional bool with_size = 11;
+
+	// DICTIONARY
+	repeated string symbols = 100;
 }
 
 message WorkerResponse {

@@ -33,10 +33,6 @@ public:
 
     void add_plan(const loomplan::Plan &plan, bool distribute=true);
 
-    loom::TaskId translate_task_type(const std::string &item) {
-        return _translate(task_types, item);
-    }
-
     void on_task_finished(TaskNode &task);
 
     WorkDistribution compute_distribution(TaskNode::Vector &tasks);
@@ -52,8 +48,6 @@ private:
     std::vector<std::string> task_types;
 
     void distribute_work(TaskNode::Vector &tasks);
-
-    static int _translate(std::vector<std::string> &table, const std::string &item);
 };
 
 
