@@ -29,9 +29,12 @@ message WorkerCommand {
 	enum Type {
 		TASK = 1;
 		SEND = 2;
+		REMOVE = 3;
+
 	}
 	required Type type = 1;
 
+	// ALL
 	optional int32 id = 2;
 
 	// TASK

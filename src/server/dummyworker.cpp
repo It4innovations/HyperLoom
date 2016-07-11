@@ -85,7 +85,8 @@ void DWConnection::on_message(const char *buffer, size_t size)
 
     assert(msg.has_data_size());
     size_t data_size = msg.data_size();
-    llog->debug("Fetching data id={} data_size={}", msg.id(), data_size);
+    auto data_id = msg.id();
+    llog->debug("Fetching data id={} data_size={}", data_id, data_size);
 
     auto mem = std::make_unique<char[]>(data_size);
     pointer = mem.get();

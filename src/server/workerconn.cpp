@@ -90,3 +90,11 @@ void WorkerConnection::send_data(Id id, const std::string &address, bool with_si
     connection->send_message(msg);
 
 }
+
+void WorkerConnection::remove_data(Id id)
+{
+    loomcomm::WorkerCommand msg;
+    msg.set_type(loomcomm::WorkerCommand_Type_REMOVE);
+    msg.set_id(id);
+    connection->send_message(msg);
+}

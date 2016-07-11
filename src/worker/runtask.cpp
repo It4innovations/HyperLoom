@@ -49,7 +49,7 @@ void RunTask::start(DataVector &inputs)
     std::string work_dir = worker.get_run_dir(get_id());
     options.cwd = work_dir.c_str();
 
-    if (llog->level() == spdlog::level::debug) {
+    if (llog->level() <= spdlog::level::debug) {
         std::stringstream s;
         s << msg.args(0);
         for (int i = 1; i < args_size; i++) {
@@ -74,7 +74,7 @@ void RunTask::start(DataVector &inputs)
             assert(map.input_index() >= 0 && map.input_index() < input_size);
             auto& input = *inputs[map.input_index()];
             std::string path = get_path(map.filename());
-            std::string filename = input->get_filename(worker);
+            std::string filename = input->get_filename();
             assert(!filename.empty());
             llog->debug("Creating symlink of '{}'", map.filename());
             if (symlink(filename.c_str(), path.c_str())) {
@@ -156,10 +156,10 @@ void RunTask::_on_close(uv_handle_t *handle)
             continue;
         }
         auto data = std::make_unique<RawData>();
-        data->assign_file_id();
+        data->assign_filename(task->worker);
 
         std::string path = task->get_path(map.filename());
-        std::string data_path = data->get_filename(task->worker);
+        std::string data_path = data->get_filename();
         llog->debug("Storing file '{}'' as index={}", map.filename(), i);
         //data->create(task->worker, 10);
         if (unlikely(rename(path.c_str(),

@@ -34,7 +34,7 @@ void ExternFile::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_
     assert(0); // TODO
 }
 
-std::string ExternFile::get_filename(Worker &worker) const
+std::string ExternFile::get_filename() const
 {
     return filename;
 }

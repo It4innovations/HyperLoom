@@ -22,7 +22,7 @@ public:
     };
 
     TaskNode(loom::Id id, int task_type, const std::string &config)
-        : state(WAITING), id(id), task_type(task_type), config(config) {}
+        : state(WAITING), id(id), ref_count(0), task_type(task_type), config(config) {}
 
     bool is_ready() {
         assert(state == WAITING);
@@ -49,6 +49,19 @@ public:
 
     void add_next(TaskNode *task) {
         nexts.push_back(task);
+        ref_count += 1;
+    }
+
+    void inc_ref_counter() {
+        ref_count += 1;
+    }
+
+    bool dec_ref_counter() {
+        return --ref_count <= 0;
+    }
+
+    int get_ref_counter() const {
+        return ref_count;
     }
 
     void set_state(State state) {
@@ -95,6 +108,7 @@ public:
 private:
     State state;
     loom::Id id;
+    int ref_count;
     loom::TaskId task_type;
     Vector inputs;
     Vector nexts;

@@ -17,46 +17,50 @@ using namespace loom;
 size_t RawData::file_id_counter = 1;
 
 RawData::RawData()
-    : data(nullptr), size(0), file_id(0)
+    : data(nullptr), size(0)
 {
-
 }
 
 RawData::~RawData()
 {
-    if (data != nullptr) {
-        if (file_id) {
-            munmap(data, size);
-        } else {
-            delete [] data;
+    llog->debug("Disposing raw data filename={}", filename);
+
+    if (filename.empty()) {
+        assert(data == nullptr);
+    } else {
+        if (munmap(data, size)) {
+            log_errno_abort("munmap");
+        }
+        if (unlink(filename.c_str())) {
+            log_errno_abort("unlink");
         }
     }
 }
 
 
 
-char* RawData::init_memonly(size_t size)
+/*char* RawData::init_memonly(size_t size)
 {
     assert(data == nullptr);
     assert(file_id == 0);
     this->size = size;
     data = new char[size];
     return data;
-}
+}*/
 
 char* RawData::init_empty_file(Worker &worker, size_t size)
 {
     assert(data == nullptr);
 
-    if (file_id == 0) {
-        assign_file_id();
+    if (filename.empty()) {
+        assign_filename(worker);
     }
 
     this->size = size;
 
-    int fd = ::open(get_filename(worker).c_str(), O_CREAT | O_RDWR,  S_IRUSR | S_IWUSR);
+    int fd = ::open(filename.c_str(), O_CREAT | O_RDWR,  S_IRUSR | S_IWUSR);
     if (fd < 0) {
-        llog->critical("Cannot open data {} for writing", get_filename(worker));
+        llog->critical("Cannot open data {} for writing", filename);
         log_errno_abort("open");
     }
 
@@ -74,36 +78,36 @@ char* RawData::init_empty_file(Worker &worker, size_t size)
     return data;
 }
 
-void RawData::assign_file_id()
+void RawData::assign_filename(Worker &worker)
 {
-    assert(file_id == 0);
-    file_id = file_id_counter++;
+    assert(filename.empty());
+    int file_id = file_id_counter++;
+    std::stringstream s;
+    s << worker.get_work_dir() << "data/" << file_id;
+    filename = s.str();
 }
 
 void RawData::init_from_file(Worker &worker)
 {
     assert(data == nullptr);
-    if (file_id == 0) {
-        assign_file_id();
+    if (filename.empty()) {
+        assign_filename(worker);
     }
-    size = file_size(get_filename(worker).c_str());
+    size = file_size(filename.c_str());
 }
 
-std::string RawData::get_filename(Worker &worker) const
+std::string RawData::get_filename() const
 {
-    assert(file_id);
-    std::stringstream s;
-    s << worker.get_work_dir() << "data/" << file_id;
-    return s.str();
+    return filename;
 }
 
 void RawData::open(Worker &worker)
 {
-    assert(file_id);
+    assert(!filename.empty());
 
-    int fd = ::open(get_filename(worker).c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
+    int fd = ::open(filename.c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
     if (fd < 0) {
-        llog->critical("Cannot open data {}", get_filename(worker));
+        llog->critical("Cannot open data {}", filename);
         log_errno_abort("open");
     }
     map(fd, false);
@@ -114,7 +118,7 @@ void RawData::open(Worker &worker)
 void RawData::map(int fd, bool write)
 {
     assert(data == nullptr);
-    assert(file_id);
+    assert(!filename.empty());
     assert(fd >= 0);
 
     int flags = PROT_READ;
@@ -123,7 +127,7 @@ void RawData::map(int fd, bool write)
     }
     data = (char*) mmap(0, size, flags, MAP_SHARED, fd, 0);
     if (data == MAP_FAILED) {
-        llog->critical("Cannot mmap data file_id={}", file_id);
+        llog->critical("Cannot mmap data filename={}", filename);
         log_errno_abort("mmap");
     }
 }

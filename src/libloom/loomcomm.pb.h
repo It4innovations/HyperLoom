@@ -61,11 +61,12 @@ const int ServerMessage_Type_Type_ARRAYSIZE = ServerMessage_Type_Type_MAX + 1;
 
 enum WorkerCommand_Type {
   WorkerCommand_Type_TASK = 1,
-  WorkerCommand_Type_SEND = 2
+  WorkerCommand_Type_SEND = 2,
+  WorkerCommand_Type_REMOVE = 3
 };
 bool WorkerCommand_Type_IsValid(int value);
 const WorkerCommand_Type WorkerCommand_Type_Type_MIN = WorkerCommand_Type_TASK;
-const WorkerCommand_Type WorkerCommand_Type_Type_MAX = WorkerCommand_Type_SEND;
+const WorkerCommand_Type WorkerCommand_Type_Type_MAX = WorkerCommand_Type_REMOVE;
 const int WorkerCommand_Type_Type_ARRAYSIZE = WorkerCommand_Type_Type_MAX + 1;
 
 enum ClientMessage_Type {
@@ -395,6 +396,7 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   typedef WorkerCommand_Type Type;
   static const Type TASK = WorkerCommand_Type_TASK;
   static const Type SEND = WorkerCommand_Type_SEND;
+  static const Type REMOVE = WorkerCommand_Type_REMOVE;
   static inline bool Type_IsValid(int value) {
     return WorkerCommand_Type_IsValid(value);
   }

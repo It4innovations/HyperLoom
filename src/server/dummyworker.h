@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <libloom/connection.h>
+#include <libloom/types.h>
 
 class Server;
 class DWConnection;
@@ -59,7 +60,6 @@ protected:
     DummyWorker &worker;
     std::unique_ptr<loom::SendBuffer> send_buffer;
     char *pointer;
-    size_t size;
     bool registered;
 };
 

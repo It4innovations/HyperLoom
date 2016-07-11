@@ -30,7 +30,7 @@ public:
     virtual void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) = 0;
 
     virtual char *get_raw_data(Worker &worker);
-    virtual std::string get_filename(Worker &worker) const;
+    virtual std::string get_filename() const;
 };
 
 class DataUnpacker

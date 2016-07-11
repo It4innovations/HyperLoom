@@ -28,7 +28,7 @@ char *Data::get_raw_data(Worker &worker)
     return nullptr;
 }
 
-std::string Data::get_filename(Worker &worker) const
+std::string Data::get_filename() const
 {
     return "";
 }

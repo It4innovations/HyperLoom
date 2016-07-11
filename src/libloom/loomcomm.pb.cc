@@ -639,6 +639,7 @@ bool WorkerCommand_Type_IsValid(int value) {
   switch(value) {
     case 1:
     case 2:
+    case 3:
       return true;
     default:
       return false;
@@ -648,6 +649,7 @@ bool WorkerCommand_Type_IsValid(int value) {
 #ifndef _MSC_VER
 const WorkerCommand_Type WorkerCommand::TASK;
 const WorkerCommand_Type WorkerCommand::SEND;
+const WorkerCommand_Type WorkerCommand::REMOVE;
 const WorkerCommand_Type WorkerCommand::Type_MIN;
 const WorkerCommand_Type WorkerCommand::Type_MAX;
 const int WorkerCommand::Type_ARRAYSIZE;

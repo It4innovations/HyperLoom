@@ -23,6 +23,7 @@ public:
 
     void send_task(TaskNode *task);
     void send_data(loom::Id id, const std::string &address, bool with_size);
+    void remove_data(loom::Id id);
 
     std::unordered_map<loom::Id, TaskNode*>& get_tasks() {
         return tasks;

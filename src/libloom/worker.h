@@ -63,6 +63,7 @@ public:
 
     void task_finished(TaskInstance &task_instance);
     void publish_data(Id id, std::unique_ptr<Data> data);
+    void remove_data(loom::Id id);
 
     bool has_data(Id id) const
     {
@@ -119,7 +120,7 @@ private:
     void register_worker();
     void start_listen();
 
-    void remove_task(TaskInstance &task);
+    void remove_task(TaskInstance &task);    
     void start_task(std::unique_ptr<Task> task);
     //int get_listen_port();
 

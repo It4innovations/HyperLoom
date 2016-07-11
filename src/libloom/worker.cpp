@@ -186,6 +186,14 @@ void Worker::publish_data(Id id, std::unique_ptr<Data> data)
     check_waiting_tasks();
 }
 
+void Worker::remove_data(Id id)
+{
+    llog->debug("Removing data id={}", id);
+    auto i = public_data.find(id);
+    assert(i != public_data.end());
+    public_data.erase(i);
+}
+
 InterConnection& Worker::get_connection(const std::string &address)
 {
     auto &connection = connections[address];
@@ -317,7 +325,6 @@ void Worker::check_waiting_tasks()
     }
 }
 
-
 void Worker::remove_task(TaskInstance &task)
 {
     for (auto i = active_tasks.begin(); i != active_tasks.end(); i++) {
@@ -388,6 +395,10 @@ void ServerConnection::on_message(const char *data, size_t size)
             task->add_input(msg.task_inputs(i));
         }
         worker.new_task(std::move(task));
+        break;
+    }
+    case loomcomm::WorkerCommand_Type_REMOVE: {
+        worker.remove_data(msg.id());
         break;
     }
     case loomcomm::WorkerCommand_Type_SEND: {

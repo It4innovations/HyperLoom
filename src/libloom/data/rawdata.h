@@ -31,12 +31,12 @@ public:
     std::string get_info();    
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
-    char* init_memonly(size_t size);
+    //char* init_memonly(size_t size);
     char* init_empty_file(Worker &worker, size_t size);
-    void assign_file_id();
+    void assign_filename(Worker &worker);
     void init_from_file(Worker &worker);
 
-    std::string get_filename(Worker &worker) const;
+    std::string get_filename() const;
 
 private:
 
@@ -45,7 +45,7 @@ private:
 
     char *data;
     size_t size;
-    size_t file_id;
+    std::string filename;
 
     static size_t file_id_counter;
 

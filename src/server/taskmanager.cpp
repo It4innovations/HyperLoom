@@ -52,9 +52,16 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
     }
 
     for (int i = 0; i < plan.result_ids_size(); i++)
-    {
-        results.insert(plan.result_ids(i));
+    {        
+        auto id = plan.result_ids(i);
+        tasks[id]->inc_ref_counter();
+        results.insert(id);
     }
+
+    for (auto &t : tasks) {
+        assert(t.second->get_ref_counter() > 0);
+    }
+
     if (distribute) {
         distribute_work(ready_tasks);
     }
@@ -68,9 +75,26 @@ void TaskManager::on_task_finished(TaskNode &task)
         const auto &owners = task.get_owners();
         assert(owners.size());
         owners[0]->send_data(id, server.get_dummy_worker().get_address(), true);
+
+        if (task.dec_ref_counter()) {
+            assert(task.get_ref_counter() == 0);
+            for (WorkerConnection *owner : task.get_owners()) {
+                owner->remove_data(task.get_id());
+            }
+        }
     } else {
         llog->debug("Job id={} finished", id);
     }
+
+    for (TaskNode *input : task.get_inputs()) {
+        if (input->dec_ref_counter()) {
+            assert(input->get_ref_counter() == 0);
+            for (WorkerConnection *owner : input->get_owners()) {
+                owner->remove_data(input->get_id());
+            }
+        }
+    }
+
     std::vector<TaskNode*> ready;
     task.collect_ready_nexts(ready);
     distribute_work(ready);

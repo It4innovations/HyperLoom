@@ -33,7 +33,7 @@ public:
     std::string get_info();
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
-    std::string get_filename(Worker &worker) const;
+    std::string get_filename() const;
 
 private:
 
