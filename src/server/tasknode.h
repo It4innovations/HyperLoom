@@ -49,7 +49,6 @@ public:
 
     void add_next(TaskNode *task) {
         nexts.push_back(task);
-        ref_count += 1;
     }
 
     void inc_ref_counter() {

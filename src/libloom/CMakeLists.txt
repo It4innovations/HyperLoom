@@ -4,6 +4,8 @@ add_library(libloom
             data/externfile.h
             data/rawdata.h
             data/rawdata.cpp
+            data/array.h
+            data/array.cpp
             connection.cpp
             connection.h
             worker.cpp

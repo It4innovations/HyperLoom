@@ -16,7 +16,6 @@
 namespace loomrun {
 
 void protobuf_ShutdownFile_loomrun_2eproto() {
-  delete MapFile::default_instance_;
   delete Run::default_instance_;
 }
 
@@ -32,9 +31,7 @@ void protobuf_AddDesc_loomrun_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
 #endif
-  MapFile::default_instance_ = new MapFile();
   Run::default_instance_ = new Run();
-  MapFile::default_instance_->InitAsDefaultInstance();
   Run::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_loomrun_2eproto);
 }
@@ -57,330 +54,9 @@ struct StaticDescriptorInitializer_loomrun_2eproto {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int MapFile::kFilenameFieldNumber;
-const int MapFile::kInputIndexFieldNumber;
-const int MapFile::kOutputIndexFieldNumber;
-const int MapFile::kVariableFieldNumber;
-#endif  // !_MSC_VER
-
-MapFile::MapFile()
-  : ::google::protobuf::MessageLite() {
-  SharedCtor();
-  // @@protoc_insertion_point(constructor:loomrun.MapFile)
-}
-
-void MapFile::InitAsDefaultInstance() {
-}
-
-MapFile::MapFile(const MapFile& from)
-  : ::google::protobuf::MessageLite() {
-  SharedCtor();
-  MergeFrom(from);
-  // @@protoc_insertion_point(copy_constructor:loomrun.MapFile)
-}
-
-void MapFile::SharedCtor() {
-  ::google::protobuf::internal::GetEmptyString();
-  _cached_size_ = 0;
-  filename_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  input_index_ = 0;
-  output_index_ = 0;
-  variable_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-MapFile::~MapFile() {
-  // @@protoc_insertion_point(destructor:loomrun.MapFile)
-  SharedDtor();
-}
-
-void MapFile::SharedDtor() {
-  if (filename_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete filename_;
-  }
-  if (variable_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete variable_;
-  }
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  if (this != &default_instance()) {
-  #else
-  if (this != default_instance_) {
-  #endif
-  }
-}
-
-void MapFile::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const MapFile& MapFile::default_instance() {
-#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  protobuf_AddDesc_loomrun_2eproto();
-#else
-  if (default_instance_ == NULL) protobuf_AddDesc_loomrun_2eproto();
-#endif
-  return *default_instance_;
-}
-
-MapFile* MapFile::default_instance_ = NULL;
-
-MapFile* MapFile::New() const {
-  return new MapFile;
-}
-
-void MapFile::Clear() {
-#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
-  &reinterpret_cast<MapFile*>(16)->f) - \
-   reinterpret_cast<char*>(16))
-
-#define ZR_(first, last) do {                              \
-    size_t f = OFFSET_OF_FIELD_(first);                    \
-    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
-    ::memset(&first, 0, n);                                \
-  } while (0)
-
-  if (_has_bits_[0 / 32] & 15) {
-    ZR_(input_index_, output_index_);
-    if (has_filename()) {
-      if (filename_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-        filename_->clear();
-      }
-    }
-    if (has_variable()) {
-      if (variable_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-        variable_->clear();
-      }
-    }
-  }
-
-#undef OFFSET_OF_FIELD_
-#undef ZR_
-
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->clear();
-}
-
-bool MapFile::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::io::StringOutputStream unknown_fields_string(
-      mutable_unknown_fields());
-  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(
-      &unknown_fields_string);
-  // @@protoc_insertion_point(parse_start:loomrun.MapFile)
-  for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required string filename = 1;
-      case 1: {
-        if (tag == 10) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_filename()));
-        } else {
-          goto handle_unusual;
-        }
-        if (input->ExpectTag(16)) goto parse_input_index;
-        break;
-      }
-
-      // required int32 input_index = 2;
-      case 2: {
-        if (tag == 16) {
-         parse_input_index:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &input_index_)));
-          set_has_input_index();
-        } else {
-          goto handle_unusual;
-        }
-        if (input->ExpectTag(24)) goto parse_output_index;
-        break;
-      }
-
-      // required int32 output_index = 3;
-      case 3: {
-        if (tag == 24) {
-         parse_output_index:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &output_index_)));
-          set_has_output_index();
-        } else {
-          goto handle_unusual;
-        }
-        if (input->ExpectTag(34)) goto parse_variable;
-        break;
-      }
-
-      // optional string variable = 4;
-      case 4: {
-        if (tag == 34) {
-         parse_variable:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_variable()));
-        } else {
-          goto handle_unusual;
-        }
-        if (input->ExpectAtEnd()) goto success;
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0 ||
-            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormatLite::SkipField(
-            input, tag, &unknown_fields_stream));
-        break;
-      }
-    }
-  }
-success:
-  // @@protoc_insertion_point(parse_success:loomrun.MapFile)
-  return true;
-failure:
-  // @@protoc_insertion_point(parse_failure:loomrun.MapFile)
-  return false;
-#undef DO_
-}
-
-void MapFile::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:loomrun.MapFile)
-  // required string filename = 1;
-  if (has_filename()) {
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->filename(), output);
-  }
-
-  // required int32 input_index = 2;
-  if (has_input_index()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->input_index(), output);
-  }
-
-  // required int32 output_index = 3;
-  if (has_output_index()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->output_index(), output);
-  }
-
-  // optional string variable = 4;
-  if (has_variable()) {
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      4, this->variable(), output);
-  }
-
-  output->WriteRaw(unknown_fields().data(),
-                   unknown_fields().size());
-  // @@protoc_insertion_point(serialize_end:loomrun.MapFile)
-}
-
-int MapFile::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required string filename = 1;
-    if (has_filename()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->filename());
-    }
-
-    // required int32 input_index = 2;
-    if (has_input_index()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->input_index());
-    }
-
-    // required int32 output_index = 3;
-    if (has_output_index()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->output_index());
-    }
-
-    // optional string variable = 4;
-    if (has_variable()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->variable());
-    }
-
-  }
-  total_size += unknown_fields().size();
-
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void MapFile::CheckTypeAndMergeFrom(
-    const ::google::protobuf::MessageLite& from) {
-  MergeFrom(*::google::protobuf::down_cast<const MapFile*>(&from));
-}
-
-void MapFile::MergeFrom(const MapFile& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_filename()) {
-      set_filename(from.filename());
-    }
-    if (from.has_input_index()) {
-      set_input_index(from.input_index());
-    }
-    if (from.has_output_index()) {
-      set_output_index(from.output_index());
-    }
-    if (from.has_variable()) {
-      set_variable(from.variable());
-    }
-  }
-  mutable_unknown_fields()->append(from.unknown_fields());
-}
-
-void MapFile::CopyFrom(const MapFile& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool MapFile::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000007) != 0x00000007) return false;
-
-  return true;
-}
-
-void MapFile::Swap(MapFile* other) {
-  if (other != this) {
-    std::swap(filename_, other->filename_);
-    std::swap(input_index_, other->input_index_);
-    std::swap(output_index_, other->output_index_);
-    std::swap(variable_, other->variable_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.swap(other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::std::string MapFile::GetTypeName() const {
-  return "loomrun.MapFile";
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
 const int Run::kArgsFieldNumber;
-const int Run::kMapsFieldNumber;
+const int Run::kMapInputsFieldNumber;
+const int Run::kMapOutputsFieldNumber;
 #endif  // !_MSC_VER
 
 Run::Run()
@@ -441,7 +117,8 @@ Run* Run::New() const {
 
 void Run::Clear() {
   args_.Clear();
-  maps_.Clear();
+  map_inputs_.Clear();
+  map_outputs_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->clear();
 }
@@ -470,20 +147,34 @@ bool Run::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(10)) goto parse_args;
-        if (input->ExpectTag(18)) goto parse_maps;
+        if (input->ExpectTag(18)) goto parse_map_inputs;
         break;
       }
 
-      // repeated .loomrun.MapFile maps = 2;
+      // repeated string map_inputs = 2;
       case 2: {
         if (tag == 18) {
-         parse_maps:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_maps()));
+         parse_map_inputs:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_map_inputs()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(18)) goto parse_maps;
+        if (input->ExpectTag(18)) goto parse_map_inputs;
+        if (input->ExpectTag(26)) goto parse_map_outputs;
+        break;
+      }
+
+      // repeated string map_outputs = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_map_outputs:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_map_outputs()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_map_outputs;
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -519,10 +210,16 @@ void Run::SerializeWithCachedSizes(
       1, this->args(i), output);
   }
 
-  // repeated .loomrun.MapFile maps = 2;
-  for (int i = 0; i < this->maps_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessage(
-      2, this->maps(i), output);
+  // repeated string map_inputs = 2;
+  for (int i = 0; i < this->map_inputs_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->map_inputs(i), output);
+  }
+
+  // repeated string map_outputs = 3;
+  for (int i = 0; i < this->map_outputs_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      3, this->map_outputs(i), output);
   }
 
   output->WriteRaw(unknown_fields().data(),
@@ -540,12 +237,18 @@ int Run::ByteSize() const {
       this->args(i));
   }
 
-  // repeated .loomrun.MapFile maps = 2;
-  total_size += 1 * this->maps_size();
-  for (int i = 0; i < this->maps_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->maps(i));
+  // repeated string map_inputs = 2;
+  total_size += 1 * this->map_inputs_size();
+  for (int i = 0; i < this->map_inputs_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->map_inputs(i));
+  }
+
+  // repeated string map_outputs = 3;
+  total_size += 1 * this->map_outputs_size();
+  for (int i = 0; i < this->map_outputs_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->map_outputs(i));
   }
 
   total_size += unknown_fields().size();
@@ -564,7 +267,8 @@ void Run::CheckTypeAndMergeFrom(
 void Run::MergeFrom(const Run& from) {
   GOOGLE_CHECK_NE(&from, this);
   args_.MergeFrom(from.args_);
-  maps_.MergeFrom(from.maps_);
+  map_inputs_.MergeFrom(from.map_inputs_);
+  map_outputs_.MergeFrom(from.map_outputs_);
   mutable_unknown_fields()->append(from.unknown_fields());
 }
 
@@ -576,14 +280,14 @@ void Run::CopyFrom(const Run& from) {
 
 bool Run::IsInitialized() const {
 
-  if (!::google::protobuf::internal::AllAreInitialized(this->maps())) return false;
   return true;
 }
 
 void Run::Swap(Run* other) {
   if (other != this) {
     args_.Swap(&other->args_);
-    maps_.Swap(&other->maps_);
+    map_inputs_.Swap(&other->map_inputs_);
+    map_outputs_.Swap(&other->map_outputs_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -106,6 +106,7 @@ void WorkerConnection::send_data(Id id, const std::string &address, bool with_si
 
 void WorkerConnection::remove_data(Id id)
 {
+    llog->debug("Command for {}: REMOVE id={}", this->address, id);
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_REMOVE);
     msg.set_id(id);

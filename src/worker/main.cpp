@@ -1,6 +1,7 @@
 
 #include "runtask.h"
 #include "basictasks.h"
+#include "arraytasks.h"
 
 #include "libloom/worker.h"
 #include "libloom/log.h"
@@ -110,6 +111,8 @@ int main(int argc, char **argv)
                         config.port,
                         config.work_dir);
     loom::llog->info("Worker started; listening on port {}", worker.get_listen_port());
+
+    // Basic
     worker.add_task_factory(
                 std::make_unique<SimpleTaskFactory<RunTask>>("run"));
     worker.add_task_factory(
@@ -120,8 +123,14 @@ int main(int argc, char **argv)
                 std::make_unique<SimpleTaskFactory<OpenTask>>("open"));
     worker.add_task_factory(
                 std::make_unique<SimpleTaskFactory<LineSplitTask>>("split_lines"));
+
+    // Arrays
+    worker.add_task_factory(
+                std::make_unique<SimpleTaskFactory<ArrayMakeTask>>("array/make"));
+    worker.add_task_factory(
+                std::make_unique<SimpleTaskFactory<ArrayGetTask>>("array/get"));
+
     worker.set_cpus(config.cpus);
-    //worker.add_task_factory<MergeTask>("merge");
     uv_run(&loop, UV_RUN_DEFAULT);
     uv_loop_close(&loop);
     return 0;

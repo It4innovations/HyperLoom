@@ -46,9 +46,21 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
         }
 
         for (int j = 0; j < inputs_size; j++) {
-            auto &task = tasks[pt.input_ids(j)];
+            auto id = pt.input_ids(j);
+            auto &task = tasks[id];
             t->add_input(task.get());
-            task->add_next(t.get());
+            task->inc_ref_counter();
+
+            // Put next if there is not such
+            int j2;
+            for (j2 = 0; j2 < j; j2++) {
+               if (id == pt.input_ids(j2)) {
+                  break;
+               }
+            }
+            if (j2 == j) {
+               task->add_next(t.get());
+            }
         }
     }
 
@@ -60,6 +72,7 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
     }
 
     for (auto &t : tasks) {
+        llog->alert("{} {}", t.second->get_id(), t.second->get_ref_counter());
         assert(t.second->get_ref_counter() > 0);
     }
 
@@ -186,6 +199,7 @@ void TaskManager::distribute_work(TaskNode::Vector &tasks)
                     assert(input->get_owners().size() >= 1);
                     WorkerConnection *owner = input->get_owners()[0];
                     owner->send_data(input->get_id(), load.connection.get_address(), false);
+                    input->add_owner(&load.connection);
                 }
             }
             load.connection.send_task(task);

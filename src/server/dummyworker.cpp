@@ -16,6 +16,10 @@ using namespace loom;
 DummyWorker::DummyWorker(Server &server)
     : server(server), listen_port(-1)
 {
+    uv_loop_t *loop = server.get_loop();
+    if (loop == nullptr) {
+       return;
+    }
     UV_CHECK(uv_tcp_init(server.get_loop(), &listen_socket));
     listen_socket.data = this;
 }

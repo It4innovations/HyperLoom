@@ -13,9 +13,10 @@ using namespace loom;
 void ConstTask::start(DataVector &inputs)
 {
     auto& config = task->get_config();
-    auto output = std::make_unique<RawData>();
-    memcpy(output->init_empty_file(worker, config.size()), config.c_str(), config.size());
-    finish(std::move(output));
+    std::shared_ptr<Data> output = std::make_shared<RawData>();
+    RawData &data = static_cast<RawData&>(*output);
+    memcpy(data.init_empty_file(worker, config.size()), config.c_str(), config.size());
+    finish(output);
 }
 
 
@@ -24,23 +25,25 @@ void MergeTask::start(DataVector &inputs) {
     for (auto& data : inputs) {
         size += (*data)->get_size();
     }    
-    auto output = std::make_unique<RawData>();
-    output->init_empty_file(worker, size);
+    std::shared_ptr<Data> output = std::make_shared<RawData>();
+    RawData &data = static_cast<RawData&>(*output);
+    data.init_empty_file(worker, size);
     char *dst = output->get_raw_data(worker);
 
     for (auto& data : inputs) {
         char *mem = (*data)->get_raw_data(worker);
-        assert(mem);
         size_t size = (*data)->get_size();
+        assert(mem || size == 0);
         memcpy(dst, mem, size);
         dst += size;
     }
-    finish(std::move(output));
+    finish(output);
 }
 
 void OpenTask::start(DataVector &inputs)
 {
-    finish(std::make_unique<ExternFile>(task->get_config()));
+    std::shared_ptr<Data> data = std::make_shared<ExternFile>(task->get_config());
+    finish(data);
 }
 
 void LineSplitTask::start(DataVector &inputs)
@@ -84,10 +87,11 @@ void LineSplitTask::start(DataVector &inputs)
         }
     }
     size_t data_size = data_end - start_ptr;
-    auto output = std::make_unique<RawData>();
-    output->init_empty_file(worker, data_size);
+    std::shared_ptr<Data> output = std::make_shared<RawData>();
+    RawData &data = static_cast<RawData&>(*output);
+    data.init_empty_file(worker, data_size);
     char *dst = output->get_raw_data(worker);
     memcpy(dst, start_ptr, data_size);
-    finish(std::move(output));
+    finish(output);
 
 }

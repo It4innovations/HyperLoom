@@ -19,7 +19,7 @@ def pytestprog(sleep, op="copy", stamp=False, file_out=None, file_in=None):
         args.append("--out=" + file_out)
     args.append(op)
     args.append(sleep)
-    return args
+    return map(str, args)
 
 
 def str2datetime(s):
@@ -134,13 +134,15 @@ def test_run_files(loom_env):
     p = loom_env.plan()
 
     a1 = p.task_const("abcd" * 100)
-    b1 = p.task_run(pytestprog(0.0, "plus1", file_out="myfile1"), stdin=a1)
-    b1.map_file_out("myfile1")
+    b1 = p.task_run(
+            pytestprog(0.0, "plus1", file_out="myfile1"),
+            stdin=a1,
+            outputs=["myfile1"])
 
     c1 = p.task_run(pytestprog(
-        0.0, "plus1", file_in="input", file_out="output"))
-    c1.map_file_in(b1, "input")
-    c1.map_file_out("output")
+        0.0, "plus1", file_in="input", file_out="output"),
+        outputs=["output"],
+        inputs=[(b1, "input")])
 
     loom_env.start(1)
     result = loom_env.submit(p, c1)

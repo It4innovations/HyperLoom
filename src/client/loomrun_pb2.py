@@ -18,62 +18,11 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='loomrun.proto',
   package='loomrun',
-  serialized_pb=_b('\n\rloomrun.proto\x12\x07loomrun\"X\n\x07MapFile\x12\x10\n\x08\x66ilename\x18\x01 \x02(\t\x12\x13\n\x0binput_index\x18\x02 \x02(\x05\x12\x14\n\x0coutput_index\x18\x03 \x02(\x05\x12\x10\n\x08variable\x18\x04 \x01(\t\"3\n\x03Run\x12\x0c\n\x04\x61rgs\x18\x01 \x03(\t\x12\x1e\n\x04maps\x18\x02 \x03(\x0b\x32\x10.loomrun.MapFileB\x02H\x03')
+  serialized_pb=_b('\n\rloomrun.proto\x12\x07loomrun\"<\n\x03Run\x12\x0c\n\x04\x61rgs\x18\x01 \x03(\t\x12\x12\n\nmap_inputs\x18\x02 \x03(\t\x12\x13\n\x0bmap_outputs\x18\x03 \x03(\tB\x02H\x03')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
-
-
-_MAPFILE = _descriptor.Descriptor(
-  name='MapFile',
-  full_name='loomrun.MapFile',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='filename', full_name='loomrun.MapFile.filename', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='input_index', full_name='loomrun.MapFile.input_index', index=1,
-      number=2, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='output_index', full_name='loomrun.MapFile.output_index', index=2,
-      number=3, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='variable', full_name='loomrun.MapFile.variable', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=26,
-  serialized_end=114,
-)
 
 
 _RUN = _descriptor.Descriptor(
@@ -91,8 +40,15 @@ _RUN = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='maps', full_name='loomrun.Run.maps', index=1,
-      number=2, type=11, cpp_type=10, label=3,
+      name='map_inputs', full_name='loomrun.Run.map_inputs', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='map_outputs', full_name='loomrun.Run.map_outputs', index=2,
+      number=3, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -108,20 +64,11 @@ _RUN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=116,
-  serialized_end=167,
+  serialized_start=26,
+  serialized_end=86,
 )
 
-_RUN.fields_by_name['maps'].message_type = _MAPFILE
-DESCRIPTOR.message_types_by_name['MapFile'] = _MAPFILE
 DESCRIPTOR.message_types_by_name['Run'] = _RUN
-
-MapFile = _reflection.GeneratedProtocolMessageType('MapFile', (_message.Message,), dict(
-  DESCRIPTOR = _MAPFILE,
-  __module__ = 'loomrun_pb2'
-  # @@protoc_insertion_point(class_scope:loomrun.MapFile)
-  ))
-_sym_db.RegisterMessage(MapFile)
 
 Run = _reflection.GeneratedProtocolMessageType('Run', (_message.Message,), dict(
   DESCRIPTOR = _RUN,

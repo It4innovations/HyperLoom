@@ -63,8 +63,8 @@ public:
     }
 
     void task_finished(TaskInstance &task_instance);
-    void publish_data(Id id, std::unique_ptr<Data> data);
-    void remove_data(loom::Id id);
+    void publish_data(Id id, std::shared_ptr<Data> &data);
+    void remove_data(Id id);
 
     bool has_data(Id id) const
     {

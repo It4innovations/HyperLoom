@@ -6,6 +6,8 @@ add_executable(loom-worker
                runtask.h
                basictasks.cpp
                basictasks.h
+               arraytasks.cpp
+               arraytasks.h
                main.cpp)
 target_include_directories(loom-worker PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(loom-worker libloom ${LIBUV_LIBRARY} pthread)

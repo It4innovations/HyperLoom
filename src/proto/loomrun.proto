@@ -2,14 +2,8 @@ package loomrun;
 
 option optimize_for = LITE_RUNTIME;
 
-message MapFile {
-	required string filename = 1;
-	required int32 input_index = 2; // -2 = no mapping
-	required int32 output_index = 3; // -2 = no mapping, -1 = task_id
-	optional string variable = 4;
-}
-
 message Run {
 	repeated string args = 1;
-	repeated MapFile maps = 2;
+	repeated string map_inputs = 2;
+	repeated string map_outputs = 3;
 }

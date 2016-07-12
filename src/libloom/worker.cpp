@@ -4,6 +4,7 @@
 #include "log.h"
 #include "types.h"
 #include "data/rawdata.h"
+#include "data/array.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -66,6 +67,10 @@ Worker::Worker(uv_loop_t *loop,
 
     add_unpacker(RawData::TYPE_ID,
                  std::make_unique<SimpleUnpackFactory<RawDataUnpacker>>());
+
+    add_unpacker(Array::TYPE_ID,
+                 std::make_unique<SimpleUnpackFactory<ArrayUnpacker>>());
+
 
     resource_cpus = 1;
 }
@@ -179,7 +184,7 @@ void Worker::start_task(std::unique_ptr<Task> task)
     t->start();
 }*/
 
-void Worker::publish_data(Id id, std::unique_ptr<Data> data)
+void Worker::publish_data(Id id, std::shared_ptr<Data> &data)
 {
     llog->debug("Publishing data id={} size={}", id, data->get_size());
     public_data[id] = std::move(data);

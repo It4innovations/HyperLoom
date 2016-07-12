@@ -32,141 +32,9 @@ void  protobuf_AddDesc_loomrun_2eproto();
 void protobuf_AssignDesc_loomrun_2eproto();
 void protobuf_ShutdownFile_loomrun_2eproto();
 
-class MapFile;
 class Run;
 
 // ===================================================================
-
-class MapFile : public ::google::protobuf::MessageLite {
- public:
-  MapFile();
-  virtual ~MapFile();
-
-  MapFile(const MapFile& from);
-
-  inline MapFile& operator=(const MapFile& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::std::string& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::std::string* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const MapFile& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const MapFile* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(MapFile* other);
-
-  // implements Message ----------------------------------------------
-
-  MapFile* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const MapFile& from);
-  void MergeFrom(const MapFile& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  void DiscardUnknownFields();
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // required string filename = 1;
-  inline bool has_filename() const;
-  inline void clear_filename();
-  static const int kFilenameFieldNumber = 1;
-  inline const ::std::string& filename() const;
-  inline void set_filename(const ::std::string& value);
-  inline void set_filename(const char* value);
-  inline void set_filename(const char* value, size_t size);
-  inline ::std::string* mutable_filename();
-  inline ::std::string* release_filename();
-  inline void set_allocated_filename(::std::string* filename);
-
-  // required int32 input_index = 2;
-  inline bool has_input_index() const;
-  inline void clear_input_index();
-  static const int kInputIndexFieldNumber = 2;
-  inline ::google::protobuf::int32 input_index() const;
-  inline void set_input_index(::google::protobuf::int32 value);
-
-  // required int32 output_index = 3;
-  inline bool has_output_index() const;
-  inline void clear_output_index();
-  static const int kOutputIndexFieldNumber = 3;
-  inline ::google::protobuf::int32 output_index() const;
-  inline void set_output_index(::google::protobuf::int32 value);
-
-  // optional string variable = 4;
-  inline bool has_variable() const;
-  inline void clear_variable();
-  static const int kVariableFieldNumber = 4;
-  inline const ::std::string& variable() const;
-  inline void set_variable(const ::std::string& value);
-  inline void set_variable(const char* value);
-  inline void set_variable(const char* value, size_t size);
-  inline ::std::string* mutable_variable();
-  inline ::std::string* release_variable();
-  inline void set_allocated_variable(::std::string* variable);
-
-  // @@protoc_insertion_point(class_scope:loomrun.MapFile)
- private:
-  inline void set_has_filename();
-  inline void clear_has_filename();
-  inline void set_has_input_index();
-  inline void clear_has_input_index();
-  inline void set_has_output_index();
-  inline void clear_has_output_index();
-  inline void set_has_variable();
-  inline void clear_has_variable();
-
-  ::std::string _unknown_fields_;
-
-  ::google::protobuf::uint32 _has_bits_[1];
-  mutable int _cached_size_;
-  ::std::string* filename_;
-  ::google::protobuf::int32 input_index_;
-  ::google::protobuf::int32 output_index_;
-  ::std::string* variable_;
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_loomrun_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_loomrun_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_loomrun_2eproto();
-  friend void protobuf_ShutdownFile_loomrun_2eproto();
-
-  void InitAsDefaultInstance();
-  static MapFile* default_instance_;
-};
-// -------------------------------------------------------------------
 
 class Run : public ::google::protobuf::MessageLite {
  public:
@@ -245,17 +113,37 @@ class Run : public ::google::protobuf::MessageLite {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& args() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_args();
 
-  // repeated .loomrun.MapFile maps = 2;
-  inline int maps_size() const;
-  inline void clear_maps();
-  static const int kMapsFieldNumber = 2;
-  inline const ::loomrun::MapFile& maps(int index) const;
-  inline ::loomrun::MapFile* mutable_maps(int index);
-  inline ::loomrun::MapFile* add_maps();
-  inline const ::google::protobuf::RepeatedPtrField< ::loomrun::MapFile >&
-      maps() const;
-  inline ::google::protobuf::RepeatedPtrField< ::loomrun::MapFile >*
-      mutable_maps();
+  // repeated string map_inputs = 2;
+  inline int map_inputs_size() const;
+  inline void clear_map_inputs();
+  static const int kMapInputsFieldNumber = 2;
+  inline const ::std::string& map_inputs(int index) const;
+  inline ::std::string* mutable_map_inputs(int index);
+  inline void set_map_inputs(int index, const ::std::string& value);
+  inline void set_map_inputs(int index, const char* value);
+  inline void set_map_inputs(int index, const char* value, size_t size);
+  inline ::std::string* add_map_inputs();
+  inline void add_map_inputs(const ::std::string& value);
+  inline void add_map_inputs(const char* value);
+  inline void add_map_inputs(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& map_inputs() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_map_inputs();
+
+  // repeated string map_outputs = 3;
+  inline int map_outputs_size() const;
+  inline void clear_map_outputs();
+  static const int kMapOutputsFieldNumber = 3;
+  inline const ::std::string& map_outputs(int index) const;
+  inline ::std::string* mutable_map_outputs(int index);
+  inline void set_map_outputs(int index, const ::std::string& value);
+  inline void set_map_outputs(int index, const char* value);
+  inline void set_map_outputs(int index, const char* value, size_t size);
+  inline ::std::string* add_map_outputs();
+  inline void add_map_outputs(const ::std::string& value);
+  inline void add_map_outputs(const char* value);
+  inline void add_map_outputs(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& map_outputs() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_map_outputs();
 
   // @@protoc_insertion_point(class_scope:loomrun.Run)
  private:
@@ -265,7 +153,8 @@ class Run : public ::google::protobuf::MessageLite {
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> args_;
-  ::google::protobuf::RepeatedPtrField< ::loomrun::MapFile > maps_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> map_inputs_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> map_outputs_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomrun_2eproto_impl();
   #else
@@ -281,210 +170,6 @@ class Run : public ::google::protobuf::MessageLite {
 
 
 // ===================================================================
-
-// MapFile
-
-// required string filename = 1;
-inline bool MapFile::has_filename() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void MapFile::set_has_filename() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void MapFile::clear_has_filename() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void MapFile::clear_filename() {
-  if (filename_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    filename_->clear();
-  }
-  clear_has_filename();
-}
-inline const ::std::string& MapFile::filename() const {
-  // @@protoc_insertion_point(field_get:loomrun.MapFile.filename)
-  return *filename_;
-}
-inline void MapFile::set_filename(const ::std::string& value) {
-  set_has_filename();
-  if (filename_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    filename_ = new ::std::string;
-  }
-  filename_->assign(value);
-  // @@protoc_insertion_point(field_set:loomrun.MapFile.filename)
-}
-inline void MapFile::set_filename(const char* value) {
-  set_has_filename();
-  if (filename_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    filename_ = new ::std::string;
-  }
-  filename_->assign(value);
-  // @@protoc_insertion_point(field_set_char:loomrun.MapFile.filename)
-}
-inline void MapFile::set_filename(const char* value, size_t size) {
-  set_has_filename();
-  if (filename_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    filename_ = new ::std::string;
-  }
-  filename_->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:loomrun.MapFile.filename)
-}
-inline ::std::string* MapFile::mutable_filename() {
-  set_has_filename();
-  if (filename_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    filename_ = new ::std::string;
-  }
-  // @@protoc_insertion_point(field_mutable:loomrun.MapFile.filename)
-  return filename_;
-}
-inline ::std::string* MapFile::release_filename() {
-  clear_has_filename();
-  if (filename_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    return NULL;
-  } else {
-    ::std::string* temp = filename_;
-    filename_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-    return temp;
-  }
-}
-inline void MapFile::set_allocated_filename(::std::string* filename) {
-  if (filename_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete filename_;
-  }
-  if (filename) {
-    set_has_filename();
-    filename_ = filename;
-  } else {
-    clear_has_filename();
-    filename_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  }
-  // @@protoc_insertion_point(field_set_allocated:loomrun.MapFile.filename)
-}
-
-// required int32 input_index = 2;
-inline bool MapFile::has_input_index() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void MapFile::set_has_input_index() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void MapFile::clear_has_input_index() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void MapFile::clear_input_index() {
-  input_index_ = 0;
-  clear_has_input_index();
-}
-inline ::google::protobuf::int32 MapFile::input_index() const {
-  // @@protoc_insertion_point(field_get:loomrun.MapFile.input_index)
-  return input_index_;
-}
-inline void MapFile::set_input_index(::google::protobuf::int32 value) {
-  set_has_input_index();
-  input_index_ = value;
-  // @@protoc_insertion_point(field_set:loomrun.MapFile.input_index)
-}
-
-// required int32 output_index = 3;
-inline bool MapFile::has_output_index() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void MapFile::set_has_output_index() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void MapFile::clear_has_output_index() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void MapFile::clear_output_index() {
-  output_index_ = 0;
-  clear_has_output_index();
-}
-inline ::google::protobuf::int32 MapFile::output_index() const {
-  // @@protoc_insertion_point(field_get:loomrun.MapFile.output_index)
-  return output_index_;
-}
-inline void MapFile::set_output_index(::google::protobuf::int32 value) {
-  set_has_output_index();
-  output_index_ = value;
-  // @@protoc_insertion_point(field_set:loomrun.MapFile.output_index)
-}
-
-// optional string variable = 4;
-inline bool MapFile::has_variable() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void MapFile::set_has_variable() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void MapFile::clear_has_variable() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void MapFile::clear_variable() {
-  if (variable_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    variable_->clear();
-  }
-  clear_has_variable();
-}
-inline const ::std::string& MapFile::variable() const {
-  // @@protoc_insertion_point(field_get:loomrun.MapFile.variable)
-  return *variable_;
-}
-inline void MapFile::set_variable(const ::std::string& value) {
-  set_has_variable();
-  if (variable_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    variable_ = new ::std::string;
-  }
-  variable_->assign(value);
-  // @@protoc_insertion_point(field_set:loomrun.MapFile.variable)
-}
-inline void MapFile::set_variable(const char* value) {
-  set_has_variable();
-  if (variable_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    variable_ = new ::std::string;
-  }
-  variable_->assign(value);
-  // @@protoc_insertion_point(field_set_char:loomrun.MapFile.variable)
-}
-inline void MapFile::set_variable(const char* value, size_t size) {
-  set_has_variable();
-  if (variable_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    variable_ = new ::std::string;
-  }
-  variable_->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:loomrun.MapFile.variable)
-}
-inline ::std::string* MapFile::mutable_variable() {
-  set_has_variable();
-  if (variable_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    variable_ = new ::std::string;
-  }
-  // @@protoc_insertion_point(field_mutable:loomrun.MapFile.variable)
-  return variable_;
-}
-inline ::std::string* MapFile::release_variable() {
-  clear_has_variable();
-  if (variable_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    return NULL;
-  } else {
-    ::std::string* temp = variable_;
-    variable_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-    return temp;
-  }
-}
-inline void MapFile::set_allocated_variable(::std::string* variable) {
-  if (variable_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete variable_;
-  }
-  if (variable) {
-    set_has_variable();
-    variable_ = variable;
-  } else {
-    clear_has_variable();
-    variable_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  }
-  // @@protoc_insertion_point(field_set_allocated:loomrun.MapFile.variable)
-}
-
-// -------------------------------------------------------------------
 
 // Run
 
@@ -542,34 +227,112 @@ Run::mutable_args() {
   return &args_;
 }
 
-// repeated .loomrun.MapFile maps = 2;
-inline int Run::maps_size() const {
-  return maps_.size();
+// repeated string map_inputs = 2;
+inline int Run::map_inputs_size() const {
+  return map_inputs_.size();
 }
-inline void Run::clear_maps() {
-  maps_.Clear();
+inline void Run::clear_map_inputs() {
+  map_inputs_.Clear();
 }
-inline const ::loomrun::MapFile& Run::maps(int index) const {
-  // @@protoc_insertion_point(field_get:loomrun.Run.maps)
-  return maps_.Get(index);
+inline const ::std::string& Run::map_inputs(int index) const {
+  // @@protoc_insertion_point(field_get:loomrun.Run.map_inputs)
+  return map_inputs_.Get(index);
 }
-inline ::loomrun::MapFile* Run::mutable_maps(int index) {
-  // @@protoc_insertion_point(field_mutable:loomrun.Run.maps)
-  return maps_.Mutable(index);
+inline ::std::string* Run::mutable_map_inputs(int index) {
+  // @@protoc_insertion_point(field_mutable:loomrun.Run.map_inputs)
+  return map_inputs_.Mutable(index);
 }
-inline ::loomrun::MapFile* Run::add_maps() {
-  // @@protoc_insertion_point(field_add:loomrun.Run.maps)
-  return maps_.Add();
+inline void Run::set_map_inputs(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:loomrun.Run.map_inputs)
+  map_inputs_.Mutable(index)->assign(value);
 }
-inline const ::google::protobuf::RepeatedPtrField< ::loomrun::MapFile >&
-Run::maps() const {
-  // @@protoc_insertion_point(field_list:loomrun.Run.maps)
-  return maps_;
+inline void Run::set_map_inputs(int index, const char* value) {
+  map_inputs_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomrun.Run.map_inputs)
 }
-inline ::google::protobuf::RepeatedPtrField< ::loomrun::MapFile >*
-Run::mutable_maps() {
-  // @@protoc_insertion_point(field_mutable_list:loomrun.Run.maps)
-  return &maps_;
+inline void Run::set_map_inputs(int index, const char* value, size_t size) {
+  map_inputs_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomrun.Run.map_inputs)
+}
+inline ::std::string* Run::add_map_inputs() {
+  return map_inputs_.Add();
+}
+inline void Run::add_map_inputs(const ::std::string& value) {
+  map_inputs_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:loomrun.Run.map_inputs)
+}
+inline void Run::add_map_inputs(const char* value) {
+  map_inputs_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:loomrun.Run.map_inputs)
+}
+inline void Run::add_map_inputs(const char* value, size_t size) {
+  map_inputs_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:loomrun.Run.map_inputs)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Run::map_inputs() const {
+  // @@protoc_insertion_point(field_list:loomrun.Run.map_inputs)
+  return map_inputs_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Run::mutable_map_inputs() {
+  // @@protoc_insertion_point(field_mutable_list:loomrun.Run.map_inputs)
+  return &map_inputs_;
+}
+
+// repeated string map_outputs = 3;
+inline int Run::map_outputs_size() const {
+  return map_outputs_.size();
+}
+inline void Run::clear_map_outputs() {
+  map_outputs_.Clear();
+}
+inline const ::std::string& Run::map_outputs(int index) const {
+  // @@protoc_insertion_point(field_get:loomrun.Run.map_outputs)
+  return map_outputs_.Get(index);
+}
+inline ::std::string* Run::mutable_map_outputs(int index) {
+  // @@protoc_insertion_point(field_mutable:loomrun.Run.map_outputs)
+  return map_outputs_.Mutable(index);
+}
+inline void Run::set_map_outputs(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:loomrun.Run.map_outputs)
+  map_outputs_.Mutable(index)->assign(value);
+}
+inline void Run::set_map_outputs(int index, const char* value) {
+  map_outputs_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomrun.Run.map_outputs)
+}
+inline void Run::set_map_outputs(int index, const char* value, size_t size) {
+  map_outputs_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomrun.Run.map_outputs)
+}
+inline ::std::string* Run::add_map_outputs() {
+  return map_outputs_.Add();
+}
+inline void Run::add_map_outputs(const ::std::string& value) {
+  map_outputs_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:loomrun.Run.map_outputs)
+}
+inline void Run::add_map_outputs(const char* value) {
+  map_outputs_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:loomrun.Run.map_outputs)
+}
+inline void Run::add_map_outputs(const char* value, size_t size) {
+  map_outputs_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:loomrun.Run.map_outputs)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Run::map_outputs() const {
+  // @@protoc_insertion_point(field_list:loomrun.Run.map_outputs)
+  return map_outputs_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Run::mutable_map_outputs() {
+  // @@protoc_insertion_point(field_mutable_list:loomrun.Run.map_outputs)
+  return &map_outputs_;
 }
 
 

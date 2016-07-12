@@ -1744,7 +1744,8 @@ void DataPrologue::Swap(DataPrologue* other) {
 
 #ifndef _MSC_VER
 const int Data::kTypeIdFieldNumber;
-const int Data::kSizeFieldNumber;
+const int Data::kArg0U64FieldNumber;
+const int Data::kArg1U64FieldNumber;
 #endif  // !_MSC_VER
 
 Data::Data()
@@ -1766,7 +1767,8 @@ Data::Data(const Data& from)
 void Data::SharedCtor() {
   _cached_size_ = 0;
   type_id_ = 0;
-  size_ = GOOGLE_ULONGLONG(0);
+  arg0_u64_ = GOOGLE_ULONGLONG(0);
+  arg1_u64_ = GOOGLE_ULONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1815,7 +1817,7 @@ void Data::Clear() {
     ::memset(&first, 0, n);                                \
   } while (0)
 
-  ZR_(size_, type_id_);
+  ZR_(arg0_u64_, type_id_);
 
 #undef OFFSET_OF_FIELD_
 #undef ZR_
@@ -1848,18 +1850,33 @@ bool Data::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(16)) goto parse_size;
+        if (input->ExpectTag(16)) goto parse_arg0_u64;
         break;
       }
 
-      // optional uint64 size = 2;
+      // optional uint64 arg0_u64 = 2;
       case 2: {
         if (tag == 16) {
-         parse_size:
+         parse_arg0_u64:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 input, &size_)));
-          set_has_size();
+                 input, &arg0_u64_)));
+          set_has_arg0_u64();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(24)) goto parse_arg1_u64;
+        break;
+      }
+
+      // optional uint64 arg1_u64 = 3;
+      case 3: {
+        if (tag == 24) {
+         parse_arg1_u64:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &arg1_u64_)));
+          set_has_arg1_u64();
         } else {
           goto handle_unusual;
         }
@@ -1897,9 +1914,14 @@ void Data::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->type_id(), output);
   }
 
-  // optional uint64 size = 2;
-  if (has_size()) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->size(), output);
+  // optional uint64 arg0_u64 = 2;
+  if (has_arg0_u64()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->arg0_u64(), output);
+  }
+
+  // optional uint64 arg1_u64 = 3;
+  if (has_arg1_u64()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->arg1_u64(), output);
   }
 
   output->WriteRaw(unknown_fields().data(),
@@ -1918,11 +1940,18 @@ int Data::ByteSize() const {
           this->type_id());
     }
 
-    // optional uint64 size = 2;
-    if (has_size()) {
+    // optional uint64 arg0_u64 = 2;
+    if (has_arg0_u64()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->size());
+          this->arg0_u64());
+    }
+
+    // optional uint64 arg1_u64 = 3;
+    if (has_arg1_u64()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->arg1_u64());
     }
 
   }
@@ -1945,8 +1974,11 @@ void Data::MergeFrom(const Data& from) {
     if (from.has_type_id()) {
       set_type_id(from.type_id());
     }
-    if (from.has_size()) {
-      set_size(from.size());
+    if (from.has_arg0_u64()) {
+      set_arg0_u64(from.arg0_u64());
+    }
+    if (from.has_arg1_u64()) {
+      set_arg1_u64(from.arg1_u64());
     }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
@@ -1967,7 +1999,8 @@ bool Data::IsInitialized() const {
 void Data::Swap(Data* other) {
   if (other != this) {
     std::swap(type_id_, other->type_id_);
-    std::swap(size_, other->size_);
+    std::swap(arg0_u64_, other->arg0_u64_);
+    std::swap(arg1_u64_, other->arg1_u64_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

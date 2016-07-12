@@ -26,10 +26,10 @@ const std::string TaskInstance::get_task_dir()
     return name;
 }
 
-void TaskInstance::finish(std::unique_ptr<Data> output)
+void TaskInstance::finish(std::shared_ptr<Data> &output)
 {
-    worker.publish_data(get_id(), std::move(output));
-    worker.task_finished(*this);
+   worker.publish_data(get_id(), output);
+   worker.task_finished(*this);
 }
 
 void TaskInstance::finish_without_data()
