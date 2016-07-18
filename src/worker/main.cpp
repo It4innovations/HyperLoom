@@ -114,15 +114,15 @@ int main(int argc, char **argv)
 
     // Basic
     worker.add_task_factory(
-                std::make_unique<SimpleTaskFactory<RunTask>>("run"));
+                std::make_unique<SimpleTaskFactory<RunTask>>("run/run"));
     worker.add_task_factory(
-                std::make_unique<SimpleTaskFactory<ConstTask>>("const"));
+                std::make_unique<SimpleTaskFactory<ConstTask>>("data/const"));
     worker.add_task_factory(
-                std::make_unique<SimpleTaskFactory<MergeTask>>("merge"));
+                std::make_unique<SimpleTaskFactory<MergeTask>>("data/merge"));
     worker.add_task_factory(
-                std::make_unique<SimpleTaskFactory<OpenTask>>("open"));
+                std::make_unique<SimpleTaskFactory<OpenTask>>("data/open"));
     worker.add_task_factory(
-                std::make_unique<SimpleTaskFactory<LineSplitTask>>("split_lines"));
+                std::make_unique<SimpleTaskFactory<LineSplitTask>>("data/split_lines"));
 
     // Arrays
     worker.add_task_factory(
