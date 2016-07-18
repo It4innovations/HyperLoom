@@ -43,6 +43,8 @@ public:
     virtual void start(DataVector &input_data) = 0;
 
 protected:
+    void fail(const std::string &error_msg);
+    void fail_libuv(const std::string &error_msg, int error_code);
     void finish(std::shared_ptr<Data> &output);
     void finish_without_data();
 

@@ -51,13 +51,21 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
     msg.ParseFromArray(buffer, size);
 
     const auto it = tasks.find(msg.id());
-    assert(it != tasks.end());   
+    assert(it != tasks.end());
     TaskNode *task = it->second;
     tasks.erase(it);
 
-    task->add_owner(this);
-    task->set_finished();
-    server.on_task_finished(*task);
+    if (msg.type() == loomcomm::WorkerResponse_Type_FINISH) {
+        task->add_owner(this);
+        task->set_finished();
+        server.on_task_finished(*task);
+        return;
+    }
+
+    if (msg.type() == loomcomm::WorkerResponse_Type_FAILED) {
+        assert(msg.has_error_msg());
+        server.inform_about_task_error(msg.id(), *this, msg.error_msg());
+    }
 }
 
 void WorkerConnection::on_close()

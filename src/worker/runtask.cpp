@@ -66,7 +66,6 @@ void RunTask::start(DataVector &inputs)
    stdio[1].flags = UV_IGNORE;
    options.stdio_count = 2;
 
-   llog->alert("{} {}", msg.map_inputs_size(), inputs.size());
    assert(msg.map_inputs_size() <= static_cast<int>(inputs.size()));
 
    for (int i = 0; i < msg.map_inputs_size(); i++) {
@@ -105,7 +104,8 @@ void RunTask::start(DataVector &inputs)
       }
    }
 
-   UV_CHECK(uv_spawn(worker.get_loop(), &process, &options));
+   int r;
+   r = uv_spawn(worker.get_loop(), &process, &options);
    process.data = this;
 
    /* Cleanup */
@@ -114,6 +114,11 @@ void RunTask::start(DataVector &inputs)
    }
    if (stdio[1].flags == UV_INHERIT_FD) {
       close(stdio[1].data.fd);
+   }
+
+   if (r) {
+       fail_libuv("uv_spawn", r);
+       return;
    }
 }
 

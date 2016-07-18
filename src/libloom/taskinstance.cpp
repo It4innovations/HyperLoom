@@ -26,6 +26,18 @@ const std::string TaskInstance::get_task_dir()
     return name;
 }
 
+void TaskInstance::fail(const std::string &error_msg)
+{
+    worker.task_failed(*this, error_msg);
+}
+
+void TaskInstance::fail_libuv(const std::string &error_msg, int error_code)
+{
+    std::stringstream s;
+    s << error_msg << ": " << uv_strerror(error_code);
+    fail(s.str());
+}
+
 void TaskInstance::finish(std::shared_ptr<Data> &output)
 {
    worker.publish_data(get_id(), output);

@@ -72,7 +72,6 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
     }
 
     for (auto &t : tasks) {
-        llog->alert("{} {}", t.second->get_id(), t.second->get_ref_counter());
         assert(t.second->get_ref_counter() > 0);
     }
 

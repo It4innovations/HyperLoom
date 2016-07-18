@@ -51,7 +51,15 @@ message WorkerCommand {
 }
 
 message WorkerResponse {
-	optional int32 id = 2;
+	enum Type {
+		FINISH = 1;
+		FAILED = 2;
+	}
+	required Type type = 1;
+	required int32 id = 2;
+
+	// FAILED
+	optional string error_msg = 3;
 }
 
 message Announce {
@@ -75,12 +83,20 @@ message Info {
 	required string worker = 2;
 }
 
+message Error {
+	required int32 id = 1;
+	required string worker = 2;
+	required string error_msg = 3;
+}
+
 message ClientMessage {
 	enum Type {
 		DATA = 1;
 		INFO = 2;
+		ERROR = 3;
 	}
 	required Type type = 1;
 	optional DataPrologue data = 2;
 	optional Info info = 3;
+	optional Error error = 4;
 }

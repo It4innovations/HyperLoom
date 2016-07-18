@@ -56,6 +56,9 @@ public:
         return dictionary;
     }
 
+    void inform_about_error(std::string &error_msg);
+    void inform_about_task_error(loom::Id id, WorkerConnection &wconn, const std::string &error_msg);
+
 private:
     void start_listen();
 

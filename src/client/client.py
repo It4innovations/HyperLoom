@@ -7,6 +7,20 @@ from plan import Task
 LOOM_PROTOCOL_VERSION = 1
 
 
+class LoomException(Exception):
+    pass
+
+
+class TaskFailed(LoomException):
+
+    def __init__(self, id, worker, error_msg):
+        self.id = id
+        self.worker = worker
+        self.error_msg = error_msg
+        message = "Task id={} failed: {}".format(id, error_msg)
+        LoomException.__init__(self, message)
+
+
 class Client(object):
 
     def __init__(self, address, port, info=False):
@@ -51,14 +65,20 @@ class Client(object):
             if cmsg.type == ClientMessage.DATA:
                 prologue = cmsg.data
                 data[prologue.id] = self._receive_data()
-            else:
-                assert cmsg.type == ClientMessage.INFO
+            elif cmsg.type == ClientMessage.INFO:
                 self.add_info(cmsg.info)
+            elif cmsg.type == ClientMessage.ERROR:
+                self.process_error(cmsg)
 
         if single_result:
             return data[results.id]
         else:
             return [data[task.id] for task in results]
+
+    def process_error(self, cmsg):
+        assert cmsg.HasField("error")
+        error = cmsg.error
+        raise TaskFailed(error.id, error.worker, error.error_msg)
 
     def add_info(self, info):
         self.info.append((info.id, info.worker))

@@ -160,7 +160,10 @@ void Worker::start_task(std::unique_ptr<Task> task)
 {
     llog->debug("Starting task id={} task_type={}", task->get_id(), task->get_task_type());
     auto i = task_factories.find(task->get_task_type());
-    assert(i != task_factories.end());
+    if (unlikely(i == task_factories.end())) {
+        llog->critical("Task with unknown type received");
+        exit(1);
+    }
     auto task_instance = i->second->make_instance(*this, std::move(task));
     TaskInstance *t = task_instance.get();
     active_tasks.push_back(std::move(task_instance));
@@ -349,10 +352,25 @@ void Worker::remove_task(TaskInstance &task)
     assert(0);
 }
 
+void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
+{
+    llog->error("Task id={} failed: {}", task.get_id(), error_msg);
+    if (server_conn.is_connected()) {
+        loomcomm::WorkerResponse msg;
+        msg.set_type(loomcomm::WorkerResponse_Type_FAILED);
+        msg.set_id(task.get_id());
+        msg.set_error_msg(error_msg);
+        server_conn.send_message(msg);
+    }
+    resource_cpus += 1;
+    remove_task(task);
+}
+
 void Worker::task_finished(TaskInstance &task)
 {
     if (server_conn.is_connected()) {
         loomcomm::WorkerResponse msg;
+        msg.set_type(loomcomm::WorkerResponse_Type_FINISH);
         msg.set_id(task.get_id());
         server_conn.send_message(msg);
     }

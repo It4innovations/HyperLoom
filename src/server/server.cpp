@@ -84,6 +84,32 @@ void Server::on_task_finished(TaskNode &task)
     task_manager.on_task_finished(task);
 }
 
+void Server::inform_about_error(std::string &error_msg)
+{
+
+}
+
+void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::string &error_msg)
+{
+    llog->error("Task id={} failed on worker {}: {}",
+                id, wconn.get_address(), error_msg);
+
+    loomcomm::ClientMessage msg;
+    msg.set_type(loomcomm::ClientMessage_Type_ERROR);
+    loomcomm::Error *error = msg.mutable_error();
+
+    error->set_id(id);
+    error->set_worker(wconn.get_address());
+    error->set_error_msg(error_msg);
+
+    if (client_connection) {
+        SendBuffer *buffer = new SendBuffer();
+        buffer->add(msg);
+        client_connection->send_buffer(buffer);
+    }
+    exit(1);
+}
+
 void Server::start_listen()
 {
     struct sockaddr_in addr;

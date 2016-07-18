@@ -40,6 +40,7 @@ class Announce;
 class DataPrologue;
 class Data;
 class Info;
+class Error;
 class ClientMessage;
 
 enum Register_Type {
@@ -70,13 +71,23 @@ const WorkerCommand_Type WorkerCommand_Type_Type_MIN = WorkerCommand_Type_TASK;
 const WorkerCommand_Type WorkerCommand_Type_Type_MAX = WorkerCommand_Type_DICTIONARY;
 const int WorkerCommand_Type_Type_ARRAYSIZE = WorkerCommand_Type_Type_MAX + 1;
 
+enum WorkerResponse_Type {
+  WorkerResponse_Type_FINISH = 1,
+  WorkerResponse_Type_FAILED = 2
+};
+bool WorkerResponse_Type_IsValid(int value);
+const WorkerResponse_Type WorkerResponse_Type_Type_MIN = WorkerResponse_Type_FINISH;
+const WorkerResponse_Type WorkerResponse_Type_Type_MAX = WorkerResponse_Type_FAILED;
+const int WorkerResponse_Type_Type_ARRAYSIZE = WorkerResponse_Type_Type_MAX + 1;
+
 enum ClientMessage_Type {
   ClientMessage_Type_DATA = 1,
-  ClientMessage_Type_INFO = 2
+  ClientMessage_Type_INFO = 2,
+  ClientMessage_Type_ERROR = 3
 };
 bool ClientMessage_Type_IsValid(int value);
 const ClientMessage_Type ClientMessage_Type_Type_MIN = ClientMessage_Type_DATA;
-const ClientMessage_Type ClientMessage_Type_Type_MAX = ClientMessage_Type_INFO;
+const ClientMessage_Type ClientMessage_Type_Type_MAX = ClientMessage_Type_ERROR;
 const int ClientMessage_Type_Type_ARRAYSIZE = ClientMessage_Type_Type_MAX + 1;
 
 // ===================================================================
@@ -590,25 +601,63 @@ class WorkerResponse : public ::google::protobuf::MessageLite {
 
   // nested types ----------------------------------------------------
 
+  typedef WorkerResponse_Type Type;
+  static const Type FINISH = WorkerResponse_Type_FINISH;
+  static const Type FAILED = WorkerResponse_Type_FAILED;
+  static inline bool Type_IsValid(int value) {
+    return WorkerResponse_Type_IsValid(value);
+  }
+  static const Type Type_MIN =
+    WorkerResponse_Type_Type_MIN;
+  static const Type Type_MAX =
+    WorkerResponse_Type_Type_MAX;
+  static const int Type_ARRAYSIZE =
+    WorkerResponse_Type_Type_ARRAYSIZE;
+
   // accessors -------------------------------------------------------
 
-  // optional int32 id = 2;
+  // required .loomcomm.WorkerResponse.Type type = 1;
+  inline bool has_type() const;
+  inline void clear_type();
+  static const int kTypeFieldNumber = 1;
+  inline ::loomcomm::WorkerResponse_Type type() const;
+  inline void set_type(::loomcomm::WorkerResponse_Type value);
+
+  // required int32 id = 2;
   inline bool has_id() const;
   inline void clear_id();
   static const int kIdFieldNumber = 2;
   inline ::google::protobuf::int32 id() const;
   inline void set_id(::google::protobuf::int32 value);
 
+  // optional string error_msg = 3;
+  inline bool has_error_msg() const;
+  inline void clear_error_msg();
+  static const int kErrorMsgFieldNumber = 3;
+  inline const ::std::string& error_msg() const;
+  inline void set_error_msg(const ::std::string& value);
+  inline void set_error_msg(const char* value);
+  inline void set_error_msg(const char* value, size_t size);
+  inline ::std::string* mutable_error_msg();
+  inline ::std::string* release_error_msg();
+  inline void set_allocated_error_msg(::std::string* error_msg);
+
   // @@protoc_insertion_point(class_scope:loomcomm.WorkerResponse)
  private:
+  inline void set_has_type();
+  inline void clear_has_type();
   inline void set_has_id();
   inline void clear_has_id();
+  inline void set_has_error_msg();
+  inline void clear_has_error_msg();
 
   ::std::string _unknown_fields_;
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
+  int type_;
   ::google::protobuf::int32 id_;
+  ::std::string* error_msg_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -1031,6 +1080,127 @@ class Info : public ::google::protobuf::MessageLite {
 };
 // -------------------------------------------------------------------
 
+class Error : public ::google::protobuf::MessageLite {
+ public:
+  Error();
+  virtual ~Error();
+
+  Error(const Error& from);
+
+  inline Error& operator=(const Error& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::std::string& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::std::string* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const Error& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const Error* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
+
+  void Swap(Error* other);
+
+  // implements Message ----------------------------------------------
+
+  Error* New() const;
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+  void CopyFrom(const Error& from);
+  void MergeFrom(const Error& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  void DiscardUnknownFields();
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::std::string GetTypeName() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required int32 id = 1;
+  inline bool has_id() const;
+  inline void clear_id();
+  static const int kIdFieldNumber = 1;
+  inline ::google::protobuf::int32 id() const;
+  inline void set_id(::google::protobuf::int32 value);
+
+  // required string worker = 2;
+  inline bool has_worker() const;
+  inline void clear_worker();
+  static const int kWorkerFieldNumber = 2;
+  inline const ::std::string& worker() const;
+  inline void set_worker(const ::std::string& value);
+  inline void set_worker(const char* value);
+  inline void set_worker(const char* value, size_t size);
+  inline ::std::string* mutable_worker();
+  inline ::std::string* release_worker();
+  inline void set_allocated_worker(::std::string* worker);
+
+  // required string error_msg = 3;
+  inline bool has_error_msg() const;
+  inline void clear_error_msg();
+  static const int kErrorMsgFieldNumber = 3;
+  inline const ::std::string& error_msg() const;
+  inline void set_error_msg(const ::std::string& value);
+  inline void set_error_msg(const char* value);
+  inline void set_error_msg(const char* value, size_t size);
+  inline ::std::string* mutable_error_msg();
+  inline ::std::string* release_error_msg();
+  inline void set_allocated_error_msg(::std::string* error_msg);
+
+  // @@protoc_insertion_point(class_scope:loomcomm.Error)
+ private:
+  inline void set_has_id();
+  inline void clear_has_id();
+  inline void set_has_worker();
+  inline void clear_has_worker();
+  inline void set_has_error_msg();
+  inline void clear_has_error_msg();
+
+  ::std::string _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::std::string* worker_;
+  ::std::string* error_msg_;
+  ::google::protobuf::int32 id_;
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
+  #else
+  friend void  protobuf_AddDesc_loomcomm_2eproto();
+  #endif
+  friend void protobuf_AssignDesc_loomcomm_2eproto();
+  friend void protobuf_ShutdownFile_loomcomm_2eproto();
+
+  void InitAsDefaultInstance();
+  static Error* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class ClientMessage : public ::google::protobuf::MessageLite {
  public:
   ClientMessage();
@@ -1093,6 +1263,7 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   typedef ClientMessage_Type Type;
   static const Type DATA = ClientMessage_Type_DATA;
   static const Type INFO = ClientMessage_Type_INFO;
+  static const Type ERROR = ClientMessage_Type_ERROR;
   static inline bool Type_IsValid(int value) {
     return ClientMessage_Type_IsValid(value);
   }
@@ -1130,6 +1301,15 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   inline ::loomcomm::Info* release_info();
   inline void set_allocated_info(::loomcomm::Info* info);
 
+  // optional .loomcomm.Error error = 4;
+  inline bool has_error() const;
+  inline void clear_error();
+  static const int kErrorFieldNumber = 4;
+  inline const ::loomcomm::Error& error() const;
+  inline ::loomcomm::Error* mutable_error();
+  inline ::loomcomm::Error* release_error();
+  inline void set_allocated_error(::loomcomm::Error* error);
+
   // @@protoc_insertion_point(class_scope:loomcomm.ClientMessage)
  private:
   inline void set_has_type();
@@ -1138,6 +1318,8 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   inline void clear_has_data();
   inline void set_has_info();
   inline void clear_has_info();
+  inline void set_has_error();
+  inline void clear_has_error();
 
   ::std::string _unknown_fields_;
 
@@ -1145,6 +1327,7 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   mutable int _cached_size_;
   ::loomcomm::DataPrologue* data_;
   ::loomcomm::Info* info_;
+  ::loomcomm::Error* error_;
   int type_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
@@ -1684,15 +1867,40 @@ WorkerCommand::mutable_symbols() {
 
 // WorkerResponse
 
-// optional int32 id = 2;
-inline bool WorkerResponse::has_id() const {
+// required .loomcomm.WorkerResponse.Type type = 1;
+inline bool WorkerResponse::has_type() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void WorkerResponse::set_has_id() {
+inline void WorkerResponse::set_has_type() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void WorkerResponse::clear_has_id() {
+inline void WorkerResponse::clear_has_type() {
   _has_bits_[0] &= ~0x00000001u;
+}
+inline void WorkerResponse::clear_type() {
+  type_ = 1;
+  clear_has_type();
+}
+inline ::loomcomm::WorkerResponse_Type WorkerResponse::type() const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerResponse.type)
+  return static_cast< ::loomcomm::WorkerResponse_Type >(type_);
+}
+inline void WorkerResponse::set_type(::loomcomm::WorkerResponse_Type value) {
+  assert(::loomcomm::WorkerResponse_Type_IsValid(value));
+  set_has_type();
+  type_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerResponse.type)
+}
+
+// required int32 id = 2;
+inline bool WorkerResponse::has_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void WorkerResponse::set_has_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void WorkerResponse::clear_has_id() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void WorkerResponse::clear_id() {
   id_ = 0;
@@ -1706,6 +1914,82 @@ inline void WorkerResponse::set_id(::google::protobuf::int32 value) {
   set_has_id();
   id_ = value;
   // @@protoc_insertion_point(field_set:loomcomm.WorkerResponse.id)
+}
+
+// optional string error_msg = 3;
+inline bool WorkerResponse::has_error_msg() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void WorkerResponse::set_has_error_msg() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void WorkerResponse::clear_has_error_msg() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void WorkerResponse::clear_error_msg() {
+  if (error_msg_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_->clear();
+  }
+  clear_has_error_msg();
+}
+inline const ::std::string& WorkerResponse::error_msg() const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerResponse.error_msg)
+  return *error_msg_;
+}
+inline void WorkerResponse::set_error_msg(const ::std::string& value) {
+  set_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_ = new ::std::string;
+  }
+  error_msg_->assign(value);
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerResponse.error_msg)
+}
+inline void WorkerResponse::set_error_msg(const char* value) {
+  set_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_ = new ::std::string;
+  }
+  error_msg_->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomcomm.WorkerResponse.error_msg)
+}
+inline void WorkerResponse::set_error_msg(const char* value, size_t size) {
+  set_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_ = new ::std::string;
+  }
+  error_msg_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.WorkerResponse.error_msg)
+}
+inline ::std::string* WorkerResponse::mutable_error_msg() {
+  set_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:loomcomm.WorkerResponse.error_msg)
+  return error_msg_;
+}
+inline ::std::string* WorkerResponse::release_error_msg() {
+  clear_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = error_msg_;
+    error_msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void WorkerResponse::set_allocated_error_msg(::std::string* error_msg) {
+  if (error_msg_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete error_msg_;
+  }
+  if (error_msg) {
+    set_has_error_msg();
+    error_msg_ = error_msg;
+  } else {
+    clear_has_error_msg();
+    error_msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:loomcomm.WorkerResponse.error_msg)
 }
 
 // -------------------------------------------------------------------
@@ -1970,6 +2254,186 @@ inline void Info::set_allocated_worker(::std::string* worker) {
 
 // -------------------------------------------------------------------
 
+// Error
+
+// required int32 id = 1;
+inline bool Error::has_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void Error::set_has_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void Error::clear_has_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void Error::clear_id() {
+  id_ = 0;
+  clear_has_id();
+}
+inline ::google::protobuf::int32 Error::id() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Error.id)
+  return id_;
+}
+inline void Error::set_id(::google::protobuf::int32 value) {
+  set_has_id();
+  id_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Error.id)
+}
+
+// required string worker = 2;
+inline bool Error::has_worker() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void Error::set_has_worker() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void Error::clear_has_worker() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void Error::clear_worker() {
+  if (worker_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    worker_->clear();
+  }
+  clear_has_worker();
+}
+inline const ::std::string& Error::worker() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Error.worker)
+  return *worker_;
+}
+inline void Error::set_worker(const ::std::string& value) {
+  set_has_worker();
+  if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    worker_ = new ::std::string;
+  }
+  worker_->assign(value);
+  // @@protoc_insertion_point(field_set:loomcomm.Error.worker)
+}
+inline void Error::set_worker(const char* value) {
+  set_has_worker();
+  if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    worker_ = new ::std::string;
+  }
+  worker_->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomcomm.Error.worker)
+}
+inline void Error::set_worker(const char* value, size_t size) {
+  set_has_worker();
+  if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    worker_ = new ::std::string;
+  }
+  worker_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.Error.worker)
+}
+inline ::std::string* Error::mutable_worker() {
+  set_has_worker();
+  if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    worker_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:loomcomm.Error.worker)
+  return worker_;
+}
+inline ::std::string* Error::release_worker() {
+  clear_has_worker();
+  if (worker_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = worker_;
+    worker_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void Error::set_allocated_worker(::std::string* worker) {
+  if (worker_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete worker_;
+  }
+  if (worker) {
+    set_has_worker();
+    worker_ = worker;
+  } else {
+    clear_has_worker();
+    worker_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:loomcomm.Error.worker)
+}
+
+// required string error_msg = 3;
+inline bool Error::has_error_msg() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void Error::set_has_error_msg() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void Error::clear_has_error_msg() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void Error::clear_error_msg() {
+  if (error_msg_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_->clear();
+  }
+  clear_has_error_msg();
+}
+inline const ::std::string& Error::error_msg() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Error.error_msg)
+  return *error_msg_;
+}
+inline void Error::set_error_msg(const ::std::string& value) {
+  set_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_ = new ::std::string;
+  }
+  error_msg_->assign(value);
+  // @@protoc_insertion_point(field_set:loomcomm.Error.error_msg)
+}
+inline void Error::set_error_msg(const char* value) {
+  set_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_ = new ::std::string;
+  }
+  error_msg_->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomcomm.Error.error_msg)
+}
+inline void Error::set_error_msg(const char* value, size_t size) {
+  set_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_ = new ::std::string;
+  }
+  error_msg_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.Error.error_msg)
+}
+inline ::std::string* Error::mutable_error_msg() {
+  set_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    error_msg_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:loomcomm.Error.error_msg)
+  return error_msg_;
+}
+inline ::std::string* Error::release_error_msg() {
+  clear_has_error_msg();
+  if (error_msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = error_msg_;
+    error_msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void Error::set_allocated_error_msg(::std::string* error_msg) {
+  if (error_msg_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete error_msg_;
+  }
+  if (error_msg) {
+    set_has_error_msg();
+    error_msg_ = error_msg;
+  } else {
+    clear_has_error_msg();
+    error_msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:loomcomm.Error.error_msg)
+}
+
+// -------------------------------------------------------------------
+
 // ClientMessage
 
 // required .loomcomm.ClientMessage.Type type = 1;
@@ -2085,6 +2549,51 @@ inline void ClientMessage::set_allocated_info(::loomcomm::Info* info) {
     clear_has_info();
   }
   // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientMessage.info)
+}
+
+// optional .loomcomm.Error error = 4;
+inline bool ClientMessage::has_error() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ClientMessage::set_has_error() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ClientMessage::clear_has_error() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ClientMessage::clear_error() {
+  if (error_ != NULL) error_->::loomcomm::Error::Clear();
+  clear_has_error();
+}
+inline const ::loomcomm::Error& ClientMessage::error() const {
+  // @@protoc_insertion_point(field_get:loomcomm.ClientMessage.error)
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return error_ != NULL ? *error_ : *default_instance().error_;
+#else
+  return error_ != NULL ? *error_ : *default_instance_->error_;
+#endif
+}
+inline ::loomcomm::Error* ClientMessage::mutable_error() {
+  set_has_error();
+  if (error_ == NULL) error_ = new ::loomcomm::Error;
+  // @@protoc_insertion_point(field_mutable:loomcomm.ClientMessage.error)
+  return error_;
+}
+inline ::loomcomm::Error* ClientMessage::release_error() {
+  clear_has_error();
+  ::loomcomm::Error* temp = error_;
+  error_ = NULL;
+  return temp;
+}
+inline void ClientMessage::set_allocated_error(::loomcomm::Error* error) {
+  delete error_;
+  error_ = error;
+  if (error) {
+    set_has_error();
+  } else {
+    clear_has_error();
+  }
+  // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientMessage.error)
 }
 
 
