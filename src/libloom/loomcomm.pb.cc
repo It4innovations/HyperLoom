@@ -1143,6 +1143,8 @@ const int WorkerResponse::Type_ARRAYSIZE;
 #ifndef _MSC_VER
 const int WorkerResponse::kTypeFieldNumber;
 const int WorkerResponse::kIdFieldNumber;
+const int WorkerResponse::kSizeFieldNumber;
+const int WorkerResponse::kLengthFieldNumber;
 const int WorkerResponse::kErrorMsgFieldNumber;
 #endif  // !_MSC_VER
 
@@ -1167,6 +1169,8 @@ void WorkerResponse::SharedCtor() {
   _cached_size_ = 0;
   type_ = 1;
   id_ = 0;
+  size_ = GOOGLE_ULONGLONG(0);
+  length_ = GOOGLE_ULONGLONG(0);
   error_msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -1209,15 +1213,29 @@ WorkerResponse* WorkerResponse::New() const {
 }
 
 void WorkerResponse::Clear() {
-  if (_has_bits_[0 / 32] & 7) {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<WorkerResponse*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  if (_has_bits_[0 / 32] & 31) {
+    ZR_(id_, length_);
     type_ = 1;
-    id_ = 0;
     if (has_error_msg()) {
       if (error_msg_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         error_msg_->clear();
       }
     }
   }
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->clear();
 }
@@ -1232,7 +1250,7 @@ bool WorkerResponse::MergePartialFromCodedStream(
       &unknown_fields_string);
   // @@protoc_insertion_point(parse_start:loomcomm.WorkerResponse)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1267,13 +1285,43 @@ bool WorkerResponse::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_error_msg;
+        if (input->ExpectTag(24)) goto parse_size;
         break;
       }
 
-      // optional string error_msg = 3;
+      // optional uint64 size = 3;
       case 3: {
-        if (tag == 26) {
+        if (tag == 24) {
+         parse_size:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &size_)));
+          set_has_size();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(32)) goto parse_length;
+        break;
+      }
+
+      // optional uint64 length = 4;
+      case 4: {
+        if (tag == 32) {
+         parse_length:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &length_)));
+          set_has_length();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(802)) goto parse_error_msg;
+        break;
+      }
+
+      // optional string error_msg = 100;
+      case 100: {
+        if (tag == 802) {
          parse_error_msg:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_error_msg()));
@@ -1320,10 +1368,20 @@ void WorkerResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->id(), output);
   }
 
-  // optional string error_msg = 3;
+  // optional uint64 size = 3;
+  if (has_size()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->size(), output);
+  }
+
+  // optional uint64 length = 4;
+  if (has_length()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->length(), output);
+  }
+
+  // optional string error_msg = 100;
   if (has_error_msg()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      3, this->error_msg(), output);
+      100, this->error_msg(), output);
   }
 
   output->WriteRaw(unknown_fields().data(),
@@ -1348,9 +1406,23 @@ int WorkerResponse::ByteSize() const {
           this->id());
     }
 
-    // optional string error_msg = 3;
-    if (has_error_msg()) {
+    // optional uint64 size = 3;
+    if (has_size()) {
       total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->size());
+    }
+
+    // optional uint64 length = 4;
+    if (has_length()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->length());
+    }
+
+    // optional string error_msg = 100;
+    if (has_error_msg()) {
+      total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->error_msg());
     }
@@ -1378,6 +1450,12 @@ void WorkerResponse::MergeFrom(const WorkerResponse& from) {
     if (from.has_id()) {
       set_id(from.id());
     }
+    if (from.has_size()) {
+      set_size(from.size());
+    }
+    if (from.has_length()) {
+      set_length(from.length());
+    }
     if (from.has_error_msg()) {
       set_error_msg(from.error_msg());
     }
@@ -1401,6 +1479,8 @@ void WorkerResponse::Swap(WorkerResponse* other) {
   if (other != this) {
     std::swap(type_, other->type_);
     std::swap(id_, other->id_);
+    std::swap(size_, other->size_);
+    std::swap(length_, other->length_);
     std::swap(error_msg_, other->error_msg_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
@@ -1848,6 +1928,8 @@ void DataPrologue::Swap(DataPrologue* other) {
 
 #ifndef _MSC_VER
 const int Data::kTypeIdFieldNumber;
+const int Data::kSizeFieldNumber;
+const int Data::kLengthFieldNumber;
 const int Data::kArg0U64FieldNumber;
 const int Data::kArg1U64FieldNumber;
 #endif  // !_MSC_VER
@@ -1871,6 +1953,8 @@ Data::Data(const Data& from)
 void Data::SharedCtor() {
   _cached_size_ = 0;
   type_id_ = 0;
+  size_ = GOOGLE_ULONGLONG(0);
+  length_ = GOOGLE_ULONGLONG(0);
   arg0_u64_ = GOOGLE_ULONGLONG(0);
   arg1_u64_ = GOOGLE_ULONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1921,7 +2005,9 @@ void Data::Clear() {
     ::memset(&first, 0, n);                                \
   } while (0)
 
-  ZR_(arg0_u64_, type_id_);
+  if (_has_bits_[0 / 32] & 31) {
+    ZR_(size_, type_id_);
+  }
 
 #undef OFFSET_OF_FIELD_
 #undef ZR_
@@ -1954,13 +2040,43 @@ bool Data::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(16)) goto parse_arg0_u64;
+        if (input->ExpectTag(16)) goto parse_size;
         break;
       }
 
-      // optional uint64 arg0_u64 = 2;
+      // required uint64 size = 2;
       case 2: {
         if (tag == 16) {
+         parse_size:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &size_)));
+          set_has_size();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(24)) goto parse_length;
+        break;
+      }
+
+      // optional uint64 length = 3;
+      case 3: {
+        if (tag == 24) {
+         parse_length:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &length_)));
+          set_has_length();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(64)) goto parse_arg0_u64;
+        break;
+      }
+
+      // optional uint64 arg0_u64 = 8;
+      case 8: {
+        if (tag == 64) {
          parse_arg0_u64:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
@@ -1969,13 +2085,13 @@ bool Data::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(24)) goto parse_arg1_u64;
+        if (input->ExpectTag(72)) goto parse_arg1_u64;
         break;
       }
 
-      // optional uint64 arg1_u64 = 3;
-      case 3: {
-        if (tag == 24) {
+      // optional uint64 arg1_u64 = 9;
+      case 9: {
+        if (tag == 72) {
          parse_arg1_u64:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
@@ -2018,14 +2134,24 @@ void Data::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->type_id(), output);
   }
 
-  // optional uint64 arg0_u64 = 2;
-  if (has_arg0_u64()) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->arg0_u64(), output);
+  // required uint64 size = 2;
+  if (has_size()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->size(), output);
   }
 
-  // optional uint64 arg1_u64 = 3;
+  // optional uint64 length = 3;
+  if (has_length()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->length(), output);
+  }
+
+  // optional uint64 arg0_u64 = 8;
+  if (has_arg0_u64()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(8, this->arg0_u64(), output);
+  }
+
+  // optional uint64 arg1_u64 = 9;
   if (has_arg1_u64()) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->arg1_u64(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(9, this->arg1_u64(), output);
   }
 
   output->WriteRaw(unknown_fields().data(),
@@ -2044,14 +2170,28 @@ int Data::ByteSize() const {
           this->type_id());
     }
 
-    // optional uint64 arg0_u64 = 2;
+    // required uint64 size = 2;
+    if (has_size()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->size());
+    }
+
+    // optional uint64 length = 3;
+    if (has_length()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->length());
+    }
+
+    // optional uint64 arg0_u64 = 8;
     if (has_arg0_u64()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->arg0_u64());
     }
 
-    // optional uint64 arg1_u64 = 3;
+    // optional uint64 arg1_u64 = 9;
     if (has_arg1_u64()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
@@ -2078,6 +2218,12 @@ void Data::MergeFrom(const Data& from) {
     if (from.has_type_id()) {
       set_type_id(from.type_id());
     }
+    if (from.has_size()) {
+      set_size(from.size());
+    }
+    if (from.has_length()) {
+      set_length(from.length());
+    }
     if (from.has_arg0_u64()) {
       set_arg0_u64(from.arg0_u64());
     }
@@ -2095,7 +2241,7 @@ void Data::CopyFrom(const Data& from) {
 }
 
 bool Data::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
 
   return true;
 }
@@ -2103,6 +2249,8 @@ bool Data::IsInitialized() const {
 void Data::Swap(Data* other) {
   if (other != this) {
     std::swap(type_id_, other->type_id_);
+    std::swap(size_, other->size_);
+    std::swap(length_, other->length_);
     std::swap(arg0_u64_, other->arg0_u64_);
     std::swap(arg1_u64_, other->arg1_u64_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);

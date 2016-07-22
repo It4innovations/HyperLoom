@@ -57,7 +57,7 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
 
     if (msg.type() == loomcomm::WorkerResponse_Type_FINISH) {
         task->add_owner(this);
-        task->set_finished();
+        task->set_finished(msg.size(), msg.length());
         server.on_task_finished(*task);
         return;
     }

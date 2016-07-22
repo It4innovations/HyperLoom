@@ -58,8 +58,12 @@ message WorkerResponse {
 	required Type type = 1;
 	required int32 id = 2;
 
+	// FINISHED
+	optional uint64 size = 3;
+	optional uint64 length = 4;
+
 	// FAILED
-	optional string error_msg = 3;
+	optional string error_msg = 100;
 }
 
 message Announce {
@@ -74,8 +78,10 @@ message DataPrologue {
 message Data
 {
 	required int32 type_id = 1;
-	optional uint64 arg0_u64 = 2;
-	optional uint64 arg1_u64 = 3;
+	required uint64 size = 2;
+	optional uint64 length = 3;
+	optional uint64 arg0_u64 = 8;
+	optional uint64 arg1_u64 = 9;
 }
 
 message Info {

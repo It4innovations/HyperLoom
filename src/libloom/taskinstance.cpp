@@ -40,11 +40,8 @@ void TaskInstance::fail_libuv(const std::string &error_msg, int error_code)
 
 void TaskInstance::finish(std::shared_ptr<Data> &output)
 {
+   assert(output);
    worker.publish_data(get_id(), output);
-   worker.task_finished(*this);
-}
-
-void TaskInstance::finish_without_data()
-{
-    worker.task_finished(*this);
+   assert(output);
+   worker.task_finished(*this, *output);
 }

@@ -25,7 +25,6 @@ public:
     std::shared_ptr<Data>& get_at_index(size_t index);
 
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
-    void init_message(Worker &worker, loomcomm::Data &msg) const;
 
 private:
     size_t length;

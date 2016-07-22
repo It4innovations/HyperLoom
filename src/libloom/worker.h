@@ -62,7 +62,7 @@ public:
         return true;
     }
 
-    void task_finished(TaskInstance &task_instance);
+    void task_finished(TaskInstance &task_instance, Data &data);
     void task_failed(TaskInstance &task_instance, const std::string &error_msg);
     void publish_data(Id id, std::shared_ptr<Data> &data);
     void remove_data(Id id);
@@ -115,7 +115,7 @@ public:
     void check_ready_tasks();
 
     void set_cpus(int value);
-    void add_unpacker(DataTypeId type_id, std::unique_ptr<UnpackFactory> factory);    
+    void add_unpacker(DataTypeId type_id, std::unique_ptr<UnpackFactory> factory);
     std::unique_ptr<DataUnpacker> unpack(DataTypeId id);
 
     Dictionary& get_dictionary() {
@@ -128,7 +128,7 @@ private:
     void register_worker();
     void start_listen();
 
-    void remove_task(TaskInstance &task);    
+    void remove_task(TaskInstance &task);
     void start_task(std::unique_ptr<Task> task);
     //int get_listen_port();
 

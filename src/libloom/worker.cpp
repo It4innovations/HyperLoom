@@ -190,7 +190,7 @@ void Worker::start_task(std::unique_ptr<Task> task)
 void Worker::publish_data(Id id, std::shared_ptr<Data> &data)
 {
     llog->debug("Publishing data id={} size={}", id, data->get_size());
-    public_data[id] = std::move(data);
+    public_data[id] = data;
     check_waiting_tasks();
 }
 
@@ -309,7 +309,7 @@ void Worker::add_unpacker(DataTypeId type_id, std::unique_ptr<UnpackFactory> fac
 
 std::unique_ptr<DataUnpacker> Worker::unpack(DataTypeId id)
 {
-    auto i = unpack_factories.find(id);    
+    auto i = unpack_factories.find(id);
     assert(i != unpack_factories.end());
     return i->second->make_unpacker();
 }
@@ -366,12 +366,14 @@ void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
     remove_task(task);
 }
 
-void Worker::task_finished(TaskInstance &task)
+void Worker::task_finished(TaskInstance &task, Data &data)
 {
     if (server_conn.is_connected()) {
         loomcomm::WorkerResponse msg;
         msg.set_type(loomcomm::WorkerResponse_Type_FINISH);
         msg.set_id(task.get_id());
+        msg.set_size(data.get_size());
+        msg.set_length(data.get_length());
         server_conn.send_message(msg);
     }
     resource_cpus += 1;

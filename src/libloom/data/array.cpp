@@ -42,11 +42,6 @@ void loom::Array::serialize_data(loom::Worker &worker, loom::SendBuffer &buffer,
    }
 }
 
-void loom::Array::init_message(loom::Worker &worker, loomcomm::Data &msg) const
-{
-   msg.set_arg0_u64(length);
-}
-
 loom::ArrayUnpacker::~ArrayUnpacker()
 {
 
@@ -54,9 +49,8 @@ loom::ArrayUnpacker::~ArrayUnpacker()
 
 bool loom::ArrayUnpacker::init(loom::Worker &worker, loom::Connection &connection, const loomcomm::Data &msg)
 {
-   assert(msg.has_arg0_u64());
+   length = msg.length();
    index = 0;
-   length = msg.arg0_u64();
    items = std::make_unique<std::shared_ptr<Data>[]>(length);
    if (length == 0) {
       finish();

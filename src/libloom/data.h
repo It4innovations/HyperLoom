@@ -21,9 +21,9 @@ public:
     virtual ~Data();
 
     virtual int get_type_id() = 0;
-
     virtual size_t get_size() = 0;
     virtual std::string get_info() = 0;
+    virtual size_t get_length() const;
 
     void serialize(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
     virtual void init_message(Worker &worker, loomcomm::Data &msg) const;

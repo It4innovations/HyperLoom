@@ -138,11 +138,6 @@ std::string RawData::get_info()
    return "RawData";
 }
 
-void RawData::init_message(Worker &worker, loomcomm::Data &msg) const
-{
-   msg.set_arg0_u64(size);
-}
-
 void RawData::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
     buffer.add(data_ptr, get_raw_data(worker), size);
@@ -157,8 +152,7 @@ bool RawDataUnpacker::init(Worker &worker, Connection &connection, const loomcom
 {
     this->data = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*this->data);
-    assert(msg.has_arg0_u64());
-    auto size = msg.arg0_u64();
+    size_t size = msg.size();
     pointer = data.init_empty_file(worker, size);
     if (size == 0) {
         return true;

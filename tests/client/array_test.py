@@ -4,15 +4,18 @@ loom_env  # silence flake8
 
 
 def test_make_array(loom_env):
+    loom_env.start(1)
+
     p = loom_env.plan()
     a = p.task_const("ABC")
     b = p.task_const("123456")
     c = p.task_const("")
     d = p.task_array_make((a, b, c))
+
     e0 = p.task_array_get(d, 0)
     e1 = p.task_array_get(d, 1)
     e2 = p.task_array_get(d, 2)
-    loom_env.start(1)
+    
     result_d, result_e0, result_e1, result_e2 = \
         loom_env.submit(p, (d, e0, e1, e2))
     assert result_d == ["ABC", "123456", ""]

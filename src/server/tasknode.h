@@ -22,7 +22,10 @@ public:
     };
 
     TaskNode(loom::Id id, int task_type, const std::string &config)
-        : state(WAITING), id(id), ref_count(0), task_type(task_type), config(config) {}
+        : state(WAITING), id(id), ref_count(0), task_type(task_type),
+          config(config),
+          size(0), length(0)
+    {}
 
     bool is_ready() {
         assert(state == WAITING);
@@ -95,9 +98,11 @@ public:
         return std::find(owners.begin(), owners.end(), &wconn) != owners.end();
     }
 
-    void set_finished() {
+    void set_finished(size_t size, size_t length) {
         assert(state == RUNNING);
         state = FINISHED;
+        this->size = size;
+        this->length = length;
     }
 
     const Vector& get_inputs() {
@@ -114,6 +119,9 @@ private:
     std::string config;
 
     std::vector<WorkerConnection*> owners;
+
+    size_t size;
+    size_t length;
 };
 
 

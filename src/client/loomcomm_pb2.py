@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='loomcomm.proto',
   package='loomcomm',
-  serialized_pb=_b('\n\x0eloomcomm.proto\x12\x08loomcomm\"\xbb\x01\n\x08Register\x12\x18\n\x10protocol_version\x18\x01 \x02(\x05\x12%\n\x04type\x18\x02 \x02(\x0e\x32\x17.loomcomm.Register.Type\x12\x0c\n\x04port\x18\x03 \x01(\x05\x12\x12\n\ntask_types\x18\x04 \x03(\t\x12\x0c\n\x04\x63pus\x18\x05 \x01(\x05\x12\x0c\n\x04info\x18\n \x01(\x08\"0\n\x04Type\x12\x13\n\x0fREGISTER_WORKER\x10\x01\x12\x13\n\x0fREGISTER_CLIENT\x10\x02\"&\n\rServerMessage\"\x15\n\x04Type\x12\r\n\tSTART_JOB\x10\x01\"\xf1\x01\n\rWorkerCommand\x12*\n\x04type\x18\x01 \x02(\x0e\x32\x1c.loomcomm.WorkerCommand.Type\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x11\n\ttask_type\x18\x03 \x01(\x05\x12\x13\n\x0btask_config\x18\x04 \x01(\t\x12\x13\n\x0btask_inputs\x18\x05 \x03(\x05\x12\x0f\n\x07\x61\x64\x64ress\x18\n \x01(\t\x12\x11\n\twith_size\x18\x0b \x01(\x08\x12\x0f\n\x07symbols\x18\x64 \x03(\t\"6\n\x04Type\x12\x08\n\x04TASK\x10\x01\x12\x08\n\x04SEND\x10\x02\x12\n\n\x06REMOVE\x10\x03\x12\x0e\n\nDICTIONARY\x10\x04\"|\n\x0eWorkerResponse\x12+\n\x04type\x18\x01 \x02(\x0e\x32\x1d.loomcomm.WorkerResponse.Type\x12\n\n\x02id\x18\x02 \x02(\x05\x12\x11\n\terror_msg\x18\x03 \x01(\t\"\x1e\n\x04Type\x12\n\n\x06\x46INISH\x10\x01\x12\n\n\x06\x46\x41ILED\x10\x02\"\x18\n\x08\x41nnounce\x12\x0c\n\x04port\x18\x01 \x02(\x05\"-\n\x0c\x44\x61taPrologue\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x11\n\tdata_size\x18\x03 \x01(\x04\";\n\x04\x44\x61ta\x12\x0f\n\x07type_id\x18\x01 \x02(\x05\x12\x10\n\x08\x61rg0_u64\x18\x02 \x01(\x04\x12\x10\n\x08\x61rg1_u64\x18\x03 \x01(\x04\"\"\n\x04Info\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x0e\n\x06worker\x18\x02 \x02(\t\"6\n\x05\x45rror\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x0e\n\x06worker\x18\x02 \x02(\t\x12\x11\n\terror_msg\x18\x03 \x02(\t\"\xc6\x01\n\rClientMessage\x12*\n\x04type\x18\x01 \x02(\x0e\x32\x1c.loomcomm.ClientMessage.Type\x12$\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x16.loomcomm.DataPrologue\x12\x1c\n\x04info\x18\x03 \x01(\x0b\x32\x0e.loomcomm.Info\x12\x1e\n\x05\x65rror\x18\x04 \x01(\x0b\x32\x0f.loomcomm.Error\"%\n\x04Type\x12\x08\n\x04\x44\x41TA\x10\x01\x12\x08\n\x04INFO\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x42\x02H\x03')
+  serialized_pb=_b('\n\x0eloomcomm.proto\x12\x08loomcomm\"\xbb\x01\n\x08Register\x12\x18\n\x10protocol_version\x18\x01 \x02(\x05\x12%\n\x04type\x18\x02 \x02(\x0e\x32\x17.loomcomm.Register.Type\x12\x0c\n\x04port\x18\x03 \x01(\x05\x12\x12\n\ntask_types\x18\x04 \x03(\t\x12\x0c\n\x04\x63pus\x18\x05 \x01(\x05\x12\x0c\n\x04info\x18\n \x01(\x08\"0\n\x04Type\x12\x13\n\x0fREGISTER_WORKER\x10\x01\x12\x13\n\x0fREGISTER_CLIENT\x10\x02\"&\n\rServerMessage\"\x15\n\x04Type\x12\r\n\tSTART_JOB\x10\x01\"\xf1\x01\n\rWorkerCommand\x12*\n\x04type\x18\x01 \x02(\x0e\x32\x1c.loomcomm.WorkerCommand.Type\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x11\n\ttask_type\x18\x03 \x01(\x05\x12\x13\n\x0btask_config\x18\x04 \x01(\t\x12\x13\n\x0btask_inputs\x18\x05 \x03(\x05\x12\x0f\n\x07\x61\x64\x64ress\x18\n \x01(\t\x12\x11\n\twith_size\x18\x0b \x01(\x08\x12\x0f\n\x07symbols\x18\x64 \x03(\t\"6\n\x04Type\x12\x08\n\x04TASK\x10\x01\x12\x08\n\x04SEND\x10\x02\x12\n\n\x06REMOVE\x10\x03\x12\x0e\n\nDICTIONARY\x10\x04\"\x9a\x01\n\x0eWorkerResponse\x12+\n\x04type\x18\x01 \x02(\x0e\x32\x1d.loomcomm.WorkerResponse.Type\x12\n\n\x02id\x18\x02 \x02(\x05\x12\x0c\n\x04size\x18\x03 \x01(\x04\x12\x0e\n\x06length\x18\x04 \x01(\x04\x12\x11\n\terror_msg\x18\x64 \x01(\t\"\x1e\n\x04Type\x12\n\n\x06\x46INISH\x10\x01\x12\n\n\x06\x46\x41ILED\x10\x02\"\x18\n\x08\x41nnounce\x12\x0c\n\x04port\x18\x01 \x02(\x05\"-\n\x0c\x44\x61taPrologue\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x11\n\tdata_size\x18\x03 \x01(\x04\"Y\n\x04\x44\x61ta\x12\x0f\n\x07type_id\x18\x01 \x02(\x05\x12\x0c\n\x04size\x18\x02 \x02(\x04\x12\x0e\n\x06length\x18\x03 \x01(\x04\x12\x10\n\x08\x61rg0_u64\x18\x08 \x01(\x04\x12\x10\n\x08\x61rg1_u64\x18\t \x01(\x04\"\"\n\x04Info\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x0e\n\x06worker\x18\x02 \x02(\t\"6\n\x05\x45rror\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x0e\n\x06worker\x18\x02 \x02(\t\x12\x11\n\terror_msg\x18\x03 \x02(\t\"\xc6\x01\n\rClientMessage\x12*\n\x04type\x18\x01 \x02(\x0e\x32\x1c.loomcomm.ClientMessage.Type\x12$\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x16.loomcomm.DataPrologue\x12\x1c\n\x04info\x18\x03 \x01(\x0b\x32\x0e.loomcomm.Info\x12\x1e\n\x05\x65rror\x18\x04 \x01(\x0b\x32\x0f.loomcomm.Error\"%\n\x04Type\x12\x08\n\x04\x44\x41TA\x10\x01\x12\x08\n\x04INFO\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x42\x02H\x03')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -111,8 +111,8 @@ _WORKERRESPONSE_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=596,
-  serialized_end=626,
+  serialized_start=627,
+  serialized_end=657,
 )
 _sym_db.RegisterEnumDescriptor(_WORKERRESPONSE_TYPE)
 
@@ -137,8 +137,8 @@ _CLIENTMESSAGE_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1016,
-  serialized_end=1053,
+  serialized_start=1077,
+  serialized_end=1114,
 )
 _sym_db.RegisterEnumDescriptor(_CLIENTMESSAGE_TYPE)
 
@@ -335,8 +335,22 @@ _WORKERRESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='error_msg', full_name='loomcomm.WorkerResponse.error_msg', index=2,
-      number=3, type=9, cpp_type=9, label=1,
+      name='size', full_name='loomcomm.WorkerResponse.size', index=2,
+      number=3, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='length', full_name='loomcomm.WorkerResponse.length', index=3,
+      number=4, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='error_msg', full_name='loomcomm.WorkerResponse.error_msg', index=4,
+      number=100, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -353,8 +367,8 @@ _WORKERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=502,
-  serialized_end=626,
+  serialized_start=503,
+  serialized_end=657,
 )
 
 
@@ -383,8 +397,8 @@ _ANNOUNCE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=628,
-  serialized_end=652,
+  serialized_start=659,
+  serialized_end=683,
 )
 
 
@@ -420,8 +434,8 @@ _DATAPROLOGUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=654,
-  serialized_end=699,
+  serialized_start=685,
+  serialized_end=730,
 )
 
 
@@ -440,15 +454,29 @@ _DATA = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='arg0_u64', full_name='loomcomm.Data.arg0_u64', index=1,
-      number=2, type=4, cpp_type=4, label=1,
+      name='size', full_name='loomcomm.Data.size', index=1,
+      number=2, type=4, cpp_type=4, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='arg1_u64', full_name='loomcomm.Data.arg1_u64', index=2,
+      name='length', full_name='loomcomm.Data.length', index=2,
       number=3, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='arg0_u64', full_name='loomcomm.Data.arg0_u64', index=3,
+      number=8, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='arg1_u64', full_name='loomcomm.Data.arg1_u64', index=4,
+      number=9, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -464,8 +492,8 @@ _DATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=701,
-  serialized_end=760,
+  serialized_start=732,
+  serialized_end=821,
 )
 
 
@@ -501,8 +529,8 @@ _INFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=762,
-  serialized_end=796,
+  serialized_start=823,
+  serialized_end=857,
 )
 
 
@@ -545,8 +573,8 @@ _ERROR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=798,
-  serialized_end=852,
+  serialized_start=859,
+  serialized_end=913,
 )
 
 
@@ -597,8 +625,8 @@ _CLIENTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=855,
-  serialized_end=1053,
+  serialized_start=916,
+  serialized_end=1114,
 )
 
 _REGISTER.fields_by_name['type'].enum_type = _REGISTER_TYPE

@@ -630,10 +630,24 @@ class WorkerResponse : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 id() const;
   inline void set_id(::google::protobuf::int32 value);
 
-  // optional string error_msg = 3;
+  // optional uint64 size = 3;
+  inline bool has_size() const;
+  inline void clear_size();
+  static const int kSizeFieldNumber = 3;
+  inline ::google::protobuf::uint64 size() const;
+  inline void set_size(::google::protobuf::uint64 value);
+
+  // optional uint64 length = 4;
+  inline bool has_length() const;
+  inline void clear_length();
+  static const int kLengthFieldNumber = 4;
+  inline ::google::protobuf::uint64 length() const;
+  inline void set_length(::google::protobuf::uint64 value);
+
+  // optional string error_msg = 100;
   inline bool has_error_msg() const;
   inline void clear_error_msg();
-  static const int kErrorMsgFieldNumber = 3;
+  static const int kErrorMsgFieldNumber = 100;
   inline const ::std::string& error_msg() const;
   inline void set_error_msg(const ::std::string& value);
   inline void set_error_msg(const char* value);
@@ -648,6 +662,10 @@ class WorkerResponse : public ::google::protobuf::MessageLite {
   inline void clear_has_type();
   inline void set_has_id();
   inline void clear_has_id();
+  inline void set_has_size();
+  inline void clear_has_size();
+  inline void set_has_length();
+  inline void clear_has_length();
   inline void set_has_error_msg();
   inline void clear_has_error_msg();
 
@@ -657,6 +675,8 @@ class WorkerResponse : public ::google::protobuf::MessageLite {
   mutable int _cached_size_;
   int type_;
   ::google::protobuf::int32 id_;
+  ::google::protobuf::uint64 size_;
+  ::google::protobuf::uint64 length_;
   ::std::string* error_msg_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
@@ -931,17 +951,31 @@ class Data : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 type_id() const;
   inline void set_type_id(::google::protobuf::int32 value);
 
-  // optional uint64 arg0_u64 = 2;
+  // required uint64 size = 2;
+  inline bool has_size() const;
+  inline void clear_size();
+  static const int kSizeFieldNumber = 2;
+  inline ::google::protobuf::uint64 size() const;
+  inline void set_size(::google::protobuf::uint64 value);
+
+  // optional uint64 length = 3;
+  inline bool has_length() const;
+  inline void clear_length();
+  static const int kLengthFieldNumber = 3;
+  inline ::google::protobuf::uint64 length() const;
+  inline void set_length(::google::protobuf::uint64 value);
+
+  // optional uint64 arg0_u64 = 8;
   inline bool has_arg0_u64() const;
   inline void clear_arg0_u64();
-  static const int kArg0U64FieldNumber = 2;
+  static const int kArg0U64FieldNumber = 8;
   inline ::google::protobuf::uint64 arg0_u64() const;
   inline void set_arg0_u64(::google::protobuf::uint64 value);
 
-  // optional uint64 arg1_u64 = 3;
+  // optional uint64 arg1_u64 = 9;
   inline bool has_arg1_u64() const;
   inline void clear_arg1_u64();
-  static const int kArg1U64FieldNumber = 3;
+  static const int kArg1U64FieldNumber = 9;
   inline ::google::protobuf::uint64 arg1_u64() const;
   inline void set_arg1_u64(::google::protobuf::uint64 value);
 
@@ -949,6 +983,10 @@ class Data : public ::google::protobuf::MessageLite {
  private:
   inline void set_has_type_id();
   inline void clear_has_type_id();
+  inline void set_has_size();
+  inline void clear_has_size();
+  inline void set_has_length();
+  inline void clear_has_length();
   inline void set_has_arg0_u64();
   inline void clear_has_arg0_u64();
   inline void set_has_arg1_u64();
@@ -958,6 +996,8 @@ class Data : public ::google::protobuf::MessageLite {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
+  ::google::protobuf::uint64 size_;
+  ::google::protobuf::uint64 length_;
   ::google::protobuf::uint64 arg0_u64_;
   ::google::protobuf::uint64 arg1_u64_;
   ::google::protobuf::int32 type_id_;
@@ -1916,15 +1956,63 @@ inline void WorkerResponse::set_id(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:loomcomm.WorkerResponse.id)
 }
 
-// optional string error_msg = 3;
-inline bool WorkerResponse::has_error_msg() const {
+// optional uint64 size = 3;
+inline bool WorkerResponse::has_size() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void WorkerResponse::set_has_error_msg() {
+inline void WorkerResponse::set_has_size() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void WorkerResponse::clear_has_error_msg() {
+inline void WorkerResponse::clear_has_size() {
   _has_bits_[0] &= ~0x00000004u;
+}
+inline void WorkerResponse::clear_size() {
+  size_ = GOOGLE_ULONGLONG(0);
+  clear_has_size();
+}
+inline ::google::protobuf::uint64 WorkerResponse::size() const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerResponse.size)
+  return size_;
+}
+inline void WorkerResponse::set_size(::google::protobuf::uint64 value) {
+  set_has_size();
+  size_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerResponse.size)
+}
+
+// optional uint64 length = 4;
+inline bool WorkerResponse::has_length() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void WorkerResponse::set_has_length() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void WorkerResponse::clear_has_length() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void WorkerResponse::clear_length() {
+  length_ = GOOGLE_ULONGLONG(0);
+  clear_has_length();
+}
+inline ::google::protobuf::uint64 WorkerResponse::length() const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerResponse.length)
+  return length_;
+}
+inline void WorkerResponse::set_length(::google::protobuf::uint64 value) {
+  set_has_length();
+  length_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerResponse.length)
+}
+
+// optional string error_msg = 100;
+inline bool WorkerResponse::has_error_msg() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void WorkerResponse::set_has_error_msg() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void WorkerResponse::clear_has_error_msg() {
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void WorkerResponse::clear_error_msg() {
   if (error_msg_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
@@ -2100,15 +2188,63 @@ inline void Data::set_type_id(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:loomcomm.Data.type_id)
 }
 
-// optional uint64 arg0_u64 = 2;
-inline bool Data::has_arg0_u64() const {
+// required uint64 size = 2;
+inline bool Data::has_size() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Data::set_has_arg0_u64() {
+inline void Data::set_has_size() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void Data::clear_has_arg0_u64() {
+inline void Data::clear_has_size() {
   _has_bits_[0] &= ~0x00000002u;
+}
+inline void Data::clear_size() {
+  size_ = GOOGLE_ULONGLONG(0);
+  clear_has_size();
+}
+inline ::google::protobuf::uint64 Data::size() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Data.size)
+  return size_;
+}
+inline void Data::set_size(::google::protobuf::uint64 value) {
+  set_has_size();
+  size_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Data.size)
+}
+
+// optional uint64 length = 3;
+inline bool Data::has_length() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void Data::set_has_length() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void Data::clear_has_length() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void Data::clear_length() {
+  length_ = GOOGLE_ULONGLONG(0);
+  clear_has_length();
+}
+inline ::google::protobuf::uint64 Data::length() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Data.length)
+  return length_;
+}
+inline void Data::set_length(::google::protobuf::uint64 value) {
+  set_has_length();
+  length_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Data.length)
+}
+
+// optional uint64 arg0_u64 = 8;
+inline bool Data::has_arg0_u64() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void Data::set_has_arg0_u64() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void Data::clear_has_arg0_u64() {
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void Data::clear_arg0_u64() {
   arg0_u64_ = GOOGLE_ULONGLONG(0);
@@ -2124,15 +2260,15 @@ inline void Data::set_arg0_u64(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:loomcomm.Data.arg0_u64)
 }
 
-// optional uint64 arg1_u64 = 3;
+// optional uint64 arg1_u64 = 9;
 inline bool Data::has_arg1_u64() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void Data::set_has_arg1_u64() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void Data::clear_has_arg1_u64() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void Data::clear_arg1_u64() {
   arg1_u64_ = GOOGLE_ULONGLONG(0);

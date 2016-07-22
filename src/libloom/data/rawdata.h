@@ -28,8 +28,7 @@ public:
         return data;
     }
 
-    std::string get_info();    
-    void init_message(Worker &worker, loomcomm::Data &msg) const;
+    std::string get_info();
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
     //char* init_memonly(size_t size);

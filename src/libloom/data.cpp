@@ -8,11 +8,20 @@ Data::~Data() {
 
 }
 
+size_t Data::get_length() const
+{
+    return 0;
+}
+
 void Data::serialize(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
     loomcomm::Data msg;
     msg.set_type_id(get_type_id());
-    //msg.set_size(get_size());
+    msg.set_size(get_size());
+    auto length = get_length();
+    if (length) {
+        msg.set_length(length);
+    }
     init_message(worker, msg);
     buffer.add(msg);
     serialize_data(worker, buffer, data_ptr);
