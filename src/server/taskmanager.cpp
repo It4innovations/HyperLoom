@@ -27,17 +27,19 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
     }
 
     auto task_size = plan.tasks_size();
+    int id_base = server.new_id(task_size);
     for (int i = 0; i < task_size; i++) {
         const auto& pt = plan.tasks(i);
-        tasks[i] = std::make_unique<TaskNode>(
-            i, type_task_translation[pt.task_type()], pt.config());
+        auto id = i + id_base;
+        tasks[id] = std::make_unique<TaskNode>(
+            id, i, type_task_translation[pt.task_type()], pt.config());
     }
 
     std::vector<TaskNode*> ready_tasks;
 
     for (int i = 0; i < task_size; i++) {
         const auto& pt = plan.tasks(i);
-        auto& t = tasks[i];
+        auto& t = tasks[id_base + i];
         auto inputs_size = pt.input_ids_size();
 
         if (inputs_size == 0) {
@@ -47,7 +49,7 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
 
         for (int j = 0; j < inputs_size; j++) {
             auto id = pt.input_ids(j);
-            auto &task = tasks[id];
+            auto &task = tasks[id_base + id];
             t->add_input(task.get());
             task->inc_ref_counter();
 
@@ -67,6 +69,8 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
     for (int i = 0; i < plan.result_ids_size(); i++)
     {        
         auto id = plan.result_ids(i);
+        assert (0 <= id && id < task_size);
+        id = id_base + id;
         tasks[id]->inc_ref_counter();
         results.insert(id);
     }

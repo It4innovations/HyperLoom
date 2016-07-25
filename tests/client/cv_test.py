@@ -43,4 +43,4 @@ def test_cv_iris(loom_env):
         for line in results:
             assert line.startswith("Accuracy = ")
 
-        p.write_dot("test.dot", loom_env.client.info)
+        #p.write_dot("test.dot", loom_env.client.info)

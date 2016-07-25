@@ -168,21 +168,15 @@ def test_open_and_splitlines(loom_env):
 
     p = loom_env.plan()
     a = p.task_open(FILE2)
-    c = p.task_split_lines(a, 2, 6)
-    result = loom_env.submit(p, c)
-    expect = "\n".join("Line {}".format(i) for i in xrange(3, 7)) + "\n"
-    assert result == expect
+    c1 = p.task_split_lines(a, 2, 6)
+    c2 = p.task_split_lines(a, 0, 6)
+    c3 = p.task_split_lines(a, 3, 60)
+    result1, result2, result3 = loom_env.submit(p, [c1,c2,c3])
+    expect1 = "\n".join("Line {}".format(i) for i in xrange(3, 7)) + "\n"
+    assert result1 == expect1
 
-    p = loom_env.plan()
-    a = p.task_open(FILE2)
-    c = p.task_split_lines(a, 0, 6)
-    result = loom_env.submit(p, c)
-    expect = "\n".join("Line {}".format(i) for i in xrange(1, 7)) + "\n"
-    assert result == expect
+    expect2 = "\n".join("Line {}".format(i) for i in xrange(1, 7)) + "\n"
+    assert result2 == expect2
 
-    p = loom_env.plan()
-    a = p.task_open(FILE2)
-    c = p.task_split_lines(a, 3, 60)
-    result = loom_env.submit(p, c)
-    expect = "\n".join("Line {}".format(i) for i in xrange(4, 13)) + "\n"
-    assert result == expect
+    expect3 = "\n".join("Line {}".format(i) for i in xrange(4, 13)) + "\n"
+    assert result3 == expect3

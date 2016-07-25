@@ -14,8 +14,8 @@ Server::Server(uv_loop_t *loop, int port)
     : loop(loop),
       listen_port(port),
       task_manager(*this),
-      dummy_worker(*this)
-
+      dummy_worker(*this),
+      id_counter(1)
 {
     if (loop != NULL) {
         UV_CHECK(uv_tcp_init(loop, &listen_socket));

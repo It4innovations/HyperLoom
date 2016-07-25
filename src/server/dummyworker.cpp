@@ -81,6 +81,11 @@ void DWConnection::on_message(const char *buffer, size_t size)
     loomcomm::DataPrologue msg;
     msg.ParseFromArray(buffer, size);
 
+    auto data_id = msg.id();
+    TaskNode &node = worker.server.get_task_manager().get_task(data_id);
+    auto client_id = node.get_client_id();
+    msg.set_id(client_id);
+
     loomcomm::ClientMessage cmsg;
     cmsg.set_type(loomcomm::ClientMessage_Type_DATA);
     *cmsg.mutable_data() = msg;
@@ -89,8 +94,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
 
     assert(msg.has_data_size());
     size_t data_size = msg.data_size();
-    auto data_id = msg.id();
-    llog->debug("Fetching data id={} data_size={}", data_id, data_size);
+    llog->debug("Fetching data id={} data_size={} client_id={}", data_id, data_size, client_id);
 
     auto mem = std::make_unique<char[]>(data_size);
     pointer = mem.get();

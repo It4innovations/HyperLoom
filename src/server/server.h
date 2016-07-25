@@ -59,6 +59,12 @@ public:
     void inform_about_error(std::string &error_msg);
     void inform_about_task_error(loom::Id id, WorkerConnection &wconn, const std::string &error_msg);
 
+    loom::Id new_id(int count = 1) {
+        auto id = id_counter;
+        id_counter += count;
+        return id;
+    }
+
 private:
     void start_listen();
 
@@ -76,6 +82,7 @@ private:
     TaskManager task_manager;
     DummyWorker dummy_worker;
 
+    loom::Id id_counter;
     loom::Dictionary dictionary;
 
     static void _on_new_connection(uv_stream_t *stream, int status);

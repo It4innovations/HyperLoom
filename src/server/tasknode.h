@@ -21,10 +21,10 @@ public:
         FINISHED
     };
 
-    TaskNode(loom::Id id, int task_type, const std::string &config)
+    TaskNode(loom::Id id, loom::Id client_id, int task_type, const std::string &config)
         : state(WAITING), id(id), ref_count(0), task_type(task_type),
           config(config),
-          size(0), length(0)
+          size(0), length(0), client_id(client_id)
     {}
 
     bool is_ready() {
@@ -78,6 +78,10 @@ public:
         return id;
     }
 
+    loom::Id get_client_id() const {
+        return client_id;
+    }
+
     loom::TaskId get_task_type() const {
         return task_type;
     }
@@ -122,6 +126,8 @@ private:
 
     size_t size;
     size_t length;
+
+    loom::Id client_id;
 };
 
 
