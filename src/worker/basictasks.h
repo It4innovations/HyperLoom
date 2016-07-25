@@ -3,7 +3,7 @@
 
 #include "libloom/taskinstance.h"
 
-class ConstTask : public loom::TaskInstance
+class GetTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
@@ -11,28 +11,11 @@ public:
 };
 
 
-class MergeTask : public loom::TaskInstance
+class SliceTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
     void start(loom::DataVector &inputs);
 };
-
-
-class OpenTask : public loom::TaskInstance
-{
-public:
-    using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
-};
-
-
-class LineSplitTask : public loom::TaskInstance
-{
-public:
-    using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
-};
-
 
 #endif // LOOM_WORKER_BASICTASKS_H

@@ -4,18 +4,20 @@
 #include "../worker.h"
 #include "../log.h"
 
-loom::Array::Array(size_t length, std::unique_ptr<std::shared_ptr<Data>[]> items)
+using namespace loom;
+
+Array::Array(size_t length, std::unique_ptr<std::shared_ptr<Data>[]> items)
    : length(length), items(std::move(items))
 {
 
 }
 
-loom::Array::~Array()
+Array::~Array()
 {
     llog->debug("Disposing array");
 }
 
-size_t loom::Array::get_size()
+size_t Array::get_size()
 {
    size_t size = 0;
    for (size_t i = 0; i < length; i++) {
@@ -24,30 +26,62 @@ size_t loom::Array::get_size()
    return size;
 }
 
-std::string loom::Array::get_info()
+std::string Array::get_info()
 {
-   return "Array";
+    return "Array";
 }
 
-std::shared_ptr<loom::Data>& loom::Array::get_at_index(size_t index)
+std::shared_ptr<Data> Array::get_slice(size_t from, size_t to)
+{
+    if (from > length) {
+        from = length;
+    }
+
+    if (to > length) {
+        to = length;
+    }
+
+    size_t size;
+    if (from >= to) {
+        size = 0;
+    } else {
+        size = to - from;
+    }
+
+    auto items = std::make_unique<std::shared_ptr<Data>[]>(size);
+
+    size_t j = 0;
+    for (size_t i = from; i < to; i++, j++) {
+        items[j] = this->items[i];
+    }
+    return std::make_shared<Array>(size, std::move(items));
+}
+
+std::shared_ptr<Data> &Array::get_ref_at_index(size_t index)
+{
+    assert(index < length);
+    return items[index];
+}
+
+std::shared_ptr<Data> Array::get_at_index(size_t index)
 {
    assert(index < length);
    return items[index];
 }
 
-void loom::Array::serialize_data(loom::Worker &worker, loom::SendBuffer &buffer, std::shared_ptr<loom::Data> &data_ptr)
+void Array::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
    for (size_t i = 0; i < length; i++) {
       items[i]->serialize(worker, buffer, items[i]);
    }
 }
 
-loom::ArrayUnpacker::~ArrayUnpacker()
+ArrayUnpacker::~ArrayUnpacker()
 {
 
 }
 
-bool loom::ArrayUnpacker::init(loom::Worker &worker, loom::Connection &connection, const loomcomm::Data &msg)
+bool ArrayUnpacker::init(Worker &worker, Connection &connection, const loomcomm::Data &msg)
 {
    length = msg.length();
    index = 0;
@@ -61,7 +95,7 @@ bool loom::ArrayUnpacker::init(loom::Worker &worker, loom::Connection &connectio
    }
 }
 
-bool loom::ArrayUnpacker::on_message(loom::Connection &connection, const char *data, size_t size)
+bool ArrayUnpacker::on_message(Connection &connection, const char *data, size_t size)
 {
    if (unpacker) {
       bool r = unpacker->on_message(connection, data, size);
@@ -80,12 +114,12 @@ bool loom::ArrayUnpacker::on_message(loom::Connection &connection, const char *d
    }
 }
 
-void loom::ArrayUnpacker::on_data_chunk(const char *data, size_t size)
+void ArrayUnpacker::on_data_chunk(const char *data, size_t size)
 {
    unpacker->on_data_chunk(data, size);;
 }
 
-bool loom::ArrayUnpacker::on_data_finish(loom::Connection &connection)
+bool ArrayUnpacker::on_data_finish(Connection &connection)
 {
    bool r = unpacker->on_data_finish(connection);
    if (r) {
@@ -94,12 +128,12 @@ bool loom::ArrayUnpacker::on_data_finish(loom::Connection &connection)
    return false;
 }
 
-void loom::ArrayUnpacker::finish()
+void ArrayUnpacker::finish()
 {
    data = std::make_shared<Array>(length, std::move(items));
 }
 
-bool loom::ArrayUnpacker::finish_data()
+bool ArrayUnpacker::finish_data()
 {
    items[index] = unpacker->get_data();
    unpacker.reset();

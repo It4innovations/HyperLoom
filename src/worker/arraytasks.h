@@ -10,13 +10,4 @@ public:
     void start(loom::DataVector &inputs);
 };
 
-
-class ArrayGetTask : public loom::TaskInstance
-{
-public:
-    using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
-};
-
-
 #endif // LOOM_WORKER_ARRAYTASKS_H

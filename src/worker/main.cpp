@@ -1,6 +1,7 @@
 
 #include "runtask.h"
 #include "basictasks.h"
+#include "rawdatatasks.h"
 #include "arraytasks.h"
 
 #include "libloom/worker.h"
@@ -112,9 +113,13 @@ int main(int argc, char **argv)
                         config.work_dir);
     loom::llog->info("Worker started; listening on port {}", worker.get_listen_port());
 
-    // Basic
+    // Base
     worker.add_task_factory(
-                std::make_unique<SimpleTaskFactory<RunTask>>("run/run"));
+                std::make_unique<SimpleTaskFactory<GetTask>>("base/get"));
+    worker.add_task_factory(
+                std::make_unique<SimpleTaskFactory<SliceTask>>("base/slice"));
+
+    // RawData
     worker.add_task_factory(
                 std::make_unique<SimpleTaskFactory<ConstTask>>("data/const"));
     worker.add_task_factory(
@@ -127,8 +132,10 @@ int main(int argc, char **argv)
     // Arrays
     worker.add_task_factory(
                 std::make_unique<SimpleTaskFactory<ArrayMakeTask>>("array/make"));
+
+    // Run
     worker.add_task_factory(
-                std::make_unique<SimpleTaskFactory<ArrayGetTask>>("array/get"));
+                std::make_unique<SimpleTaskFactory<RunTask>>("run/run"));
 
     worker.set_cpus(config.cpus);
     uv_run(&loop, UV_RUN_DEFAULT);

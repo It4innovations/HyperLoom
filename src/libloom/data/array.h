@@ -22,7 +22,10 @@ public:
 
     size_t get_size();
     std::string get_info();
-    std::shared_ptr<Data>& get_at_index(size_t index);
+    std::shared_ptr<Data> get_at_index(size_t index);
+    std::shared_ptr<Data> get_slice(size_t from, size_t to);
+
+    std::shared_ptr<Data>& get_ref_at_index(size_t index);
 
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 

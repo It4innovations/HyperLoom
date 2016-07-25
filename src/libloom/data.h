@@ -24,6 +24,8 @@ public:
     virtual size_t get_size() = 0;
     virtual std::string get_info() = 0;
     virtual size_t get_length() const;
+    virtual std::shared_ptr<Data> get_at_index(size_t index);
+    virtual std::shared_ptr<Data> get_slice(size_t from, size_t to);
 
     void serialize(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
     virtual void init_message(Worker &worker, loomcomm::Data &msg) const;

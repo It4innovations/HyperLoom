@@ -13,6 +13,16 @@ size_t Data::get_length() const
     return 0;
 }
 
+std::shared_ptr<Data> Data::get_at_index(size_t index)
+{
+    assert(0);
+}
+
+std::shared_ptr<Data> Data::get_slice(size_t from, size_t to)
+{
+    assert(0);
+}
+
 void Data::serialize(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
     loomcomm::Data msg;

@@ -28,14 +28,19 @@ class Task(object):
 
 class Plan(object):
 
+    TASK_BASE_GET = "base/get"
+    TASK_BASE_SLICE = "base/slice"
+
     TASK_DATA_CONST = "data/const"
     TASK_DATA_MERGE = "data/merge"
     TASK_DATA_OPEN = "data/open"
     TASK_DATA_SPLIT_LINES = "data/split_lines"
 
     TASK_ARRAY_MAKE = "array/make"
-    TASK_ARRAY_GET = "array/get"
+
     TASK_RUN = "run/run"
+
+    TASK_SCHEDULER_DSLICE = "scheduler/dslice"
 
     u64 = struct.Struct("<Q")
     u64u64 = struct.Struct("<QQ")
@@ -50,6 +55,12 @@ class Plan(object):
         self.tasks.append(task)
         self.task_types.add(task.task_type)
         return task
+
+    def task_dslice(self, input):
+        task = Task()
+        task.task_type = self.TASK_SCHEDULER_DSLICE
+        task.inputs = (input,)
+        return self.add(task)
 
     def task_const(self, data):
         task = Task()
@@ -103,11 +114,18 @@ class Plan(object):
         task.inputs = inputs
         return self.add(task)
 
-    def task_array_get(self, input, index):
+    def task_get(self, input, index):
         task = Task()
-        task.task_type = self.TASK_ARRAY_GET
+        task.task_type = self.TASK_BASE_GET
         task.inputs = (input,)
         task.config = self.u64.pack(index)
+        return self.add(task)
+
+    def task_slice(self, input, start, end):
+        task = Task()
+        task.task_type = self.TASK_BASE_SLICE
+        task.inputs = (input,)
+        task.config = self.u64u64.pack(start, end)
         return self.add(task)
 
     def create_message(self):

@@ -6,6 +6,8 @@ add_executable(loom-worker
                runtask.h
                basictasks.cpp
                basictasks.h
+               rawdatatasks.cpp
+               rawdatatasks.h
                arraytasks.cpp
                arraytasks.h
                main.cpp)
