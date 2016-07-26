@@ -58,7 +58,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
     if (data_id > 0) {
         assert(data_unpacker.get() == nullptr);
         loomcomm::Data msg;
-        msg.ParseFromArray(buffer, size);
+        assert(msg.ParseFromArray(buffer, size));
         data_unpacker = worker.unpack(msg.type_id());
         if (data_unpacker->init(worker, connection, msg)) {
             finish_data();
@@ -66,7 +66,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
         return;
     } else if (address.size()) {
         loomcomm::DataPrologue msg;
-        msg.ParseFromArray(buffer, size);
+        assert(msg.ParseFromArray(buffer, size));
         auto id = msg.id();
         data_id = id;
         if (msg.has_data_size()) {
@@ -77,7 +77,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
     } else {
         // First message
         loomcomm::Announce msg;
-        msg.ParseFromArray(buffer, size);
+        assert(msg.ParseFromArray(buffer, size));
         std::stringstream s;
         address = make_address(connection.get_peername(), msg.port());
         llog->debug("Interconnection from worker {} accepted", address);

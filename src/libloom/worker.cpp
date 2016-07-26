@@ -5,6 +5,7 @@
 #include "types.h"
 #include "data/rawdata.h"
 #include "data/array.h"
+#include "data/index.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -71,6 +72,8 @@ Worker::Worker(uv_loop_t *loop,
     add_unpacker(Array::TYPE_ID,
                  std::make_unique<SimpleUnpackFactory<ArrayUnpacker>>());
 
+    add_unpacker(Index::TYPE_ID,
+                 std::make_unique<SimpleUnpackFactory<IndexUnpacker>>());
 
     resource_cpus = 1;
 }

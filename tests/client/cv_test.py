@@ -15,11 +15,11 @@ def test_cv_iris(loom_env):
         loom_env.info = True
 
         p = loom_env.plan()
-        a = p.task_open(IRIS_DATA)
+        data = p.task_open(IRIS_DATA)
+        data = p.task_run(("sort", "--random-sort", "-"), [(data, None)])
+        lines = p.task_split(data)
 
-        b = p.task_run(("sort", "--random-sort", "-"), [(a, None)])
-
-        chunks = [p.task_split_lines(b, i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+        chunks = [p.task_slice(lines, i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
                   for i in xrange(CHUNKS)]
 
         trainsets = [p.task_merge(chunks[:i] + chunks[i + 1:])

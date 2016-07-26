@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     worker.add_task_factory(
                 std::make_unique<SimpleTaskFactory<OpenTask>>("data/open"));
     worker.add_task_factory(
-                std::make_unique<SimpleTaskFactory<LineSplitTask>>("data/split_lines"));
+                std::make_unique<SimpleTaskFactory<SplitTask>>("data/split"));
 
     // Arrays
     worker.add_task_factory(

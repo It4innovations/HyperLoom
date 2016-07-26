@@ -8,7 +8,7 @@ Data::~Data() {
 
 }
 
-size_t Data::get_length() const
+size_t Data::get_length()
 {
     return 0;
 }

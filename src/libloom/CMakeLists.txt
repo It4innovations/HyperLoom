@@ -6,6 +6,8 @@ add_library(libloom
             data/rawdata.cpp
             data/array.h
             data/array.cpp
+            data/index.h
+            data/index.cpp
             connection.cpp
             connection.h
             worker.cpp

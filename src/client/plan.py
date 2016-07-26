@@ -34,7 +34,7 @@ class Plan(object):
     TASK_DATA_CONST = "data/const"
     TASK_DATA_MERGE = "data/merge"
     TASK_DATA_OPEN = "data/open"
-    TASK_DATA_SPLIT_LINES = "data/split_lines"
+    TASK_DATA_SPLIT = "data/split"
 
     TASK_ARRAY_MAKE = "array/make"
 
@@ -80,10 +80,9 @@ class Plan(object):
         task.config = filename
         return self.add(task)
 
-    def task_split_lines(self, input, start, end):
+    def task_split(self, input, char=None):
         task = Task()
-        task.task_type = self.TASK_DATA_SPLIT_LINES
-        task.config = self.u64u64.pack(start, end)
+        task.task_type = self.TASK_DATA_SPLIT
         task.inputs = (input,)
         return self.add(task)
 

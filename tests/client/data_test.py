@@ -168,9 +168,10 @@ def test_open_and_splitlines(loom_env):
 
     p = loom_env.plan()
     a = p.task_open(FILE2)
-    c1 = p.task_split_lines(a, 2, 6)
-    c2 = p.task_split_lines(a, 0, 6)
-    c3 = p.task_split_lines(a, 3, 60)
+    lines = p.task_split(a)
+    c1 = p.task_slice(lines, 2, 6)
+    c2 = p.task_slice(lines, 0, 6)
+    c3 = p.task_slice(lines, 3, 60)
     result1, result2, result3 = loom_env.submit(p, [c1,c2,c3])
     expect1 = "\n".join("Line {}".format(i) for i in xrange(3, 7)) + "\n"
     assert result1 == expect1
@@ -180,3 +181,23 @@ def test_open_and_splitlines(loom_env):
 
     expect3 = "\n".join("Line {}".format(i) for i in xrange(4, 13)) + "\n"
     assert result3 == expect3
+
+
+def test_split(loom_env):
+    loom_env.start(1)
+    text = "Line1\nLine2\nLine3\nLine4"
+    p = loom_env.plan()
+
+    a = p.task_const(text)
+    b = p.task_split(a)
+    c = p.task_get(b, 1)
+    d = p.task_get(b, 3)
+    e = p.task_slice(b, 0, 2)
+    f = p.task_slice(b, 10, 20)
+
+    r1, r2, r3, r4 = loom_env.submit(p, (c, d, e, f))
+
+    assert r1 == "Line2\n"
+    assert r2 == "Line4"
+    assert r3 == "Line1\nLine2\n"
+    assert r4 == ""

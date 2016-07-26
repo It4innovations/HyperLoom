@@ -105,7 +105,7 @@ bool ArrayUnpacker::on_message(Connection &connection, const char *data, size_t 
       return false;
    }
    loomcomm::Data msg;
-   msg.ParseFromArray(data, size);
+   assert(msg.ParseFromArray(data, size));
    unpacker = worker->unpack(msg.type_id());
    if (unpacker->init(*worker, connection, msg)) {
        return finish_data();
