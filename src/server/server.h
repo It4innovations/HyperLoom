@@ -68,8 +68,8 @@ public:
 private:
     void start_listen();
 
+    loom::Dictionary dictionary;
     uv_loop_t *loop;
-
     std::vector<std::unique_ptr<WorkerConnection>> connections;
 
     std::vector<std::unique_ptr<FreshConnection>> fresh_connections;
@@ -83,8 +83,6 @@ private:
     DummyWorker dummy_worker;
 
     loom::Id id_counter;
-    loom::Dictionary dictionary;
-
     static void _on_new_connection(uv_stream_t *stream, int status);
 };
 

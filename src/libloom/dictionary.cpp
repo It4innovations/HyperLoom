@@ -30,6 +30,16 @@ Id Dictionary::find_or_create(const std::string &symbol)
     }
 }
 
+const std::string& Dictionary::translate(Id id)
+{
+    for (auto &i : symbol_to_id) {
+        if (i.second == id) {
+            return i.first;
+        }
+    }
+    assert(0);
+}
+
 std::vector<std::string> Dictionary::get_all_symbols() const
 {
     std::vector<std::string> symbols;

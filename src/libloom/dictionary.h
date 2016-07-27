@@ -16,6 +16,7 @@ public:
 
     loom::Id lookup_symbol(const std::string &symbol);
     loom::Id find_or_create(const std::string &symbol);
+    const std::string& translate(loom::Id id);
 
     std::vector<std::string> get_all_symbols() const;
 

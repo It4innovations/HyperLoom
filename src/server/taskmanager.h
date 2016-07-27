@@ -41,13 +41,18 @@ public:
         return *tasks[id];
     }
 
+
 private:    
     Server &server;
     std::unordered_map<loom::Id, std::unique_ptr<TaskNode>> tasks;
     std::unordered_set<loom::Id> results;
     std::vector<std::string> task_types;
 
+    loom::Id dslice_task_id;
+    loom::Id slice_task_id;
+
     void distribute_work(TaskNode::Vector &tasks);
+    void expand_dslice(TaskNode *node, TaskNode::Vector &tasks);
 };
 
 

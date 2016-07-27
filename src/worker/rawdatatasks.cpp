@@ -71,3 +71,4 @@ void SplitTask::start(DataVector &inputs)
     std::shared_ptr<Data> result = std::make_shared<Index>(worker, input, indices.size() - 1, std::move(indices_data));
     finish(result);
 }
+

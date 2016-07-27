@@ -9,6 +9,7 @@
 #include <assert.h>
 
 class WorkerConnection;
+class Server;
 
 class TaskNode {
 public:
@@ -46,6 +47,10 @@ public:
         }
     }
 
+    void set_inputs(const TaskNode::Vector &inputs) {
+        this->inputs = inputs;
+    }
+
     void add_input(TaskNode *task) {
         inputs.push_back(task);
     }
@@ -54,8 +59,8 @@ public:
         nexts.push_back(task);
     }
 
-    void inc_ref_counter() {
-        ref_count += 1;
+    void inc_ref_counter(int count = 1) {
+        ref_count += count;
     }
 
     bool dec_ref_counter() {
@@ -109,9 +114,23 @@ public:
         this->length = length;
     }
 
-    const Vector& get_inputs() {
+    const Vector& get_inputs() const {
         return inputs;
     }
+
+    const Vector& get_nexts() const {
+        return nexts;
+    }
+
+    size_t get_length() const {
+        return length;
+    }
+
+    void replace_input(TaskNode *old_input, const std::vector<TaskNode*> &new_inputs);
+
+    std::string get_type_name(Server &server);
+    std::string get_info(Server &server);
+
 
 private:
     State state;
