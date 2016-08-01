@@ -50,6 +50,8 @@ public:
     uv_loop_t *get_loop() {
         return loop;
     }
+
+    void register_basic_tasks();
     
     void new_task(std::unique_ptr<Task> task);
     void send_data(const std::string &address, Id id, std::shared_ptr<Data> &data, bool with_size);

@@ -1,5 +1,5 @@
-#ifndef LOOM_WORKER_RAWDATATASKS_H
-#define LOOM_WORKER_RAWDATATASKS_H
+#ifndef LIBLOOM_TASKS_RAWDATATASKS_H
+#define LIBLOOM_TASKS_RAWDATATASKS_H
 
 #include "libloom/taskinstance.h"
 
@@ -35,4 +35,4 @@ public:
 };
 
 
-#endif // LOOM_WORKER_RAWDATATASKS_H
+#endif // LIBLOOM_TASKS_RAWDATATASKS_H

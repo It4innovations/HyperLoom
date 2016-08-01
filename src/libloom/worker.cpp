@@ -3,9 +3,15 @@
 #include "utils.h"
 #include "log.h"
 #include "types.h"
+
 #include "data/rawdata.h"
 #include "data/array.h"
 #include "data/index.h"
+
+#include "tasks/basetasks.h"
+#include "tasks/rawdatatasks.h"
+#include "tasks/arraytasks.h"
+#include "tasks/runtask.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -76,6 +82,25 @@ Worker::Worker(uv_loop_t *loop,
                  std::make_unique<SimpleUnpackFactory<IndexUnpacker>>());
 
     resource_cpus = 1;
+}
+
+void Worker::register_basic_tasks()
+{
+    // Base
+    add_task_factory<GetTask>("base/get");
+    add_task_factory<SliceTask>("base/slice");
+
+    // RawData
+    add_task_factory<ConstTask>("data/const");
+    add_task_factory<MergeTask>("data/merge");
+    add_task_factory<OpenTask>("data/open");
+    add_task_factory<SplitTask>("data/split");
+
+    // Arrays
+    add_task_factory<ArrayMakeTask>("array/make");
+
+    // Run
+    add_task_factory<RunTask>("run/run");
 }
 
 

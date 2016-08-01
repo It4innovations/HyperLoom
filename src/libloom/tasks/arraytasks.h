@@ -1,5 +1,5 @@
-#ifndef LOOM_WORKER_ARRAYTASKS_H
-#define LOOM_WORKER_ARRAYTASKS_H
+#ifndef LIBLOOM_TASKS_ARRAYTASKS_H
+#define LIBLOOM_TASKS_ARRAYTASKS_H
 
 #include "libloom/taskinstance.h"
 
@@ -10,4 +10,4 @@ public:
     void start(loom::DataVector &inputs);
 };
 
-#endif // LOOM_WORKER_ARRAYTASKS_H
+#endif // LIBLOOM_TASKS_ARRAYTASKS_H

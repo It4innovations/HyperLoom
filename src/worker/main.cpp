@@ -1,9 +1,4 @@
 
-#include "runtask.h"
-#include "basictasks.h"
-#include "rawdatatasks.h"
-#include "arraytasks.h"
-
 #include "libloom/worker.h"
 #include "libloom/log.h"
 
@@ -111,23 +106,8 @@ int main(int argc, char **argv)
                         config.server_address,
                         config.port,
                         config.work_dir);
+    worker.register_basic_tasks();
     loom::llog->info("Worker started; listening on port {}", worker.get_listen_port());
-
-    // Base
-    worker.add_task_factory<GetTask>("base/get");
-    worker.add_task_factory<SliceTask>("base/slice");
-
-    // RawData
-    worker.add_task_factory<ConstTask>("data/const");
-    worker.add_task_factory<MergeTask>("data/merge");
-    worker.add_task_factory<OpenTask>("data/open");
-    worker.add_task_factory<SplitTask>("data/split");
-
-    // Arrays
-    worker.add_task_factory<ArrayMakeTask>("array/make");
-
-    // Run
-    worker.add_task_factory<RunTask>("run/run");
 
     worker.set_cpus(config.cpus);
     uv_run(&loop, UV_RUN_DEFAULT);

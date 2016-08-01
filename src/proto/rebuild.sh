@@ -9,9 +9,7 @@ CLIENT_DIR=${BASE_DIR}/../client
 # LIBLOOM
 protoc loomcomm.proto --cpp_out=${LIBLOOM_DIR}
 protoc loomplan.proto --cpp_out=${LIBLOOM_DIR}
-
-# WORKER
-protoc loomrun.proto --cpp_out=${WORKER_DIR}
+protoc loomrun.proto --cpp_out=${LIBLOOM_DIR}/tasks
 
 # CLIENT (Python)
 protoc loomcomm.proto --python_out=${CLIENT_DIR}

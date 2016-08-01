@@ -1,5 +1,5 @@
-#ifndef LOOM_WORKER_RUNTASK_H
-#define LOOM_WORKER_RUNTASK_H
+#ifndef LIBLOOM_TASKS_RUNTASK_H
+#define LIBLOOM_TASKS_RUNTASK_H
 
 #include "libloom/taskinstance.h"
 
@@ -29,4 +29,4 @@ private:
 };
 
 
-#endif // LOOM_WORKER_RUNTASK_H
+#endif // LIBLOOM_TASKS_RUNTASK_H

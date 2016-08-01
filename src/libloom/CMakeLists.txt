@@ -8,6 +8,16 @@ add_library(libloom
             data/array.cpp
             data/index.h
             data/index.cpp
+            tasks/basetasks.cpp
+            tasks/basetasks.h
+            tasks/rawdatatasks.cpp
+            tasks/rawdatatasks.h
+            tasks/arraytasks.cpp
+            tasks/arraytasks.h
+            tasks/runtask.cpp
+            tasks/runtask.h
+            tasks/loomrun.pb.cc
+            tasks/loomrun.pb.h
             connection.cpp
             connection.h
             worker.cpp
