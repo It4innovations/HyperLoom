@@ -84,6 +84,11 @@ public:
         unregistered_task_factories.push_back(std::move(factory));
     }
 
+    template<typename T> void add_task_factory(const std::string &name)
+    {
+        add_task_factory(std::make_unique<SimpleTaskFactory<T>>(name));
+    }
+
     InterConnection &get_connection(const std::string &address);
 
     void close_all();
