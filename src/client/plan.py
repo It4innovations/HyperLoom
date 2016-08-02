@@ -20,9 +20,9 @@ class Task(object):
         self.inputs = inputs
     """
 
-    def set_message(self, msg, task_types):
+    def set_message(self, msg, symbols):
         msg.config = self.config
-        msg.task_type = task_types.index(self.task_type)
+        msg.task_type = symbols[self.task_type]
         msg.input_ids.extend(t.id for t in self.inputs)
 
 
@@ -127,16 +127,11 @@ class Plan(object):
         task.config = self.u64u64.pack(start, end)
         return self.add(task)
 
-    def create_message(self):
-        task_types = list(self.task_types)
-        task_types.sort()
-
+    def create_message(self, symbols):
         msg = loomplan_pb2.Plan()
-        msg.task_types.extend(task_types)
-
         for task in self.tasks:
             t = msg.tasks.add()
-            task.set_message(t, task_types)
+            task.set_message(t, symbols)
         return msg
 
     def write_dot(self, filename, info=None):

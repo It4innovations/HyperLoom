@@ -19,21 +19,13 @@ TaskManager::TaskManager(Server &server)
 
 void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
 {
-    int tt_size = plan.task_types_size();
-    int type_task_translation[tt_size];
-
-    Dictionary &dictionary = server.get_dictionary();
-    for (int i = 0; i < tt_size; i++) {
-        type_task_translation[i] = dictionary.find_or_create(plan.task_types(i));
-    }
-
     auto task_size = plan.tasks_size();
     int id_base = server.new_id(task_size);
     for (int i = 0; i < task_size; i++) {
         const auto& pt = plan.tasks(i);
         auto id = i + id_base;
         tasks[id] = std::make_unique<TaskNode>(
-            id, i, type_task_translation[pt.task_type()], pt.config());
+            id, i, pt.task_type(), pt.config());
     }
 
     std::vector<TaskNode*> ready_tasks;

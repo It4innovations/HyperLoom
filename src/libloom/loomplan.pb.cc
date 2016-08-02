@@ -331,7 +331,6 @@ void Task::Swap(Task* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int Plan::kTaskTypesFieldNumber;
 const int Plan::kTasksFieldNumber;
 const int Plan::kResultIdsFieldNumber;
 #endif  // !_MSC_VER
@@ -353,7 +352,6 @@ Plan::Plan(const Plan& from)
 }
 
 void Plan::SharedCtor() {
-  ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -393,7 +391,6 @@ Plan* Plan::New() const {
 }
 
 void Plan::Clear() {
-  task_types_.Clear();
   tasks_.Clear();
   result_ids_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -414,20 +411,6 @@ bool Plan::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated string task_types = 1;
-      case 1: {
-        if (tag == 10) {
-         parse_task_types:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->add_task_types()));
-        } else {
-          goto handle_unusual;
-        }
-        if (input->ExpectTag(10)) goto parse_task_types;
-        if (input->ExpectTag(18)) goto parse_tasks;
-        break;
-      }
-
       // repeated .loomplan.Task tasks = 2;
       case 2: {
         if (tag == 18) {
@@ -486,12 +469,6 @@ failure:
 void Plan::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:loomplan.Plan)
-  // repeated string task_types = 1;
-  for (int i = 0; i < this->task_types_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      1, this->task_types(i), output);
-  }
-
   // repeated .loomplan.Task tasks = 2;
   for (int i = 0; i < this->tasks_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
@@ -511,13 +488,6 @@ void Plan::SerializeWithCachedSizes(
 
 int Plan::ByteSize() const {
   int total_size = 0;
-
-  // repeated string task_types = 1;
-  total_size += 1 * this->task_types_size();
-  for (int i = 0; i < this->task_types_size(); i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-      this->task_types(i));
-  }
 
   // repeated .loomplan.Task tasks = 2;
   total_size += 1 * this->tasks_size();
@@ -552,7 +522,6 @@ void Plan::CheckTypeAndMergeFrom(
 
 void Plan::MergeFrom(const Plan& from) {
   GOOGLE_CHECK_NE(&from, this);
-  task_types_.MergeFrom(from.task_types_);
   tasks_.MergeFrom(from.tasks_);
   result_ids_.MergeFrom(from.result_ids_);
   mutable_unknown_fields()->append(from.unknown_fields());
@@ -572,7 +541,6 @@ bool Plan::IsInitialized() const {
 
 void Plan::Swap(Plan* other) {
   if (other != this) {
-    task_types_.Swap(&other->task_types_);
     tasks_.Swap(&other->tasks_);
     result_ids_.Swap(&other->result_ids_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);

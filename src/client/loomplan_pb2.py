@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='loomplan.proto',
   package='loomplan',
-  serialized_pb=_b('\n\x0eloomplan.proto\x12\x08loomplan\"<\n\x04Task\x12\x11\n\ttask_type\x18\x01 \x02(\x05\x12\x0e\n\x06\x63onfig\x18\x02 \x02(\x0c\x12\x11\n\tinput_ids\x18\x03 \x03(\x05\"M\n\x04Plan\x12\x12\n\ntask_types\x18\x01 \x03(\t\x12\x1d\n\x05tasks\x18\x02 \x03(\x0b\x32\x0e.loomplan.Task\x12\x12\n\nresult_ids\x18\x03 \x03(\x05\x42\x02H\x03')
+  serialized_pb=_b('\n\x0eloomplan.proto\x12\x08loomplan\"<\n\x04Task\x12\x11\n\ttask_type\x18\x01 \x02(\x05\x12\x0e\n\x06\x63onfig\x18\x02 \x02(\x0c\x12\x11\n\tinput_ids\x18\x03 \x03(\x05\"9\n\x04Plan\x12\x1d\n\x05tasks\x18\x02 \x03(\x0b\x32\x0e.loomplan.Task\x12\x12\n\nresult_ids\x18\x03 \x03(\x05\x42\x02H\x03')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -77,21 +77,14 @@ _PLAN = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='task_types', full_name='loomplan.Plan.task_types', index=0,
-      number=1, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='tasks', full_name='loomplan.Plan.tasks', index=1,
+      name='tasks', full_name='loomplan.Plan.tasks', index=0,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='result_ids', full_name='loomplan.Plan.result_ids', index=2,
+      name='result_ids', full_name='loomplan.Plan.result_ids', index=1,
       number=3, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -109,7 +102,7 @@ _PLAN = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=90,
-  serialized_end=167,
+  serialized_end=147,
 )
 
 _PLAN.fields_by_name['tasks'].message_type = _TASK

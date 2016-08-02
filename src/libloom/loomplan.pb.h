@@ -217,22 +217,6 @@ class Plan : public ::google::protobuf::MessageLite {
 
   // accessors -------------------------------------------------------
 
-  // repeated string task_types = 1;
-  inline int task_types_size() const;
-  inline void clear_task_types();
-  static const int kTaskTypesFieldNumber = 1;
-  inline const ::std::string& task_types(int index) const;
-  inline ::std::string* mutable_task_types(int index);
-  inline void set_task_types(int index, const ::std::string& value);
-  inline void set_task_types(int index, const char* value);
-  inline void set_task_types(int index, const char* value, size_t size);
-  inline ::std::string* add_task_types();
-  inline void add_task_types(const ::std::string& value);
-  inline void add_task_types(const char* value);
-  inline void add_task_types(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& task_types() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_task_types();
-
   // repeated .loomplan.Task tasks = 2;
   inline int tasks_size() const;
   inline void clear_tasks();
@@ -264,7 +248,6 @@ class Plan : public ::google::protobuf::MessageLite {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> task_types_;
   ::google::protobuf::RepeatedPtrField< ::loomplan::Task > tasks_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > result_ids_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
@@ -418,60 +401,6 @@ Task::mutable_input_ids() {
 // -------------------------------------------------------------------
 
 // Plan
-
-// repeated string task_types = 1;
-inline int Plan::task_types_size() const {
-  return task_types_.size();
-}
-inline void Plan::clear_task_types() {
-  task_types_.Clear();
-}
-inline const ::std::string& Plan::task_types(int index) const {
-  // @@protoc_insertion_point(field_get:loomplan.Plan.task_types)
-  return task_types_.Get(index);
-}
-inline ::std::string* Plan::mutable_task_types(int index) {
-  // @@protoc_insertion_point(field_mutable:loomplan.Plan.task_types)
-  return task_types_.Mutable(index);
-}
-inline void Plan::set_task_types(int index, const ::std::string& value) {
-  // @@protoc_insertion_point(field_set:loomplan.Plan.task_types)
-  task_types_.Mutable(index)->assign(value);
-}
-inline void Plan::set_task_types(int index, const char* value) {
-  task_types_.Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:loomplan.Plan.task_types)
-}
-inline void Plan::set_task_types(int index, const char* value, size_t size) {
-  task_types_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:loomplan.Plan.task_types)
-}
-inline ::std::string* Plan::add_task_types() {
-  return task_types_.Add();
-}
-inline void Plan::add_task_types(const ::std::string& value) {
-  task_types_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add:loomplan.Plan.task_types)
-}
-inline void Plan::add_task_types(const char* value) {
-  task_types_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:loomplan.Plan.task_types)
-}
-inline void Plan::add_task_types(const char* value, size_t size) {
-  task_types_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:loomplan.Plan.task_types)
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-Plan::task_types() const {
-  // @@protoc_insertion_point(field_list:loomplan.Plan.task_types)
-  return task_types_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-Plan::mutable_task_types() {
-  // @@protoc_insertion_point(field_mutable_list:loomplan.Plan.task_types)
-  return &task_types_;
-}
 
 // repeated .loomplan.Task tasks = 2;
 inline int Plan::tasks_size() const {

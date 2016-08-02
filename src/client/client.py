@@ -27,8 +27,7 @@ class Client(object):
         self.server_address = address
         self.server_port = port
 
-        self.dictionary_symbols = None
-        self.dictionary_map = None
+        self.symbols = None
 
         self.array_id = None
         self.rawdata_id = None
@@ -48,9 +47,12 @@ class Client(object):
         msg.info = info
         self._send_message(msg)
 
+        while self.symbols is None:
+            self._read_symbols()
+
     def submit(self, plan, results):
 
-        msg = plan.create_message()
+        msg = plan.create_message(self.symbols)
 
         if isinstance(results, Task):
             single_result = True
@@ -76,18 +78,24 @@ class Client(object):
                 self.add_info(cmsg.info)
             elif cmsg.type == ClientMessage.ERROR:
                 self.process_error(cmsg)
-            elif cmsg.type == ClientMessage.DICTIONARY:
-                self.dictionary_symbols = cmsg.symbols
-                self.dictionary_map = {}
-                for i, s in enumerate(self.dictionary_symbols):
-                    self.dictionary_map[s] = i
-                self.array_id = self.dictionary_map["loom/array"]
-                self.rawdata_id = self.dictionary_map["loom/data"]
+            else:
+                assert 0
 
         if single_result:
             return data[results.id]
         else:
             return [data[task.id] for task in results]
+
+    def _read_symbols(self):
+        msg = self.connection.receive_message()
+        cmsg = ClientMessage()
+        cmsg.ParseFromString(msg)
+        assert cmsg.type == ClientMessage.DICTIONARY
+        self.symbols = {}
+        for i, s in enumerate(cmsg.symbols):
+            self.symbols[s] = i
+        self.array_id = self.symbols["loom/array"]
+        self.rawdata_id = self.symbols["loom/data"]
 
     def process_error(self, cmsg):
         assert cmsg.HasField("error")
@@ -105,6 +113,7 @@ class Client(object):
             return self.connection.read_data(msg_data.size)
         if type_id == self.array_id:
             return [self._receive_data() for i in xrange(msg_data.length)]
+        print type_id, self.array_id, self.rawdata_id
         assert 0
 
     def _send_message(self, message):

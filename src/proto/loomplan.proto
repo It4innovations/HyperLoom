@@ -9,7 +9,6 @@ message Task {
 }
 
 message Plan {
-	repeated string task_types = 1;
 	repeated Task tasks = 2;
 	repeated int32 result_ids = 3;
 }
