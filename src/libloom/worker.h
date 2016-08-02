@@ -122,7 +122,8 @@ public:
     void check_ready_tasks();
 
     void set_cpus(int value);
-    void add_unpacker(DataTypeId type_id, std::unique_ptr<UnpackFactory> factory);
+    void add_unpacker(std::unique_ptr<UnpackFactory> factory);
+
     std::unique_ptr<DataUnpacker> unpack(DataTypeId id);
 
     Dictionary& get_dictionary() {
@@ -166,6 +167,7 @@ private:
     int listen_port;
 
     std::vector<std::unique_ptr<TaskFactory>> unregistered_task_factories;
+    std::vector<std::unique_ptr<UnpackFactory>> unregistered_unpack_factories;
 
     static void _on_new_connection(uv_stream_t *stream, int status);
     static void _on_getaddrinfo(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);

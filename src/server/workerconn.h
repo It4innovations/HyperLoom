@@ -16,6 +16,7 @@ public:
                      std::unique_ptr<loom::Connection> connection,
                      const std::string& address,
                      const std::vector<loom::Id> &task_types,
+                     const std::vector<loom::Id> &data_types,
                      int resource_cpus);
     void on_message(const char *buffer, size_t size);
     void on_close();
@@ -45,6 +46,7 @@ private:
     std::string address;
 
     std::vector<int> task_types;
+    std::vector<int> data_types;
 };
 
 #endif // LOOM_SERVER_WORKERCONN

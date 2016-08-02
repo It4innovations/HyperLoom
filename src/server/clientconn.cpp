@@ -2,6 +2,7 @@
 #include "server.h"
 
 #include "libloom/loomplan.pb.h"
+#include "libloom/loomcomm.pb.h"
 #include "libloom/log.h"
 
 using namespace loom;
@@ -11,6 +12,20 @@ ClientConnection::ClientConnection(Server &server, std::unique_ptr<loom::Connect
 {
     this->connection->set_callback(this);
     llog->info("Client {} connected", this->connection->get_peername());
+
+    // Send dictionary
+    loomcomm::ClientMessage cmsg;
+    cmsg.set_type(loomcomm::ClientMessage_Type_DICTIONARY);
+
+    std::vector<std::string> symbols = server.get_dictionary().get_all_symbols();
+    for (std::string &symbol : symbols) {
+        std::string *s = cmsg.add_symbols();
+        *s = symbol;
+    }
+    SendBuffer *send_buffer = new SendBuffer();
+    send_buffer->add(cmsg);
+    this->connection->send_buffer(send_buffer);
+    // End of send dictionary
 }
 
 ClientConnection::~ClientConnection()

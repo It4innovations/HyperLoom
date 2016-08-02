@@ -102,6 +102,7 @@ const int Register::kProtocolVersionFieldNumber;
 const int Register::kTypeFieldNumber;
 const int Register::kPortFieldNumber;
 const int Register::kTaskTypesFieldNumber;
+const int Register::kDataTypesFieldNumber;
 const int Register::kCpusFieldNumber;
 const int Register::kInfoFieldNumber;
 #endif  // !_MSC_VER
@@ -178,16 +179,18 @@ void Register::Clear() {
     ::memset(&first, 0, n);                                \
   } while (0)
 
-  if (_has_bits_[0 / 32] & 55) {
-    ZR_(port_, info_);
+  if (_has_bits_[0 / 32] & 103) {
+    ZR_(port_, cpus_);
     protocol_version_ = 0;
     type_ = 1;
+    info_ = false;
   }
 
 #undef OFFSET_OF_FIELD_
 #undef ZR_
 
   task_types_.Clear();
+  data_types_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->clear();
 }
@@ -266,13 +269,27 @@ bool Register::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(34)) goto parse_task_types;
-        if (input->ExpectTag(40)) goto parse_cpus;
+        if (input->ExpectTag(42)) goto parse_data_types;
         break;
       }
 
-      // optional int32 cpus = 5;
+      // repeated string data_types = 5;
       case 5: {
-        if (tag == 40) {
+        if (tag == 42) {
+         parse_data_types:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_data_types()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(42)) goto parse_data_types;
+        if (input->ExpectTag(48)) goto parse_cpus;
+        break;
+      }
+
+      // optional int32 cpus = 6;
+      case 6: {
+        if (tag == 48) {
          parse_cpus:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -347,9 +364,15 @@ void Register::SerializeWithCachedSizes(
       4, this->task_types(i), output);
   }
 
-  // optional int32 cpus = 5;
+  // repeated string data_types = 5;
+  for (int i = 0; i < this->data_types_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      5, this->data_types(i), output);
+  }
+
+  // optional int32 cpus = 6;
   if (has_cpus()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->cpus(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->cpus(), output);
   }
 
   // optional bool info = 10;
@@ -386,7 +409,7 @@ int Register::ByteSize() const {
           this->port());
     }
 
-    // optional int32 cpus = 5;
+    // optional int32 cpus = 6;
     if (has_cpus()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
@@ -406,6 +429,13 @@ int Register::ByteSize() const {
       this->task_types(i));
   }
 
+  // repeated string data_types = 5;
+  total_size += 1 * this->data_types_size();
+  for (int i = 0; i < this->data_types_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->data_types(i));
+  }
+
   total_size += unknown_fields().size();
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -422,6 +452,7 @@ void Register::CheckTypeAndMergeFrom(
 void Register::MergeFrom(const Register& from) {
   GOOGLE_CHECK_NE(&from, this);
   task_types_.MergeFrom(from.task_types_);
+  data_types_.MergeFrom(from.data_types_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_protocol_version()) {
       set_protocol_version(from.protocol_version());
@@ -460,6 +491,7 @@ void Register::Swap(Register* other) {
     std::swap(type_, other->type_);
     std::swap(port_, other->port_);
     task_types_.Swap(&other->task_types_);
+    data_types_.Swap(&other->data_types_);
     std::swap(cpus_, other->cpus_);
     std::swap(info_, other->info_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -2781,6 +2813,7 @@ bool ClientMessage_Type_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
       return true;
     default:
       return false;
@@ -2791,6 +2824,7 @@ bool ClientMessage_Type_IsValid(int value) {
 const ClientMessage_Type ClientMessage::DATA;
 const ClientMessage_Type ClientMessage::INFO;
 const ClientMessage_Type ClientMessage::ERROR;
+const ClientMessage_Type ClientMessage::DICTIONARY;
 const ClientMessage_Type ClientMessage::Type_MIN;
 const ClientMessage_Type ClientMessage::Type_MAX;
 const int ClientMessage::Type_ARRAYSIZE;
@@ -2800,6 +2834,7 @@ const int ClientMessage::kTypeFieldNumber;
 const int ClientMessage::kDataFieldNumber;
 const int ClientMessage::kInfoFieldNumber;
 const int ClientMessage::kErrorFieldNumber;
+const int ClientMessage::kSymbolsFieldNumber;
 #endif  // !_MSC_VER
 
 ClientMessage::ClientMessage()
@@ -2837,6 +2872,7 @@ ClientMessage::ClientMessage(const ClientMessage& from)
 }
 
 void ClientMessage::SharedCtor() {
+  ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   type_ = 1;
   data_ = NULL;
@@ -2895,6 +2931,7 @@ void ClientMessage::Clear() {
       if (error_ != NULL) error_->::loomcomm::Error::Clear();
     }
   }
+  symbols_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->clear();
 }
@@ -2968,6 +3005,20 @@ bool ClientMessage::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(42)) goto parse_symbols;
+        break;
+      }
+
+      // repeated string symbols = 5;
+      case 5: {
+        if (tag == 42) {
+         parse_symbols:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_symbols()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(42)) goto parse_symbols;
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -3021,6 +3072,12 @@ void ClientMessage::SerializeWithCachedSizes(
       4, this->error(), output);
   }
 
+  // repeated string symbols = 5;
+  for (int i = 0; i < this->symbols_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      5, this->symbols(i), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomcomm.ClientMessage)
@@ -3058,6 +3115,13 @@ int ClientMessage::ByteSize() const {
     }
 
   }
+  // repeated string symbols = 5;
+  total_size += 1 * this->symbols_size();
+  for (int i = 0; i < this->symbols_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->symbols(i));
+  }
+
   total_size += unknown_fields().size();
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -3073,6 +3137,7 @@ void ClientMessage::CheckTypeAndMergeFrom(
 
 void ClientMessage::MergeFrom(const ClientMessage& from) {
   GOOGLE_CHECK_NE(&from, this);
+  symbols_.MergeFrom(from.symbols_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_type()) {
       set_type(from.type());
@@ -3117,6 +3182,7 @@ void ClientMessage::Swap(ClientMessage* other) {
     std::swap(data_, other->data_);
     std::swap(info_, other->info_);
     std::swap(error_, other->error_);
+    symbols_.Swap(&other->symbols_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

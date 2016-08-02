@@ -13,7 +13,8 @@ message Register {
 	// Worker
 	optional int32 port = 3;
 	repeated string task_types = 4;
-	optional int32 cpus = 5;
+	repeated string data_types = 5;
+	optional int32 cpus = 6;
 
 	// Client
 	optional bool info = 10;
@@ -100,9 +101,11 @@ message ClientMessage {
 		DATA = 1;
 		INFO = 2;
 		ERROR = 3;
+		DICTIONARY = 4;
 	}
 	required Type type = 1;
 	optional DataPrologue data = 2;
 	optional Info info = 3;
 	optional Error error = 4;
+	repeated string symbols = 5;
 }

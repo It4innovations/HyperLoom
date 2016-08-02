@@ -19,6 +19,11 @@ Index::~Index()
     llog->debug("Disposing index");
 }
 
+std::string Index::get_type_name() const
+{
+    return IndexUnpacker::get_type_name();
+}
+
 size_t Index::get_length()
 {
     return length;

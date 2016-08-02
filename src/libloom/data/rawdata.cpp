@@ -37,7 +37,10 @@ RawData::~RawData()
     }
 }
 
-
+std::string RawData::get_type_name() const
+{
+    return RawDataUnpacker::get_type_name();
+}
 
 /*char* RawData::init_memonly(size_t size)
 {
@@ -103,7 +106,7 @@ std::string RawData::get_filename() const
 void RawData::open(Worker &worker)
 {
     if (size == 0) {
-       return;
+        return;
     }
     assert(!filename.empty());
     int fd = ::open(filename.c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
@@ -135,7 +138,7 @@ void RawData::map(int fd, bool write)
 
 std::string RawData::get_info()
 {
-   return "RawData";
+    return "RawData";
 }
 
 void RawData::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)

@@ -6,15 +6,12 @@
 namespace loom {
 
 class RawData : public Data {
-public:
-    static const int TYPE_ID = 300;
 
+public:
     RawData();
     ~RawData();
 
-    int get_type_id() {
-        return TYPE_ID;
-    }
+    std::string get_type_name() const;
 
     size_t get_size() {
         return size;
@@ -63,6 +60,11 @@ public:
     bool init(Worker &worker, Connection &connection, const loomcomm::Data &msg);
     void on_data_chunk(const char *data, size_t size);
     bool on_data_finish(Connection &connection);
+
+    static const char* get_type_name() {
+        return "loom/data";
+    }
+
 protected:
     char *pointer = nullptr;
 };

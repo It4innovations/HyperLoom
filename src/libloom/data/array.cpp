@@ -76,6 +76,11 @@ void Array::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<D
    }
 }
 
+std::string Array::get_type_name() const
+{
+    return ArrayUnpacker::get_type_name();
+}
+
 ArrayUnpacker::~ArrayUnpacker()
 {
 

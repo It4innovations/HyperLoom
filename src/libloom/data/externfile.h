@@ -9,14 +9,9 @@ namespace loom {
 
 class ExternFile : public Data {
 public:
-    static const int TYPE_ID = 301;
-
+    std::string get_type_name() const;
     ExternFile(const std::string &filename);
     ~ExternFile();
-
-    int get_type_id() {
-        return TYPE_ID;
-    }
 
     size_t get_size() {
         return size;
@@ -34,6 +29,7 @@ public:
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
     std::string get_filename() const;
+
 
 private:
 

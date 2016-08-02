@@ -11,7 +11,6 @@
 
 #include <vector>
 
-
 class Server {
 
 public:
@@ -64,6 +63,8 @@ public:
         id_counter += count;
         return id;
     }
+
+    void send_dictionary(loom::Connection &connection);
 
 private:
     void start_listen();

@@ -110,6 +110,20 @@ void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::
     exit(1);
 }
 
+void Server::send_dictionary(Connection &connection)
+{
+    loomcomm::WorkerCommand msg;
+    msg.set_type(loomcomm::WorkerCommand_Type_DICTIONARY);
+    std::vector<std::string> symbols = dictionary.get_all_symbols();
+    for (std::string &symbol : symbols) {
+        std::string *s = msg.add_symbols();
+        *s = symbol;
+    }
+    SendBuffer *send_buffer = new SendBuffer();
+    send_buffer->add(msg);
+    connection.send_buffer(send_buffer);
+}
+
 void Server::start_listen()
 {
     struct sockaddr_in addr;

@@ -11,6 +11,11 @@
 
 using namespace loom;
 
+std::string ExternFile::get_type_name() const
+{
+    return "loom/file";
+}
+
 ExternFile::ExternFile(const std::string &filename)
     : data(nullptr), filename(filename)
 {

@@ -72,14 +72,11 @@ Worker::Worker(uv_loop_t *loop,
         llog->info("Using '{}' as working directory", work_dir);
     }
 
-    add_unpacker(RawData::TYPE_ID,
-                 std::make_unique<SimpleUnpackFactory<RawDataUnpacker>>());
+    add_unpacker(std::make_unique<SimpleUnpackFactory<RawDataUnpacker>>());
 
-    add_unpacker(Array::TYPE_ID,
-                 std::make_unique<SimpleUnpackFactory<ArrayUnpacker>>());
+    add_unpacker(std::make_unique<SimpleUnpackFactory<ArrayUnpacker>>());
 
-    add_unpacker(Index::TYPE_ID,
-                 std::make_unique<SimpleUnpackFactory<IndexUnpacker>>());
+    add_unpacker(std::make_unique<SimpleUnpackFactory<IndexUnpacker>>());
 
     resource_cpus = 1;
 }
@@ -171,6 +168,10 @@ void Worker::register_worker()
         msg.add_task_types(factory->get_name());
     }
 
+    for (auto& factory : unregistered_unpack_factories) {
+        msg.add_data_types(factory->get_type_name());
+    }
+
     server_conn.send_message(msg);
 }
 
@@ -189,7 +190,7 @@ void Worker::start_task(std::unique_ptr<Task> task)
     llog->debug("Starting task id={} task_type={}", task->get_id(), task->get_task_type());
     auto i = task_factories.find(task->get_task_type());
     if (unlikely(i == task_factories.end())) {
-        llog->critical("Task with unknown type received");
+        llog->critical("Task with unknown type {} received", task->get_task_type());
         exit(1);
     }
     auto task_instance = i->second->make_instance(*this, std::move(task));
@@ -328,11 +329,9 @@ void Worker::set_cpus(int value)
     llog->info("Number of CPUs for worker: {}", value);
 }
 
-void Worker::add_unpacker(DataTypeId type_id, std::unique_ptr<UnpackFactory> factory)
+void Worker::add_unpacker(std::unique_ptr<UnpackFactory> factory)
 {
-    auto &f = unpack_factories[type_id];
-    assert(f.get() == nullptr);
-    f = std::move(factory);
+    unregistered_unpack_factories.push_back(std::move(factory));
 }
 
 std::unique_ptr<DataUnpacker> Worker::unpack(DataTypeId id)
@@ -346,8 +345,17 @@ void Worker::on_dictionary_updated()
 {
     for (auto &f : unregistered_task_factories) {
         loom::Id id = dictionary.lookup_symbol(f->get_name());
+        llog->debug("Registering task_factory: {} = {}", f->get_name(), id);
         task_factories[id] = std::move(f);
     }
+    unregistered_task_factories.clear();
+
+    for (auto &f : unregistered_unpack_factories) {
+        loom::Id id = dictionary.lookup_symbol(f->get_type_name());
+        llog->debug("Registering unpack_factory: {} = {}", f->get_type_name(), id);
+        unpack_factories[id] = std::move(f);
+    }
+    unregistered_unpack_factories.clear();
 }
 
 void Worker::check_waiting_tasks()

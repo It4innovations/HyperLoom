@@ -6,15 +6,9 @@
 namespace loom {
 
 class Array : public Data {
-public:
-    static const int TYPE_ID = 400;
-
+public:    
     Array(size_t length, std::unique_ptr<std::shared_ptr<Data>[]> items);
     ~Array();
-
-    int get_type_id() {
-        return TYPE_ID;
-    }
 
     size_t get_length() {
         return length;
@@ -27,7 +21,8 @@ public:
 
     std::shared_ptr<Data>& get_ref_at_index(size_t index);
 
-    void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
+    void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);    
+    std::string get_type_name() const;
 
 private:
     size_t length;
@@ -44,6 +39,10 @@ public:
     bool on_message(Connection &connection, const char *data, size_t size);
     void on_data_chunk(const char *data, size_t size);
     bool on_data_finish(Connection &connection);
+
+    static const char* get_type_name() {
+        return "loom/array";
+    }
 
 protected:
 

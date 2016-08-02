@@ -26,6 +26,13 @@ class Client(object):
     def __init__(self, address, port, info=False):
         self.server_address = address
         self.server_port = port
+
+        self.dictionary_symbols = None
+        self.dictionary_map = None
+
+        self.array_id = None
+        self.rawdata_id = None
+
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((address, port))
         self.connection = Connection(s)
@@ -69,6 +76,13 @@ class Client(object):
                 self.add_info(cmsg.info)
             elif cmsg.type == ClientMessage.ERROR:
                 self.process_error(cmsg)
+            elif cmsg.type == ClientMessage.DICTIONARY:
+                self.dictionary_symbols = cmsg.symbols
+                self.dictionary_map = {}
+                for i, s in enumerate(self.dictionary_symbols):
+                    self.dictionary_map[s] = i
+                self.array_id = self.dictionary_map["loom/array"]
+                self.rawdata_id = self.dictionary_map["loom/data"]
 
         if single_result:
             return data[results.id]
@@ -87,9 +101,9 @@ class Client(object):
         msg_data = Data()
         msg_data.ParseFromString(self.connection.receive_message())
         type_id = msg_data.type_id
-        if type_id == 300:  # Data
+        if type_id == self.rawdata_id:
             return self.connection.read_data(msg_data.size)
-        if type_id == 400:  # Array
+        if type_id == self.array_id:
             return [self._receive_data() for i in xrange(msg_data.length)]
         assert 0
 

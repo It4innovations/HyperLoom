@@ -13,8 +13,6 @@ class Worker;
 
 class Index : public Data {
 public:
-    static const int TYPE_ID = 500;
-
     Index(Worker &worker,
           std::shared_ptr<Data> &data,
           size_t length,
@@ -22,10 +20,7 @@ public:
 
     ~Index();
 
-    int get_type_id() {
-        return TYPE_ID;
-    }
-
+    std::string get_type_name() const;
     size_t get_length();
     size_t get_size();
     std::string get_info();
@@ -33,6 +28,7 @@ public:
     std::shared_ptr<Data> get_slice(size_t from, size_t to);
 
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
+
 
 private:
     Worker &worker;
@@ -51,6 +47,10 @@ public:
     bool on_message(Connection &connection, const char *data, size_t size);
     void on_data_chunk(const char *data, size_t size);
     bool on_data_finish(Connection &connection);
+
+    static const char* get_type_name() {
+        return "loom/index";
+    }
 
 protected:
 

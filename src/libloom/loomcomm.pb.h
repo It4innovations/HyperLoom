@@ -83,11 +83,12 @@ const int WorkerResponse_Type_Type_ARRAYSIZE = WorkerResponse_Type_Type_MAX + 1;
 enum ClientMessage_Type {
   ClientMessage_Type_DATA = 1,
   ClientMessage_Type_INFO = 2,
-  ClientMessage_Type_ERROR = 3
+  ClientMessage_Type_ERROR = 3,
+  ClientMessage_Type_DICTIONARY = 4
 };
 bool ClientMessage_Type_IsValid(int value);
 const ClientMessage_Type ClientMessage_Type_Type_MIN = ClientMessage_Type_DATA;
-const ClientMessage_Type ClientMessage_Type_Type_MAX = ClientMessage_Type_ERROR;
+const ClientMessage_Type ClientMessage_Type_Type_MAX = ClientMessage_Type_DICTIONARY;
 const int ClientMessage_Type_Type_ARRAYSIZE = ClientMessage_Type_Type_MAX + 1;
 
 // ===================================================================
@@ -203,10 +204,26 @@ class Register : public ::google::protobuf::MessageLite {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& task_types() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_task_types();
 
-  // optional int32 cpus = 5;
+  // repeated string data_types = 5;
+  inline int data_types_size() const;
+  inline void clear_data_types();
+  static const int kDataTypesFieldNumber = 5;
+  inline const ::std::string& data_types(int index) const;
+  inline ::std::string* mutable_data_types(int index);
+  inline void set_data_types(int index, const ::std::string& value);
+  inline void set_data_types(int index, const char* value);
+  inline void set_data_types(int index, const char* value, size_t size);
+  inline ::std::string* add_data_types();
+  inline void add_data_types(const ::std::string& value);
+  inline void add_data_types(const char* value);
+  inline void add_data_types(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& data_types() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_data_types();
+
+  // optional int32 cpus = 6;
   inline bool has_cpus() const;
   inline void clear_cpus();
-  static const int kCpusFieldNumber = 5;
+  static const int kCpusFieldNumber = 6;
   inline ::google::protobuf::int32 cpus() const;
   inline void set_cpus(::google::protobuf::int32 value);
 
@@ -239,6 +256,7 @@ class Register : public ::google::protobuf::MessageLite {
   ::google::protobuf::RepeatedPtrField< ::std::string> task_types_;
   ::google::protobuf::int32 port_;
   ::google::protobuf::int32 cpus_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> data_types_;
   bool info_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
@@ -1304,6 +1322,7 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   static const Type DATA = ClientMessage_Type_DATA;
   static const Type INFO = ClientMessage_Type_INFO;
   static const Type ERROR = ClientMessage_Type_ERROR;
+  static const Type DICTIONARY = ClientMessage_Type_DICTIONARY;
   static inline bool Type_IsValid(int value) {
     return ClientMessage_Type_IsValid(value);
   }
@@ -1350,6 +1369,22 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   inline ::loomcomm::Error* release_error();
   inline void set_allocated_error(::loomcomm::Error* error);
 
+  // repeated string symbols = 5;
+  inline int symbols_size() const;
+  inline void clear_symbols();
+  static const int kSymbolsFieldNumber = 5;
+  inline const ::std::string& symbols(int index) const;
+  inline ::std::string* mutable_symbols(int index);
+  inline void set_symbols(int index, const ::std::string& value);
+  inline void set_symbols(int index, const char* value);
+  inline void set_symbols(int index, const char* value, size_t size);
+  inline ::std::string* add_symbols();
+  inline void add_symbols(const ::std::string& value);
+  inline void add_symbols(const char* value);
+  inline void add_symbols(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& symbols() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_symbols();
+
   // @@protoc_insertion_point(class_scope:loomcomm.ClientMessage)
  private:
   inline void set_has_type();
@@ -1368,6 +1403,7 @@ class ClientMessage : public ::google::protobuf::MessageLite {
   ::loomcomm::DataPrologue* data_;
   ::loomcomm::Info* info_;
   ::loomcomm::Error* error_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> symbols_;
   int type_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
@@ -1514,15 +1550,69 @@ Register::mutable_task_types() {
   return &task_types_;
 }
 
-// optional int32 cpus = 5;
+// repeated string data_types = 5;
+inline int Register::data_types_size() const {
+  return data_types_.size();
+}
+inline void Register::clear_data_types() {
+  data_types_.Clear();
+}
+inline const ::std::string& Register::data_types(int index) const {
+  // @@protoc_insertion_point(field_get:loomcomm.Register.data_types)
+  return data_types_.Get(index);
+}
+inline ::std::string* Register::mutable_data_types(int index) {
+  // @@protoc_insertion_point(field_mutable:loomcomm.Register.data_types)
+  return data_types_.Mutable(index);
+}
+inline void Register::set_data_types(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:loomcomm.Register.data_types)
+  data_types_.Mutable(index)->assign(value);
+}
+inline void Register::set_data_types(int index, const char* value) {
+  data_types_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomcomm.Register.data_types)
+}
+inline void Register::set_data_types(int index, const char* value, size_t size) {
+  data_types_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.Register.data_types)
+}
+inline ::std::string* Register::add_data_types() {
+  return data_types_.Add();
+}
+inline void Register::add_data_types(const ::std::string& value) {
+  data_types_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:loomcomm.Register.data_types)
+}
+inline void Register::add_data_types(const char* value) {
+  data_types_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:loomcomm.Register.data_types)
+}
+inline void Register::add_data_types(const char* value, size_t size) {
+  data_types_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:loomcomm.Register.data_types)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Register::data_types() const {
+  // @@protoc_insertion_point(field_list:loomcomm.Register.data_types)
+  return data_types_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Register::mutable_data_types() {
+  // @@protoc_insertion_point(field_mutable_list:loomcomm.Register.data_types)
+  return &data_types_;
+}
+
+// optional int32 cpus = 6;
 inline bool Register::has_cpus() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void Register::set_has_cpus() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void Register::clear_has_cpus() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void Register::clear_cpus() {
   cpus_ = 0;
@@ -1540,13 +1630,13 @@ inline void Register::set_cpus(::google::protobuf::int32 value) {
 
 // optional bool info = 10;
 inline bool Register::has_info() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void Register::set_has_info() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void Register::clear_has_info() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void Register::clear_info() {
   info_ = false;
@@ -2730,6 +2820,60 @@ inline void ClientMessage::set_allocated_error(::loomcomm::Error* error) {
     clear_has_error();
   }
   // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientMessage.error)
+}
+
+// repeated string symbols = 5;
+inline int ClientMessage::symbols_size() const {
+  return symbols_.size();
+}
+inline void ClientMessage::clear_symbols() {
+  symbols_.Clear();
+}
+inline const ::std::string& ClientMessage::symbols(int index) const {
+  // @@protoc_insertion_point(field_get:loomcomm.ClientMessage.symbols)
+  return symbols_.Get(index);
+}
+inline ::std::string* ClientMessage::mutable_symbols(int index) {
+  // @@protoc_insertion_point(field_mutable:loomcomm.ClientMessage.symbols)
+  return symbols_.Mutable(index);
+}
+inline void ClientMessage::set_symbols(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:loomcomm.ClientMessage.symbols)
+  symbols_.Mutable(index)->assign(value);
+}
+inline void ClientMessage::set_symbols(int index, const char* value) {
+  symbols_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomcomm.ClientMessage.symbols)
+}
+inline void ClientMessage::set_symbols(int index, const char* value, size_t size) {
+  symbols_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.ClientMessage.symbols)
+}
+inline ::std::string* ClientMessage::add_symbols() {
+  return symbols_.Add();
+}
+inline void ClientMessage::add_symbols(const ::std::string& value) {
+  symbols_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:loomcomm.ClientMessage.symbols)
+}
+inline void ClientMessage::add_symbols(const char* value) {
+  symbols_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:loomcomm.ClientMessage.symbols)
+}
+inline void ClientMessage::add_symbols(const char* value, size_t size) {
+  symbols_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:loomcomm.ClientMessage.symbols)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ClientMessage::symbols() const {
+  // @@protoc_insertion_point(field_list:loomcomm.ClientMessage.symbols)
+  return symbols_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ClientMessage::mutable_symbols() {
+  // @@protoc_insertion_point(field_mutable_list:loomcomm.ClientMessage.symbols)
+  return &symbols_;
 }
 
 
