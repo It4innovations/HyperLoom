@@ -72,11 +72,9 @@ Worker::Worker(uv_loop_t *loop,
         llog->info("Using '{}' as working directory", work_dir);
     }
 
-    add_unpacker(std::make_unique<SimpleUnpackFactory<RawDataUnpacker>>());
-
-    add_unpacker(std::make_unique<SimpleUnpackFactory<ArrayUnpacker>>());
-
-    add_unpacker(std::make_unique<SimpleUnpackFactory<IndexUnpacker>>());
+    add_unpacker<RawDataUnpacker>();
+    add_unpacker<ArrayUnpacker>();
+    add_unpacker<IndexUnpacker>();
 
     resource_cpus = 1;
 }

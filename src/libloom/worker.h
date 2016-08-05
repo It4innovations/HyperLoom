@@ -123,6 +123,10 @@ public:
 
     void set_cpus(int value);
     void add_unpacker(std::unique_ptr<UnpackFactory> factory);
+    template<typename T> void add_unpacker()
+    {
+        add_unpacker(std::make_unique<SimpleUnpackFactory<T>>());
+    }
 
     std::unique_ptr<DataUnpacker> unpack(DataTypeId id);
 
