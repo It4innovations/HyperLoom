@@ -27,10 +27,9 @@ public:
     std::shared_ptr<Data> get_at_index(size_t index);
     std::shared_ptr<Data> get_slice(size_t from, size_t to);
 
+protected:
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
-
-private:
     Worker &worker;
     std::shared_ptr<Data> data;
     size_t length;

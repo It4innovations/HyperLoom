@@ -15,6 +15,7 @@ class Plan;
 
 class Server;
 
+/** This class is responsible for planning tasks on workers */
 class TaskManager
 {
 

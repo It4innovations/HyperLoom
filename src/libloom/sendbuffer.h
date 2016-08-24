@@ -15,6 +15,7 @@ namespace loom {
 
 class Data;
 
+/** Buffer for composing data that will be send over a connection */
 class SendBuffer {
 
 public:

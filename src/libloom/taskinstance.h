@@ -17,6 +17,7 @@ class Data;
 
 typedef std::vector<std::shared_ptr<Data>*> DataVector;
 
+/** Base class for task instance - an actual state of computation of a task */
 class TaskInstance
 {
 public:

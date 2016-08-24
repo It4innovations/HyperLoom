@@ -27,8 +27,6 @@ add_library(libloom
             taskfactory.h
             dictionary.cpp
             dictionary.h
-            databuilder.cpp
-            databuilder.h
             data.cpp
             data.h
             unpacking.cpp

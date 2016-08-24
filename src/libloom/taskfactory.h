@@ -15,6 +15,7 @@ namespace loom {
 class Worker;
 class TaskInstance;
 
+/** Abstract class for creating task instances */
 class TaskFactory
 {
 public:

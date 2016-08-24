@@ -16,6 +16,7 @@ namespace loom {
 
 class Connection;
 
+/** Base class for handling events emited by Connection */
 class ConnectionCallback
 {
     friend class Connection;
@@ -23,15 +24,21 @@ public:
     virtual ~ConnectionCallback();
 
 protected:
+    /** New connection is established. (Not used when connection created by 'accept'). */
     virtual void on_connection() { assert(0); }
+    /** An error has occured, error_code is from libuv. */
     virtual void on_error(int error_code);
+    /** The connection is closed. */
     virtual void on_close() = 0;
+    /** Raw data received */
     virtual void on_data_chunk(const char *buffer, size_t size) { assert(0); }
+    /** Raw data finished */
     virtual void on_data_finish() { assert(0); }
+    /** Message received */
     virtual void on_message(const char *buffer, size_t size) = 0;
 };
 
-
+/** Class representing TCP/IP connection */
 class Connection
 {    
 public:
@@ -51,6 +58,7 @@ public:
         return state;
     }
 
+    /** Set callback instance; the old one is forgotten. */
     void set_callback(ConnectionCallback *callback) {
         this->callback = callback;
     }

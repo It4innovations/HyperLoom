@@ -19,6 +19,7 @@ namespace loom {
 class Worker;
 class DataUnpacker;
 
+/** Class representing connection to the server */
 class ServerConnection : public SimpleConnectionCallback {
     
 public:
@@ -37,7 +38,7 @@ protected:
     void on_error(int error_code);
 };
 
-
+/** Main class of the libloom that represents whole worker */
 class Worker {    
     friend class ServerConnection;
 

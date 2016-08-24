@@ -13,6 +13,7 @@ class Worker;
 class DataBuilder;
 class SendBuffer;
 
+/** Interconnection between workers */
 class InterConnection : public SimpleConnectionCallback
 {
 public:

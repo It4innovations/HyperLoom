@@ -11,6 +11,7 @@
 
 #include <vector>
 
+/** Main class of the server */
 class Server {
 
 public:

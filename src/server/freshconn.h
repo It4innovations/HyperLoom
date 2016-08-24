@@ -5,6 +5,9 @@
 
 class Server;
 
+/**
+ * A new connection before registration (it is not determined if it is client or worker)
+ */
 class FreshConnection : public loom::ConnectionCallback {
 
 public:

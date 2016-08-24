@@ -8,6 +8,7 @@
 
 namespace loom {
 
+/** Base class for factory producing deserializers for data types */
 class UnpackFactory
 {
 public:

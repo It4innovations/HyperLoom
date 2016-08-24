@@ -11,6 +11,7 @@
 class WorkerConnection;
 class Server;
 
+/** A task in the task graph in the server */
 class TaskNode {
 public:
 

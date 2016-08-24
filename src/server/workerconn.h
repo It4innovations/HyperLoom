@@ -9,6 +9,7 @@
 class Server;
 class TaskNode;
 
+/** Connection to worker */
 class WorkerConnection : public loom::ConnectionCallback {
 
 public:

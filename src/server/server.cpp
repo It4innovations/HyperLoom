@@ -1,5 +1,4 @@
 #include "server.h"
-#include "resendtask.h"
 
 #include "libloom/compat.h"
 #include "libloom/utils.h"

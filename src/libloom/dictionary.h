@@ -9,6 +9,7 @@
 
 namespace loom {
 
+/** Container for symbols */
 class Dictionary {
 
 public:

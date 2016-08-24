@@ -9,6 +9,7 @@ namespace loom {
 
 class Worker;
 
+/** Class that repsents one task */
 class Task {
 
 public:

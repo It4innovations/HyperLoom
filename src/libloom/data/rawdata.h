@@ -26,17 +26,16 @@ public:
     }
 
     std::string get_info();
-    void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
-    //char* init_memonly(size_t size);
     char* init_empty_file(Worker &worker, size_t size);
     void assign_filename(Worker &worker);
     void init_from_file(Worker &worker);
 
     std::string get_filename() const;
 
-private:
+protected:
 
+    void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
     void open(Worker &worker);
     void map(int fd, bool write);
 

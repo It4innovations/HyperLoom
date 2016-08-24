@@ -1,3 +1,10 @@
+/**
+  @file compat.h
+
+  This file provides some features from C++14.
+  In the current version it provides std::make_unique
+*/
+
 #ifndef LIBLOOM_COMPAT_H
 #define LIBLOOM_COMPAT_H
 

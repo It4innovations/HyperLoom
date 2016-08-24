@@ -3,7 +3,6 @@
 #include "loomcomm.pb.h"
 #include "log.h"
 #include "utils.h"
-#include "databuilder.h"
 
 #include <sstream>
 

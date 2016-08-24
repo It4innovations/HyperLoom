@@ -12,6 +12,9 @@
 class Server;
 class DWConnection;
 
+/** An implementation of a simple worker that is only able
+ *  to receive a data
+ */
 class DummyWorker
 {
     friend class DWConnection;

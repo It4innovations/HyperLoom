@@ -21,10 +21,10 @@ public:
 
     std::shared_ptr<Data>& get_ref_at_index(size_t index);
 
-    void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);    
     std::string get_type_name() const;
 
-private:
+protected:
+    void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
     size_t length;
     std::unique_ptr<std::shared_ptr<Data>[]> items;
 };
