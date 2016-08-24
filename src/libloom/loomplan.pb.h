@@ -35,6 +35,16 @@ void protobuf_ShutdownFile_loomplan_2eproto();
 class Task;
 class Plan;
 
+enum Task_Mode {
+  Task_Mode_MODE_STANDARD = 1,
+  Task_Mode_MODE_SIMPLE = 2,
+  Task_Mode_MODE_SCHEDULER = 3
+};
+bool Task_Mode_IsValid(int value);
+const Task_Mode Task_Mode_Mode_MIN = Task_Mode_MODE_STANDARD;
+const Task_Mode Task_Mode_Mode_MAX = Task_Mode_MODE_SCHEDULER;
+const int Task_Mode_Mode_ARRAYSIZE = Task_Mode_Mode_MAX + 1;
+
 // ===================================================================
 
 class Task : public ::google::protobuf::MessageLite {
@@ -96,6 +106,20 @@ class Task : public ::google::protobuf::MessageLite {
 
   // nested types ----------------------------------------------------
 
+  typedef Task_Mode Mode;
+  static const Mode MODE_STANDARD = Task_Mode_MODE_STANDARD;
+  static const Mode MODE_SIMPLE = Task_Mode_MODE_SIMPLE;
+  static const Mode MODE_SCHEDULER = Task_Mode_MODE_SCHEDULER;
+  static inline bool Mode_IsValid(int value) {
+    return Task_Mode_IsValid(value);
+  }
+  static const Mode Mode_MIN =
+    Task_Mode_Mode_MIN;
+  static const Mode Mode_MAX =
+    Task_Mode_Mode_MAX;
+  static const int Mode_ARRAYSIZE =
+    Task_Mode_Mode_ARRAYSIZE;
+
   // accessors -------------------------------------------------------
 
   // required int32 task_type = 1;
@@ -129,20 +153,30 @@ class Task : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_input_ids();
 
+  // optional .loomplan.Task.Mode mode = 4 [default = MODE_STANDARD];
+  inline bool has_mode() const;
+  inline void clear_mode();
+  static const int kModeFieldNumber = 4;
+  inline ::loomplan::Task_Mode mode() const;
+  inline void set_mode(::loomplan::Task_Mode value);
+
   // @@protoc_insertion_point(class_scope:loomplan.Task)
  private:
   inline void set_has_task_type();
   inline void clear_has_task_type();
   inline void set_has_config();
   inline void clear_has_config();
+  inline void set_has_mode();
+  inline void clear_has_mode();
 
   ::std::string _unknown_fields_;
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::std::string* config_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > input_ids_;
   ::google::protobuf::int32 task_type_;
+  int mode_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > input_ids_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomplan_2eproto_impl();
   #else
@@ -396,6 +430,31 @@ inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
 Task::mutable_input_ids() {
   // @@protoc_insertion_point(field_mutable_list:loomplan.Task.input_ids)
   return &input_ids_;
+}
+
+// optional .loomplan.Task.Mode mode = 4 [default = MODE_STANDARD];
+inline bool Task::has_mode() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void Task::set_has_mode() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void Task::clear_has_mode() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void Task::clear_mode() {
+  mode_ = 1;
+  clear_has_mode();
+}
+inline ::loomplan::Task_Mode Task::mode() const {
+  // @@protoc_insertion_point(field_get:loomplan.Task.mode)
+  return static_cast< ::loomplan::Task_Mode >(mode_);
+}
+inline void Task::set_mode(::loomplan::Task_Mode value) {
+  assert(::loomplan::Task_Mode_IsValid(value));
+  set_has_mode();
+  mode_ = value;
+  // @@protoc_insertion_point(field_set:loomplan.Task.mode)
 }
 
 // -------------------------------------------------------------------

@@ -6,11 +6,17 @@ import gv
 import struct
 
 
+MODE_STANDARD = loomplan_pb2.Task.MODE_STANDARD
+MODE_SIMPLE = loomplan_pb2.Task.MODE_SIMPLE
+MODE_SCHEDULER = loomplan_pb2.Task.MODE_SCHEDULER
+
+
 class Task(object):
 
     inputs = ()
     id = None
     config = ""
+    mode = MODE_STANDARD
 
     def set_message(self, msg, symbols):
         msg.config = self.config
@@ -51,6 +57,7 @@ class Plan(object):
     def task_dslice(self, input):
         task = Task()
         task.task_type = self.TASK_SCHEDULER_DSLICE
+        task.mode = MODE_SCHEDULER
         task.inputs = (input,)
         return self.add(task)
 
@@ -58,24 +65,28 @@ class Plan(object):
         task = Task()
         task.task_type = self.TASK_DATA_CONST
         task.config = data
+        task.mode = MODE_SIMPLE
         return self.add(task)
 
     def task_merge(self, inputs):
         task = Task()
         task.task_type = self.TASK_DATA_MERGE
         task.inputs = inputs
+        task.mode = MODE_SIMPLE
         return self.add(task)
 
     def task_open(self, filename):
         task = Task()
         task.task_type = self.TASK_DATA_OPEN
         task.config = filename
+        task.mode = MODE_SIMPLE
         return self.add(task)
 
     def task_split(self, input, char=None):
         task = Task()
         task.task_type = self.TASK_DATA_SPLIT
         task.inputs = (input,)
+        task.mode = MODE_SIMPLE
         return self.add(task)
 
     def task_run(self, args, inputs=(), outputs=(None,), stdin=None):
@@ -103,6 +114,7 @@ class Plan(object):
         task = Task()
         task.task_type = self.TASK_ARRAY_MAKE
         task.inputs = inputs
+        task.mode = MODE_SIMPLE
         return self.add(task)
 
     def task_get(self, input, index):
@@ -110,6 +122,7 @@ class Plan(object):
         task.task_type = self.TASK_BASE_GET
         task.inputs = (input,)
         task.config = self.u64.pack(index)
+        task.mode = MODE_SIMPLE
         return self.add(task)
 
     def task_slice(self, input, start, end):
@@ -117,6 +130,7 @@ class Plan(object):
         task.task_type = self.TASK_BASE_SLICE
         task.inputs = (input,)
         task.config = self.u64u64.pack(start, end)
+        task.mode = MODE_SIMPLE
         return self.add(task)
 
     def create_message(self, symbols):

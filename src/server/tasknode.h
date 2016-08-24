@@ -23,8 +23,14 @@ public:
         FINISHED
     };
 
-    TaskNode(loom::Id id, loom::Id client_id, int task_type, const std::string &config)
-        : state(WAITING), id(id), ref_count(0), task_type(task_type),
+    enum TaskMode {
+        MODE_STANDARD,
+        MODE_SIMPLE,
+        MODE_SCHEDULER
+    };
+
+    TaskNode(loom::Id id, loom::Id client_id, TaskMode mode, int task_type, const std::string &config)
+        : state(WAITING), id(id), mode(mode), ref_count(0), task_type(task_type),
           config(config),
           size(0), length(0), client_id(client_id)
     {}
@@ -70,6 +76,10 @@ public:
 
     int get_ref_counter() const {
         return ref_count;
+    }
+
+    TaskMode get_mode() const {
+        return mode;
     }
 
     void set_state(State state) {
@@ -136,6 +146,7 @@ public:
 private:
     State state;
     loom::Id id;
+    TaskMode mode;
     int ref_count;
     loom::TaskId task_type;
     Vector inputs;

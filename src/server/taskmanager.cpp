@@ -18,6 +18,20 @@ TaskManager::TaskManager(Server &server)
     slice_task_id = dictionary.find_or_create("loom/base/slice");
 }
 
+static TaskNode::TaskMode read_task_mode(loomplan::Task_Mode mode) {
+    switch(mode) {
+        case loomplan::Task_Mode_MODE_STANDARD:
+            return TaskNode::MODE_STANDARD;
+        case loomplan::Task_Mode_MODE_SIMPLE:
+            return TaskNode::MODE_SIMPLE;
+        case loomplan::Task_Mode_MODE_SCHEDULER:
+            return TaskNode::MODE_SCHEDULER;
+        default:
+            llog->critical("Invalid task mode");
+            exit(1);
+    }
+}
+
 void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
 {
     auto task_size = plan.tasks_size();
@@ -26,7 +40,7 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
         const auto& pt = plan.tasks(i);
         auto id = i + id_base;
         tasks[id] = std::make_unique<TaskNode>(
-            id, i, pt.task_type(), pt.config());
+            id, i, read_task_mode(pt.mode()), pt.task_type(), pt.config());
     }
 
     std::vector<TaskNode*> ready_tasks;
@@ -173,12 +187,12 @@ void TaskManager::expand_dslice(TaskNode *node, TaskNode::Vector &tasks)
         i = indices[1];
         std::string config(reinterpret_cast<char*>(&indices), sizeof(size_t) * 2);
 
-        auto new_slice = std::make_unique<TaskNode>(new_id, -1, slice_task_id, config);
+        auto new_slice = std::make_unique<TaskNode>(new_id, -1, TaskNode::MODE_SIMPLE, slice_task_id, config);
         new_slice->set_inputs(node->get_inputs());
         tasks.push_back(new_slice.get());
 
         auto new_task = std::make_unique<TaskNode>(
-            new_id + 1, -1, next->get_task_type(), next->get_config());
+            new_id + 1, -1, next->get_mode(), next->get_task_type(), next->get_config());
         new_task->add_input(new_slice.get());
         new_slice->inc_ref_counter();
         new_tasks.push_back(new_slice.get());
