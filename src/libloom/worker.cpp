@@ -82,20 +82,20 @@ Worker::Worker(uv_loop_t *loop,
 void Worker::register_basic_tasks()
 {
     // Base
-    add_task_factory<GetTask>("base/get");
-    add_task_factory<SliceTask>("base/slice");
+    add_task_factory<GetTask>("loom/base/get");
+    add_task_factory<SliceTask>("loom/base/slice");
 
     // RawData
-    add_task_factory<ConstTask>("data/const");
-    add_task_factory<MergeTask>("data/merge");
-    add_task_factory<OpenTask>("data/open");
-    add_task_factory<SplitTask>("data/split");
+    add_task_factory<ConstTask>("loom/data/const");
+    add_task_factory<MergeTask>("loom/data/merge");
+    add_task_factory<OpenTask>("loom/data/open");
+    add_task_factory<SplitTask>("loom/data/split");
 
     // Arrays
-    add_task_factory<ArrayMakeTask>("array/make");
+    add_task_factory<ArrayMakeTask>("loom/array/make");
 
     // Run
-    add_task_factory<RunTask>("run/run");
+    add_task_factory<RunTask>("loom/run/run");
 }
 
 

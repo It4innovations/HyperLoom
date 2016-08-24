@@ -12,14 +12,6 @@ class Task(object):
     id = None
     config = ""
 
-    """
-    def __init__(self,  config, inputs=()):
-        self.id = None
-        self.task_type = task_type
-        self.config = config
-        self.inputs = inputs
-    """
-
     def set_message(self, msg, symbols):
         msg.config = self.config
         msg.task_type = symbols[self.task_type]
@@ -28,19 +20,19 @@ class Task(object):
 
 class Plan(object):
 
-    TASK_BASE_GET = "base/get"
-    TASK_BASE_SLICE = "base/slice"
+    TASK_BASE_GET = "loom/base/get"
+    TASK_BASE_SLICE = "loom/base/slice"
 
-    TASK_DATA_CONST = "data/const"
-    TASK_DATA_MERGE = "data/merge"
-    TASK_DATA_OPEN = "data/open"
-    TASK_DATA_SPLIT = "data/split"
+    TASK_DATA_CONST = "loom/data/const"
+    TASK_DATA_MERGE = "loom/data/merge"
+    TASK_DATA_OPEN = "loom/data/open"
+    TASK_DATA_SPLIT = "loom/data/split"
 
-    TASK_ARRAY_MAKE = "array/make"
+    TASK_ARRAY_MAKE = "loom/array/make"
 
-    TASK_RUN = "run/run"
+    TASK_RUN = "loom/run/run"
 
-    TASK_SCHEDULER_DSLICE = "scheduler/dslice"
+    TASK_SCHEDULER_DSLICE = "loom/scheduler/dslice"
 
     u64 = struct.Struct("<Q")
     u64u64 = struct.Struct("<QQ")

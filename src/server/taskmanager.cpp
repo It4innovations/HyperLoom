@@ -13,8 +13,9 @@ using namespace loom;
 TaskManager::TaskManager(Server &server)
     : server(server)
 {
-    dslice_task_id = server.get_dictionary().find_or_create("scheduler/dslice");
-    slice_task_id = server.get_dictionary().find_or_create("base/slice");
+    auto &dictionary = server.get_dictionary();
+    dslice_task_id = dictionary.find_or_create("loom/scheduler/dslice");
+    slice_task_id = dictionary.find_or_create("loom/base/slice");
 }
 
 void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
