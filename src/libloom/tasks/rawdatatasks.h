@@ -1,7 +1,7 @@
 #ifndef LIBLOOM_TASKS_RAWDATATASKS_H
 #define LIBLOOM_TASKS_RAWDATATASKS_H
 
-#include "libloom/taskinstance.h"
+#include "libloom/ttinstance.h"
 
 class ConstTask : public loom::TaskInstance
 {
@@ -11,11 +11,14 @@ public:
 };
 
 
-class MergeTask : public loom::TaskInstance
+class MergeTask : public loom::ThreadTaskInstance
 {
 public:
-    using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    using ThreadTaskInstance::ThreadTaskInstance;
+
+    bool run_in_thread(loom::DataVector &input_data);
+protected:
+    std::shared_ptr<loom::Data> run();
 };
 
 

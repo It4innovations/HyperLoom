@@ -8,6 +8,11 @@
 
 using namespace loom;
 
+TaskInstance::~TaskInstance()
+{
+
+}
+
 const std::string TaskInstance::get_task_dir()
 {
     std::stringstream s;

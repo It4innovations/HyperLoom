@@ -24,6 +24,8 @@ add_library(libloom
             worker.h
             taskinstance.cpp
             taskinstance.h
+            ttinstance.cpp
+            ttinstance.h
             taskfactory.h
             dictionary.cpp
             dictionary.h

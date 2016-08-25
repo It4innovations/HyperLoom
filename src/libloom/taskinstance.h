@@ -29,7 +29,7 @@ public:
 
     }
 
-    virtual ~TaskInstance() {}
+    virtual ~TaskInstance();
     
     int get_id() const {
         return task->get_id();

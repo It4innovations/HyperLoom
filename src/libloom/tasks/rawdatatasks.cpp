@@ -20,8 +20,24 @@ void ConstTask::start(DataVector &inputs)
     finish(output);
 }
 
+/** If there are more then 50 input or size is bigger then 20000,
+ *  then merge task is run in thread */
+bool MergeTask::run_in_thread(DataVector &input_data)
+{
+    if (input_data.size() > 50) {
+        return true;
+    }
+    size_t size = 0;
+    for (auto& data : inputs) {
+        size += (*data)->get_size();
+        if (size > 20000) {
+            return true;
+        }
+    }
+    return false;
+}
 
-void MergeTask::start(DataVector &inputs) {
+std::shared_ptr<Data> MergeTask::run() {
     size_t size = 0;
     for (auto& data : inputs) {
         size += (*data)->get_size();
@@ -38,7 +54,7 @@ void MergeTask::start(DataVector &inputs) {
         memcpy(dst, mem, size);
         dst += size;
     }
-    finish(output);
+    return output;
 }
 
 void OpenTask::start(DataVector &inputs)
