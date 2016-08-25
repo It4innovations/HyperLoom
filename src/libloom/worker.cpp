@@ -199,7 +199,7 @@ void Worker::start_task(std::unique_ptr<Task> task)
 
     DataVector input_data;
     for (Id id : t->get_inputs()) {
-        input_data.push_back(&get_data(id));
+        input_data.push_back(get_data(id));
     }
 
     t->start(input_data);

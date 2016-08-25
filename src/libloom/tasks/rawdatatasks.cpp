@@ -29,7 +29,7 @@ bool MergeTask::run_in_thread(DataVector &input_data)
     }
     size_t size = 0;
     for (auto& data : inputs) {
-        size += (*data)->get_size();
+        size += data->get_size();
         if (size > 20000) {
             return true;
         }
@@ -40,7 +40,7 @@ bool MergeTask::run_in_thread(DataVector &input_data)
 std::shared_ptr<Data> MergeTask::run() {
     size_t size = 0;
     for (auto& data : inputs) {
-        size += (*data)->get_size();
+        size += data->get_size();
     }
     std::shared_ptr<Data> output = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*output);
@@ -48,8 +48,8 @@ std::shared_ptr<Data> MergeTask::run() {
     char *dst = output->get_raw_data(worker);
 
     for (auto& data : inputs) {
-        char *mem = (*data)->get_raw_data(worker);
-        size_t size = (*data)->get_size();
+        char *mem = data->get_raw_data(worker);
+        size_t size = data->get_size();
         assert(mem || size == 0);
         memcpy(dst, mem, size);
         dst += size;
@@ -69,7 +69,7 @@ void SplitTask::start(DataVector &inputs)
     char split_char = '\n';
 
     std::vector<size_t> indices;
-    auto input = *inputs[0];
+    auto& input = inputs[0];
     char *ptr = input->get_raw_data(worker);
     size_t size = input->get_size();
 

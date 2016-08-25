@@ -69,9 +69,8 @@ void RunTask::start(DataVector &inputs)
    assert(msg.map_inputs_size() <= static_cast<int>(inputs.size()));
 
    for (int i = 0; i < msg.map_inputs_size(); i++) {
-      auto& input = *inputs[i];
       std::string path = get_path(msg.map_inputs(i));
-      std::string filename = input->get_filename();
+      std::string filename = inputs[i]->get_filename();
       assert(!filename.empty());
       llog->debug("Creating symlink of '{}'", msg.map_inputs(i));
       if (symlink(filename.c_str(), path.c_str())) {
