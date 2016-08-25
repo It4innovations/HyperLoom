@@ -50,10 +50,24 @@ private:
     std::vector<std::string> task_types;
 
     loom::Id dslice_task_id;
+    loom::Id dget_task_id;
+
     loom::Id slice_task_id;
+    loom::Id get_task_id;
+
+
 
     void distribute_work(TaskNode::Vector &tasks);
-    void expand_dslice(TaskNode *node, TaskNode::Vector &tasks);
+    void expand_scheduler_mode_task(TaskNode *node, TaskNode::Vector &tasks);
+    void expand_dslice(TaskNode *node, TaskNode::Vector &tasks, size_t length, TaskNode *next);
+    void expand_dget(TaskNode *node, TaskNode::Vector &tasks, size_t length, TaskNode *next);
+    void dynamic_expand_helper(
+            const TaskNode::Vector &inputs,
+            TaskNode *next,
+            loom::Id task_type_id,
+            std::string &config,
+            TaskNode::Vector &tasks1,
+            TaskNode::Vector &tasks2);
 };
 
 

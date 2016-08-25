@@ -20,3 +20,18 @@ def test_dslice(loom_env):
 
     assert len(result) >= 2
     assert sum(result, []) == ["data{}".format(i) for i in xrange(16)]
+
+
+def test_dget(loom_env):
+    loom_env.start(2)
+    p = loom_env.plan()
+
+    consts = []
+    for i in xrange(16):
+        consts.append(p.task_const("data{}".format(i)))
+    a = p.task_array_make(consts)
+    ds = p.task_dget(a)
+    f = p.task_run("/bin/cat", stdin=ds)
+    r = p.task_array_make((f,))
+    result = loom_env.submit(p, r)
+    assert result == ["data{}".format(i) for i in xrange(16)]

@@ -123,6 +123,15 @@ void Server::send_dictionary(Connection &connection)
     connection.send_buffer(send_buffer);
 }
 
+int Server::get_worker_ncpus()
+{
+    int count = 0;
+    for (auto &w : connections) {
+        count += w->get_resource_cpus();
+    }
+    return count;
+}
+
 void Server::start_listen()
 {
     struct sockaddr_in addr;

@@ -22,6 +22,7 @@ class Task(object):
         msg.config = self.config
         msg.task_type = symbols[self.task_type]
         msg.input_ids.extend(t.id for t in self.inputs)
+        msg.mode = self.mode
 
 
 class Plan(object):
@@ -39,6 +40,7 @@ class Plan(object):
     TASK_RUN = "loom/run/run"
 
     TASK_SCHEDULER_DSLICE = "loom/scheduler/dslice"
+    TASK_SCHEDULER_DGET = "loom/scheduler/dget"
 
     u64 = struct.Struct("<Q")
     u64u64 = struct.Struct("<QQ")
@@ -57,6 +59,13 @@ class Plan(object):
     def task_dslice(self, input):
         task = Task()
         task.task_type = self.TASK_SCHEDULER_DSLICE
+        task.mode = MODE_SCHEDULER
+        task.inputs = (input,)
+        return self.add(task)
+
+    def task_dget(self, input):
+        task = Task()
+        task.task_type = self.TASK_SCHEDULER_DGET
         task.mode = MODE_SCHEDULER
         task.inputs = (input,)
         return self.add(task)

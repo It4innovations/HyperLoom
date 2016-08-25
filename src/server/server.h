@@ -67,6 +67,8 @@ public:
 
     void send_dictionary(loom::Connection &connection);
 
+    int get_worker_ncpus();
+
 private:
     void start_listen();
 

@@ -14,8 +14,11 @@ TaskManager::TaskManager(Server &server)
     : server(server)
 {
     auto &dictionary = server.get_dictionary();
-    dslice_task_id = dictionary.find_or_create("loom/scheduler/dslice");
     slice_task_id = dictionary.find_or_create("loom/base/slice");
+    get_task_id = dictionary.find_or_create("loom/base/get");
+    dslice_task_id = dictionary.find_or_create("loom/scheduler/dslice");
+    dget_task_id = dictionary.find_or_create("loom/scheduler/dget");
+
 }
 
 static TaskNode::TaskMode read_task_mode(loomplan::Task_Mode mode) {
@@ -123,19 +126,19 @@ void TaskManager::on_task_finished(TaskNode &task)
     std::vector<TaskNode*> ready;
     task.collect_ready_nexts(ready);
 
-    bool dslice = false;
+    bool scheduler_mode = false;
     for (TaskNode *node : ready) {
-        if (node->get_task_type() == dslice_task_id) {
-            dslice = true;
+        if (node->get_mode() == TaskNode::MODE_SCHEDULER) {
+            scheduler_mode = true;
             break;
         }
     }
 
-    if (dslice) {
+    if (scheduler_mode) {
         std::vector<TaskNode*> new_ready;
-        for (TaskNode *node : ready) {
-            if (node->get_task_type() == dslice_task_id) {
-                expand_dslice(node, new_ready);
+        for (TaskNode *node : ready) {           
+            if (node->get_mode() == TaskNode::MODE_SCHEDULER) {
+                expand_scheduler_mode_task(node, new_ready);
             } else {
                 new_ready.push_back(node);
             }
@@ -146,19 +149,64 @@ void TaskManager::on_task_finished(TaskNode &task)
     distribute_work(ready);
 }
 
-void TaskManager::expand_dslice(TaskNode *node, TaskNode::Vector &tasks)
+void TaskManager::expand_scheduler_mode_task(TaskNode *node, TaskNode::Vector &tasks)
 {
-    size_t slice_count = 0;
-    for (auto &w : server.get_connections()) {
-        slice_count += w->get_resource_cpus();
-    }
-    slice_count *= 4;
-    assert (slice_count > 0);
-
     assert (node->get_inputs().size() == 1); // Todo generalize
     TaskNode *input = node->get_inputs()[0];
     size_t length = input->get_length();
 
+    assert (node->get_nexts().size() == 1); // Todo generalize
+    TaskNode *next = node->get_nexts()[0];
+
+    if (node->get_task_type() == dslice_task_id) {
+        expand_dslice(node, tasks, length, next);
+        return;
+    }
+    if (node->get_task_type() == dget_task_id) {
+        expand_dget(node, tasks, length, next);
+        return;
+    }
+    llog->critical("Invalid scheduler task");
+    exit(1);
+}
+
+void TaskManager::expand_dget(TaskNode *node, TaskNode::Vector &tasks, size_t length, TaskNode *next)
+{
+    if (llog->level() >= spdlog::level::debug) {
+        llog->debug("Expanding dget id={}; follow id={} length={}",
+                    node->get_id(), next->get_type_name(server), length);
+    }
+
+    auto& inputs = node->get_inputs();
+
+    std::vector<TaskNode*> new_tasks;
+    for (size_t i = 0; i < length; i++) {
+        std::string config(reinterpret_cast<char*>(&i), sizeof(size_t));
+        dynamic_expand_helper(inputs, next, get_task_id, config, tasks, new_tasks);
+    }
+
+    for (TaskNode *n : next->get_nexts()) {
+        n->replace_input(next, new_tasks);
+    }
+
+    for (TaskNode *n : node->get_inputs()) {
+        n->inc_ref_counter(length - 1);
+    }
+}
+
+
+void TaskManager::expand_dslice(TaskNode *node, TaskNode::Vector &tasks, size_t length, TaskNode *next)
+{
+    if (llog->level() >= spdlog::level::debug) {
+        llog->debug("Expanding dslice dslice id={}; follow id={}",
+                    node->get_id(), next->get_type_name(server));
+    }
+
+    auto& inputs = node->get_inputs();
+
+    size_t slice_count = server.get_worker_ncpus();
+    slice_count *= 4;
+    assert (slice_count > 0);
 
     size_t slice_size = round(static_cast<double>(length) / slice_count);
     if (slice_size == 0) {
@@ -168,16 +216,9 @@ void TaskManager::expand_dslice(TaskNode *node, TaskNode::Vector &tasks)
     size_t i = 0;
     slice_count = 0;
 
-    assert (node->get_nexts().size() == 1); // Todo generalize
-    TaskNode *next = node->get_nexts()[0];
-
-    if (llog->level() >= spdlog::level::debug) {
-        llog->debug("Expanding dslice dslice id={}; follow id={}",
-                    node->get_id(), next->get_type_name(server));
-    }
     std::vector<TaskNode*> new_tasks;
     while (i < length) {
-        loom::Id new_id = server.new_id(2);
+
         size_t indices[2];
         indices[0] = i;
         indices[1] = i + slice_size;
@@ -186,17 +227,7 @@ void TaskManager::expand_dslice(TaskNode *node, TaskNode::Vector &tasks)
         }
         i = indices[1];
         std::string config(reinterpret_cast<char*>(&indices), sizeof(size_t) * 2);
-
-        auto new_slice = std::make_unique<TaskNode>(new_id, -1, TaskNode::MODE_SIMPLE, slice_task_id, config);
-        new_slice->set_inputs(node->get_inputs());
-        tasks.push_back(new_slice.get());
-
-        auto new_task = std::make_unique<TaskNode>(
-            new_id + 1, -1, next->get_mode(), next->get_task_type(), next->get_config());
-        new_task->add_input(new_slice.get());
-        new_slice->inc_ref_counter();
-        new_tasks.push_back(new_slice.get());
-        this->tasks[new_id] = std::move(new_slice);
+        dynamic_expand_helper(inputs, next, slice_task_id, config, tasks, new_tasks);
         slice_count += 1;
     }
 
@@ -209,6 +240,28 @@ void TaskManager::expand_dslice(TaskNode *node, TaskNode::Vector &tasks)
     for (TaskNode *n : node->get_inputs()) {
         n->inc_ref_counter(slice_count - 1);
     }
+}
+
+void TaskManager::dynamic_expand_helper(
+        const TaskNode::Vector &inputs,
+        TaskNode *next,
+        Id task_type_id,
+        std::string &config,
+        TaskNode::Vector &tasks1,
+        TaskNode::Vector &tasks2)
+{
+    Id new_id = server.new_id(2);
+    auto new_slice = std::make_unique<TaskNode>(new_id, -1, TaskNode::MODE_SIMPLE, task_type_id, config);
+    new_slice->set_inputs(inputs);
+    tasks1.push_back(new_slice.get());
+
+    auto new_task = std::make_unique<TaskNode>(
+        new_id + 1, -1, next->get_mode(), next->get_task_type(), next->get_config());
+    new_task->add_input(new_slice.get());
+    new_slice->inc_ref_counter();
+    tasks2.push_back(new_slice.get());
+
+    this->tasks[new_id] = std::move(new_slice);
 }
 
 struct _TaskInfo {
