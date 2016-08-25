@@ -3,6 +3,8 @@
 
 #include "libloom/taskinstance.h"
 
+namespace loom {
+
 class RunTask : public loom::TaskInstance
 {
 public:
@@ -22,11 +24,9 @@ private:
     uv_write_t write_request;
 
     static void _on_exit(uv_process_t *process, int64_t exit_status, int term_signal);
-    /*static void _on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf);
-    static void _buf_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
-    static void _on_write(uv_write_t* req, int status);*/
     static void _on_close(uv_handle_t *handle);
 };
 
+}
 
 #endif // LIBLOOM_TASKS_RUNTASK_H

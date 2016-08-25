@@ -6,7 +6,7 @@
 
 using namespace loom;
 
-void GetTask::start(loom::DataVector &inputs)
+void GetTask::start(DataVector &inputs)
 {
    assert(inputs.size() == 1);
    assert(task->get_config().size() == sizeof(size_t));

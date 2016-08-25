@@ -3,6 +3,8 @@
 
 #include "libloom/taskinstance.h"
 
+namespace loom {
+
 class GetTask : public loom::TaskInstance
 {
 public:
@@ -33,5 +35,6 @@ public:
     void start(loom::DataVector &inputs);
 };
 
+}
 
 #endif // LIBLOOM_TASKS_BASICTASKS_H

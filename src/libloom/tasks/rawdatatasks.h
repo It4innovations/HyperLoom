@@ -3,6 +3,8 @@
 
 #include "libloom/ttinstance.h"
 
+namespace loom {
+
 class ConstTask : public loom::TaskInstance
 {
 public:
@@ -37,5 +39,6 @@ public:
     void start(loom::DataVector &inputs);
 };
 
+}
 
 #endif // LIBLOOM_TASKS_RAWDATATASKS_H

@@ -4,7 +4,7 @@
 
 using namespace loom;
 
-void ArrayMakeTask::start(loom::DataVector &inputs)
+void ArrayMakeTask::start(DataVector &inputs)
 {
    size_t size =  inputs.size();
    auto items = std::make_unique<std::shared_ptr<Data>[]>(size);
