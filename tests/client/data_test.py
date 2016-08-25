@@ -1,5 +1,6 @@
 from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
 
+import struct
 from datetime import datetime
 import os
 
@@ -201,3 +202,20 @@ def test_split(loom_env):
     assert r2 == "Line4"
     assert r3 == "Line1\nLine2\n"
     assert r4 == ""
+
+
+def test_size_and_length(loom_env):
+    loom_env.start(1)
+
+    p = loom_env.plan()
+    text = "12345" * 5
+
+    a1 = p.task_const(text)
+    a2 = p.task_array_make((a1, a1))
+    b1 = p.task_size(a1)
+    c1 = p.task_length(a1)
+    b2 = p.task_size(a2)
+    c2 = p.task_length(a2)
+
+    u64 = struct.Struct("<Q")
+    [25, 0, 50, 2] == map(lambda x: u64.unpack(x)[0], loom_env.submit(p, (b1, c1, b2, c2)))

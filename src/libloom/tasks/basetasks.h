@@ -18,4 +18,20 @@ public:
     void start(loom::DataVector &inputs);
 };
 
+
+class SizeTask : public loom::TaskInstance
+{
+public:
+    using TaskInstance::TaskInstance;
+    void start(loom::DataVector &inputs);
+};
+
+class LengthTask : public loom::TaskInstance
+{
+public:
+    using TaskInstance::TaskInstance;
+    void start(loom::DataVector &inputs);
+};
+
+
 #endif // LIBLOOM_TASKS_BASICTASKS_H

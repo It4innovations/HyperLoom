@@ -1,5 +1,6 @@
 
 #include "basetasks.h"
+#include "../data/rawdata.h"
 
 //#include "libloom/log.h"
 
@@ -23,4 +24,28 @@ void SliceTask::start(DataVector &inputs)
     std::shared_ptr<Data> &input = *(inputs[0]);
     auto result = input->get_slice(index[0], index[1]);
     finish(result);
+}
+
+void SizeTask::start(DataVector &inputs)
+{
+    size_t size = 0;
+    for (auto &d : inputs) {
+        size += (*d)->get_size();
+    }
+    std::shared_ptr<Data> output = std::make_shared<RawData>();
+    RawData &data = static_cast<RawData&>(*output);
+    memcpy(data.init_empty_file(worker, sizeof(size_t)), &size, sizeof(size_t));
+    finish(output);
+}
+
+void LengthTask::start(DataVector &inputs)
+{
+    size_t length = 0;
+    for (auto &d : inputs) {
+        length += (*d)->get_length();
+    }
+    std::shared_ptr<Data> output = std::make_shared<RawData>();
+    RawData &data = static_cast<RawData&>(*output);
+    memcpy(data.init_empty_file(worker, sizeof(size_t)), &length, sizeof(size_t));
+    finish(output);
 }

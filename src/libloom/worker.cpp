@@ -84,6 +84,8 @@ void Worker::register_basic_tasks()
     // Base
     add_task_factory<GetTask>("loom/base/get");
     add_task_factory<SliceTask>("loom/base/slice");
+    add_task_factory<SizeTask>("loom/base/size");
+    add_task_factory<LengthTask>("loom/base/length");
 
     // RawData
     add_task_factory<ConstTask>("loom/data/const");

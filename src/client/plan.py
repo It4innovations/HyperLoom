@@ -29,6 +29,8 @@ class Plan(object):
 
     TASK_BASE_GET = "loom/base/get"
     TASK_BASE_SLICE = "loom/base/slice"
+    TASK_BASE_SIZE = "loom/base/size"
+    TASK_BASE_LENGTH = "loom/base/length"
 
     TASK_DATA_CONST = "loom/data/const"
     TASK_DATA_MERGE = "loom/data/merge"
@@ -123,6 +125,20 @@ class Plan(object):
         task = Task()
         task.task_type = self.TASK_ARRAY_MAKE
         task.inputs = inputs
+        task.mode = MODE_SIMPLE
+        return self.add(task)
+
+    def task_size(self, input):
+        task = Task()
+        task.task_type = self.TASK_BASE_SIZE
+        task.inputs = (input,)
+        task.mode = MODE_SIMPLE
+        return self.add(task)
+
+    def task_length(self, input):
+        task = Task()
+        task.task_type = self.TASK_BASE_LENGTH
+        task.inputs = (input,)
         task.mode = MODE_SIMPLE
         return self.add(task)
 
