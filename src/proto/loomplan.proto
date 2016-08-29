@@ -3,16 +3,16 @@ package loomplan;
 option optimize_for = LITE_RUNTIME;
 
 message Task {
-	enum Mode {
-		MODE_STANDARD = 1;
-		MODE_SIMPLE = 2;
-		MODE_SCHEDULER = 3;
+	enum Policy {
+		POLICY_STANDARD = 1;
+		POLICY_SIMPLE = 2;
+		POLICY_SCHEDULER = 3;
 	}
 
 	required int32 task_type = 1;
 	required bytes config = 2;
 	repeated int32 input_ids = 3;
-	optional Mode mode = 4 [default = MODE_STANDARD];
+	optional Policy policy = 4 [default = POLICY_STANDARD];
 }
 
 message Plan {

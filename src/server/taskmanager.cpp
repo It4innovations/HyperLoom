@@ -21,16 +21,16 @@ TaskManager::TaskManager(Server &server)
 
 }
 
-static TaskNode::TaskMode read_task_mode(loomplan::Task_Mode mode) {
-    switch(mode) {
-        case loomplan::Task_Mode_MODE_STANDARD:
-            return TaskNode::MODE_STANDARD;
-        case loomplan::Task_Mode_MODE_SIMPLE:
-            return TaskNode::MODE_SIMPLE;
-        case loomplan::Task_Mode_MODE_SCHEDULER:
-            return TaskNode::MODE_SCHEDULER;
+static TaskNode::Policy read_task_policy(loomplan::Task_Policy policy) {
+    switch(policy) {
+        case loomplan::Task_Policy_POLICY_STANDARD:
+            return TaskNode::POLICY_STANDARD;
+        case loomplan::Task_Policy_POLICY_SIMPLE:
+            return TaskNode::POLICY_SIMPLE;
+        case loomplan::Task_Policy_POLICY_SCHEDULER:
+            return TaskNode::POLICY_SCHEDULER;
         default:
-            llog->critical("Invalid task mode");
+            llog->critical("Invalid task policy");
             exit(1);
     }
 }
@@ -43,7 +43,7 @@ void TaskManager::add_plan(const loomplan::Plan &plan, bool distribute)
         const auto& pt = plan.tasks(i);
         auto id = i + id_base;
         tasks[id] = std::make_unique<TaskNode>(
-            id, i, read_task_mode(pt.mode()), pt.task_type(), pt.config());
+            id, i, read_task_policy(pt.policy()), pt.task_type(), pt.config());
     }
 
     std::vector<TaskNode*> ready_tasks;
@@ -126,19 +126,19 @@ void TaskManager::on_task_finished(TaskNode &task)
     std::vector<TaskNode*> ready;
     task.collect_ready_nexts(ready);
 
-    bool scheduler_mode = false;
+    bool scheduler_policy = false;
     for (TaskNode *node : ready) {
-        if (node->get_mode() == TaskNode::MODE_SCHEDULER) {
-            scheduler_mode = true;
+        if (node->get_policy() == TaskNode::POLICY_SCHEDULER) {
+            scheduler_policy = true;
             break;
         }
     }
 
-    if (scheduler_mode) {
+    if (scheduler_policy) {
         std::vector<TaskNode*> new_ready;
         for (TaskNode *node : ready) {           
-            if (node->get_mode() == TaskNode::MODE_SCHEDULER) {
-                expand_scheduler_mode_task(node, new_ready);
+            if (node->get_policy() == TaskNode::POLICY_SCHEDULER) {
+                expand_scheduler_task(node, new_ready);
             } else {
                 new_ready.push_back(node);
             }
@@ -149,7 +149,7 @@ void TaskManager::on_task_finished(TaskNode &task)
     distribute_work(ready);
 }
 
-void TaskManager::expand_scheduler_mode_task(TaskNode *node, TaskNode::Vector &tasks)
+void TaskManager::expand_scheduler_task(TaskNode *node, TaskNode::Vector &tasks)
 {
     assert (node->get_inputs().size() == 1); // Todo generalize
     TaskNode *input = node->get_inputs()[0];
@@ -251,12 +251,12 @@ void TaskManager::dynamic_expand_helper(
         TaskNode::Vector &tasks2)
 {
     Id new_id = server.new_id(2);
-    auto new_slice = std::make_unique<TaskNode>(new_id, -1, TaskNode::MODE_SIMPLE, task_type_id, config);
+    auto new_slice = std::make_unique<TaskNode>(new_id, -1, TaskNode::POLICY_SIMPLE, task_type_id, config);
     new_slice->set_inputs(inputs);
     tasks1.push_back(new_slice.get());
 
     auto new_task = std::make_unique<TaskNode>(
-        new_id + 1, -1, next->get_mode(), next->get_task_type(), next->get_config());
+        new_id + 1, -1, next->get_policy(), next->get_task_type(), next->get_config());
     new_task->add_input(new_slice.get());
     new_slice->inc_ref_counter();
     tasks2.push_back(new_slice.get());

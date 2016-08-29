@@ -35,15 +35,15 @@ void protobuf_ShutdownFile_loomplan_2eproto();
 class Task;
 class Plan;
 
-enum Task_Mode {
-  Task_Mode_MODE_STANDARD = 1,
-  Task_Mode_MODE_SIMPLE = 2,
-  Task_Mode_MODE_SCHEDULER = 3
+enum Task_Policy {
+  Task_Policy_POLICY_STANDARD = 1,
+  Task_Policy_POLICY_SIMPLE = 2,
+  Task_Policy_POLICY_SCHEDULER = 3
 };
-bool Task_Mode_IsValid(int value);
-const Task_Mode Task_Mode_Mode_MIN = Task_Mode_MODE_STANDARD;
-const Task_Mode Task_Mode_Mode_MAX = Task_Mode_MODE_SCHEDULER;
-const int Task_Mode_Mode_ARRAYSIZE = Task_Mode_Mode_MAX + 1;
+bool Task_Policy_IsValid(int value);
+const Task_Policy Task_Policy_Policy_MIN = Task_Policy_POLICY_STANDARD;
+const Task_Policy Task_Policy_Policy_MAX = Task_Policy_POLICY_SCHEDULER;
+const int Task_Policy_Policy_ARRAYSIZE = Task_Policy_Policy_MAX + 1;
 
 // ===================================================================
 
@@ -106,19 +106,19 @@ class Task : public ::google::protobuf::MessageLite {
 
   // nested types ----------------------------------------------------
 
-  typedef Task_Mode Mode;
-  static const Mode MODE_STANDARD = Task_Mode_MODE_STANDARD;
-  static const Mode MODE_SIMPLE = Task_Mode_MODE_SIMPLE;
-  static const Mode MODE_SCHEDULER = Task_Mode_MODE_SCHEDULER;
-  static inline bool Mode_IsValid(int value) {
-    return Task_Mode_IsValid(value);
+  typedef Task_Policy Policy;
+  static const Policy POLICY_STANDARD = Task_Policy_POLICY_STANDARD;
+  static const Policy POLICY_SIMPLE = Task_Policy_POLICY_SIMPLE;
+  static const Policy POLICY_SCHEDULER = Task_Policy_POLICY_SCHEDULER;
+  static inline bool Policy_IsValid(int value) {
+    return Task_Policy_IsValid(value);
   }
-  static const Mode Mode_MIN =
-    Task_Mode_Mode_MIN;
-  static const Mode Mode_MAX =
-    Task_Mode_Mode_MAX;
-  static const int Mode_ARRAYSIZE =
-    Task_Mode_Mode_ARRAYSIZE;
+  static const Policy Policy_MIN =
+    Task_Policy_Policy_MIN;
+  static const Policy Policy_MAX =
+    Task_Policy_Policy_MAX;
+  static const int Policy_ARRAYSIZE =
+    Task_Policy_Policy_ARRAYSIZE;
 
   // accessors -------------------------------------------------------
 
@@ -153,12 +153,12 @@ class Task : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_input_ids();
 
-  // optional .loomplan.Task.Mode mode = 4 [default = MODE_STANDARD];
-  inline bool has_mode() const;
-  inline void clear_mode();
-  static const int kModeFieldNumber = 4;
-  inline ::loomplan::Task_Mode mode() const;
-  inline void set_mode(::loomplan::Task_Mode value);
+  // optional .loomplan.Task.Policy policy = 4 [default = POLICY_STANDARD];
+  inline bool has_policy() const;
+  inline void clear_policy();
+  static const int kPolicyFieldNumber = 4;
+  inline ::loomplan::Task_Policy policy() const;
+  inline void set_policy(::loomplan::Task_Policy value);
 
   // @@protoc_insertion_point(class_scope:loomplan.Task)
  private:
@@ -166,8 +166,8 @@ class Task : public ::google::protobuf::MessageLite {
   inline void clear_has_task_type();
   inline void set_has_config();
   inline void clear_has_config();
-  inline void set_has_mode();
-  inline void clear_has_mode();
+  inline void set_has_policy();
+  inline void clear_has_policy();
 
   ::std::string _unknown_fields_;
 
@@ -175,7 +175,7 @@ class Task : public ::google::protobuf::MessageLite {
   mutable int _cached_size_;
   ::std::string* config_;
   ::google::protobuf::int32 task_type_;
-  int mode_;
+  int policy_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > input_ids_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomplan_2eproto_impl();
@@ -432,29 +432,29 @@ Task::mutable_input_ids() {
   return &input_ids_;
 }
 
-// optional .loomplan.Task.Mode mode = 4 [default = MODE_STANDARD];
-inline bool Task::has_mode() const {
+// optional .loomplan.Task.Policy policy = 4 [default = POLICY_STANDARD];
+inline bool Task::has_policy() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void Task::set_has_mode() {
+inline void Task::set_has_policy() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void Task::clear_has_mode() {
+inline void Task::clear_has_policy() {
   _has_bits_[0] &= ~0x00000008u;
 }
-inline void Task::clear_mode() {
-  mode_ = 1;
-  clear_has_mode();
+inline void Task::clear_policy() {
+  policy_ = 1;
+  clear_has_policy();
 }
-inline ::loomplan::Task_Mode Task::mode() const {
-  // @@protoc_insertion_point(field_get:loomplan.Task.mode)
-  return static_cast< ::loomplan::Task_Mode >(mode_);
+inline ::loomplan::Task_Policy Task::policy() const {
+  // @@protoc_insertion_point(field_get:loomplan.Task.policy)
+  return static_cast< ::loomplan::Task_Policy >(policy_);
 }
-inline void Task::set_mode(::loomplan::Task_Mode value) {
-  assert(::loomplan::Task_Mode_IsValid(value));
-  set_has_mode();
-  mode_ = value;
-  // @@protoc_insertion_point(field_set:loomplan.Task.mode)
+inline void Task::set_policy(::loomplan::Task_Policy value) {
+  assert(::loomplan::Task_Policy_IsValid(value));
+  set_has_policy();
+  policy_ = value;
+  // @@protoc_insertion_point(field_set:loomplan.Task.policy)
 }
 
 // -------------------------------------------------------------------

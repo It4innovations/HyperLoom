@@ -23,14 +23,14 @@ public:
         FINISHED
     };
 
-    enum TaskMode {
-        MODE_STANDARD,
-        MODE_SIMPLE,
-        MODE_SCHEDULER
+    enum Policy {
+        POLICY_STANDARD,
+        POLICY_SIMPLE,
+        POLICY_SCHEDULER
     };
 
-    TaskNode(loom::Id id, loom::Id client_id, TaskMode mode, int task_type, const std::string &config)
-        : state(WAITING), id(id), mode(mode), ref_count(0), task_type(task_type),
+    TaskNode(loom::Id id, loom::Id client_id, Policy policy, int task_type, const std::string &config)
+        : state(WAITING), id(id), policy(policy), ref_count(0), task_type(task_type),
           config(config),
           size(0), length(0), client_id(client_id)
     {}
@@ -78,8 +78,8 @@ public:
         return ref_count;
     }
 
-    TaskMode get_mode() const {
-        return mode;
+    Policy get_policy() const {
+        return policy;
     }
 
     void set_state(State state) {
@@ -146,7 +146,7 @@ public:
 private:
     State state;
     loom::Id id;
-    TaskMode mode;
+    Policy policy;
     int ref_count;
     loom::TaskId task_type;
     Vector inputs;

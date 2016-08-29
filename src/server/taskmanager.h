@@ -58,7 +58,7 @@ private:
 
 
     void distribute_work(TaskNode::Vector &tasks);
-    void expand_scheduler_mode_task(TaskNode *node, TaskNode::Vector &tasks);
+    void expand_scheduler_task(TaskNode *node, TaskNode::Vector &tasks);
     void expand_dslice(TaskNode *node, TaskNode::Vector &tasks, size_t length, TaskNode *next);
     void expand_dget(TaskNode *node, TaskNode::Vector &tasks, size_t length, TaskNode *next);
     void dynamic_expand_helper(

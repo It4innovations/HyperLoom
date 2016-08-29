@@ -18,37 +18,37 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='loomplan.proto',
   package='loomplan',
-  serialized_pb=_b('\n\x0eloomplan.proto\x12\x08loomplan\"\xae\x01\n\x04Task\x12\x11\n\ttask_type\x18\x01 \x02(\x05\x12\x0e\n\x06\x63onfig\x18\x02 \x02(\x0c\x12\x11\n\tinput_ids\x18\x03 \x03(\x05\x12\x30\n\x04mode\x18\x04 \x01(\x0e\x32\x13.loomplan.Task.Mode:\rMODE_STANDARD\">\n\x04Mode\x12\x11\n\rMODE_STANDARD\x10\x01\x12\x0f\n\x0bMODE_SIMPLE\x10\x02\x12\x12\n\x0eMODE_SCHEDULER\x10\x03\"9\n\x04Plan\x12\x1d\n\x05tasks\x18\x02 \x03(\x0b\x32\x0e.loomplan.Task\x12\x12\n\nresult_ids\x18\x03 \x03(\x05\x42\x02H\x03')
+  serialized_pb=_b('\n\x0eloomplan.proto\x12\x08loomplan\"\xbc\x01\n\x04Task\x12\x11\n\ttask_type\x18\x01 \x02(\x05\x12\x0e\n\x06\x63onfig\x18\x02 \x02(\x0c\x12\x11\n\tinput_ids\x18\x03 \x03(\x05\x12\x36\n\x06policy\x18\x04 \x01(\x0e\x32\x15.loomplan.Task.Policy:\x0fPOLICY_STANDARD\"F\n\x06Policy\x12\x13\n\x0fPOLICY_STANDARD\x10\x01\x12\x11\n\rPOLICY_SIMPLE\x10\x02\x12\x14\n\x10POLICY_SCHEDULER\x10\x03\"9\n\x04Plan\x12\x1d\n\x05tasks\x18\x02 \x03(\x0b\x32\x0e.loomplan.Task\x12\x12\n\nresult_ids\x18\x03 \x03(\x05\x42\x02H\x03')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
-_TASK_MODE = _descriptor.EnumDescriptor(
-  name='Mode',
-  full_name='loomplan.Task.Mode',
+_TASK_POLICY = _descriptor.EnumDescriptor(
+  name='Policy',
+  full_name='loomplan.Task.Policy',
   filename=None,
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='MODE_STANDARD', index=0, number=1,
+      name='POLICY_STANDARD', index=0, number=1,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='MODE_SIMPLE', index=1, number=2,
+      name='POLICY_SIMPLE', index=1, number=2,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='MODE_SCHEDULER', index=2, number=3,
+      name='POLICY_SCHEDULER', index=2, number=3,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=141,
-  serialized_end=203,
+  serialized_start=147,
+  serialized_end=217,
 )
-_sym_db.RegisterEnumDescriptor(_TASK_MODE)
+_sym_db.RegisterEnumDescriptor(_TASK_POLICY)
 
 
 _TASK = _descriptor.Descriptor(
@@ -80,7 +80,7 @@ _TASK = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='mode', full_name='loomplan.Task.mode', index=3,
+      name='policy', full_name='loomplan.Task.policy', index=3,
       number=4, type=14, cpp_type=8, label=1,
       has_default_value=True, default_value=1,
       message_type=None, enum_type=None, containing_type=None,
@@ -91,7 +91,7 @@ _TASK = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
-    _TASK_MODE,
+    _TASK_POLICY,
   ],
   options=None,
   is_extendable=False,
@@ -99,7 +99,7 @@ _TASK = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=29,
-  serialized_end=203,
+  serialized_end=217,
 )
 
 
@@ -135,12 +135,12 @@ _PLAN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=205,
-  serialized_end=262,
+  serialized_start=219,
+  serialized_end=276,
 )
 
-_TASK.fields_by_name['mode'].enum_type = _TASK_MODE
-_TASK_MODE.containing_type = _TASK
+_TASK.fields_by_name['policy'].enum_type = _TASK_POLICY
+_TASK_POLICY.containing_type = _TASK
 _PLAN.fields_by_name['tasks'].message_type = _TASK
 DESCRIPTOR.message_types_by_name['Task'] = _TASK
 DESCRIPTOR.message_types_by_name['Plan'] = _PLAN

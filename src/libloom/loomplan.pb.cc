@@ -56,7 +56,7 @@ struct StaticDescriptorInitializer_loomplan_2eproto {
 
 // ===================================================================
 
-bool Task_Mode_IsValid(int value) {
+bool Task_Policy_IsValid(int value) {
   switch(value) {
     case 1:
     case 2:
@@ -68,18 +68,18 @@ bool Task_Mode_IsValid(int value) {
 }
 
 #ifndef _MSC_VER
-const Task_Mode Task::MODE_STANDARD;
-const Task_Mode Task::MODE_SIMPLE;
-const Task_Mode Task::MODE_SCHEDULER;
-const Task_Mode Task::Mode_MIN;
-const Task_Mode Task::Mode_MAX;
-const int Task::Mode_ARRAYSIZE;
+const Task_Policy Task::POLICY_STANDARD;
+const Task_Policy Task::POLICY_SIMPLE;
+const Task_Policy Task::POLICY_SCHEDULER;
+const Task_Policy Task::Policy_MIN;
+const Task_Policy Task::Policy_MAX;
+const int Task::Policy_ARRAYSIZE;
 #endif  // _MSC_VER
 #ifndef _MSC_VER
 const int Task::kTaskTypeFieldNumber;
 const int Task::kConfigFieldNumber;
 const int Task::kInputIdsFieldNumber;
-const int Task::kModeFieldNumber;
+const int Task::kPolicyFieldNumber;
 #endif  // !_MSC_VER
 
 Task::Task()
@@ -103,7 +103,7 @@ void Task::SharedCtor() {
   _cached_size_ = 0;
   task_type_ = 0;
   config_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  mode_ = 1;
+  policy_ = 1;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -152,7 +152,7 @@ void Task::Clear() {
         config_->clear();
       }
     }
-    mode_ = 1;
+    policy_ = 1;
   }
   input_ids_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -215,20 +215,20 @@ bool Task::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(24)) goto parse_input_ids;
-        if (input->ExpectTag(32)) goto parse_mode;
+        if (input->ExpectTag(32)) goto parse_policy;
         break;
       }
 
-      // optional .loomplan.Task.Mode mode = 4 [default = MODE_STANDARD];
+      // optional .loomplan.Task.Policy policy = 4 [default = POLICY_STANDARD];
       case 4: {
         if (tag == 32) {
-         parse_mode:
+         parse_policy:
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
-          if (::loomplan::Task_Mode_IsValid(value)) {
-            set_mode(static_cast< ::loomplan::Task_Mode >(value));
+          if (::loomplan::Task_Policy_IsValid(value)) {
+            set_policy(static_cast< ::loomplan::Task_Policy >(value));
           } else {
             unknown_fields_stream.WriteVarint32(tag);
             unknown_fields_stream.WriteVarint32(value);
@@ -282,10 +282,10 @@ void Task::SerializeWithCachedSizes(
       3, this->input_ids(i), output);
   }
 
-  // optional .loomplan.Task.Mode mode = 4 [default = MODE_STANDARD];
-  if (has_mode()) {
+  // optional .loomplan.Task.Policy policy = 4 [default = POLICY_STANDARD];
+  if (has_policy()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      4, this->mode(), output);
+      4, this->policy(), output);
   }
 
   output->WriteRaw(unknown_fields().data(),
@@ -311,10 +311,10 @@ int Task::ByteSize() const {
           this->config());
     }
 
-    // optional .loomplan.Task.Mode mode = 4 [default = MODE_STANDARD];
-    if (has_mode()) {
+    // optional .loomplan.Task.Policy policy = 4 [default = POLICY_STANDARD];
+    if (has_policy()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::EnumSize(this->mode());
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->policy());
     }
 
   }
@@ -351,8 +351,8 @@ void Task::MergeFrom(const Task& from) {
     if (from.has_config()) {
       set_config(from.config());
     }
-    if (from.has_mode()) {
-      set_mode(from.mode());
+    if (from.has_policy()) {
+      set_policy(from.policy());
     }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
@@ -375,7 +375,7 @@ void Task::Swap(Task* other) {
     std::swap(task_type_, other->task_type_);
     std::swap(config_, other->config_);
     input_ids_.Swap(&other->input_ids_);
-    std::swap(mode_, other->mode_);
+    std::swap(policy_, other->policy_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
