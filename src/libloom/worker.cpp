@@ -216,7 +216,7 @@ void Worker::start_task(std::unique_ptr<Task> task)
     t->start();
 }*/
 
-void Worker::publish_data(Id id, std::shared_ptr<Data> &data)
+void Worker::publish_data(Id id, const std::shared_ptr<Data> &data)
 {
     llog->debug("Publishing data id={} size={}", id, data->get_size());
     public_data[id] = data;

@@ -34,7 +34,7 @@ void SizeTask::start(DataVector &inputs)
     }
     std::shared_ptr<Data> output = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*output);
-    memcpy(data.init_empty_file(worker, sizeof(size_t)), &size, sizeof(size_t));
+    memcpy(data.init_empty(worker, sizeof(size_t)), &size, sizeof(size_t));
     finish(output);
 }
 
@@ -46,6 +46,6 @@ void LengthTask::start(DataVector &inputs)
     }
     std::shared_ptr<Data> output = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*output);
-    memcpy(data.init_empty_file(worker, sizeof(size_t)), &length, sizeof(size_t));
+    memcpy(data.init_empty(worker, sizeof(size_t)), &length, sizeof(size_t));
     finish(output);
 }

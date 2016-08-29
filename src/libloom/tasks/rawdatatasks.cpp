@@ -13,11 +13,9 @@ using namespace loom;
 
 void ConstTask::start(DataVector &inputs)
 {
-    auto& config = task->get_config();
-    std::shared_ptr<Data> output = std::make_shared<RawData>();
-    RawData &data = static_cast<RawData&>(*output);
-    memcpy(data.init_empty_file(worker, config.size()), config.c_str(), config.size());
-    finish(output);
+    auto output = std::make_shared<RawData>();
+    output->init_from_string(worker, task->get_config());
+    finish(std::static_pointer_cast<Data>(output));
 }
 
 /** If there are more then 50 input or size is bigger then 20000,
@@ -44,7 +42,7 @@ std::shared_ptr<Data> MergeTask::run() {
     }
     std::shared_ptr<Data> output = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*output);
-    data.init_empty_file(worker, size);
+    data.init_empty(worker, size);
     char *dst = output->get_raw_data(worker);
 
     for (auto& data : inputs) {

@@ -67,7 +67,7 @@ public:
 
     void task_finished(TaskInstance &task_instance, Data &data);
     void task_failed(TaskInstance &task_instance, const std::string &error_msg);
-    void publish_data(Id id, std::shared_ptr<Data> &data);
+    void publish_data(Id id, const std::shared_ptr<Data> &data);
     void remove_data(Id id);
 
     bool has_data(Id id) const

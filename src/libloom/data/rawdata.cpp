@@ -51,7 +51,7 @@ std::string RawData::get_type_name() const
     return data;
 }*/
 
-char* RawData::init_empty_file(Worker &worker, size_t size)
+char* RawData::init_empty(Worker &worker, size_t size)
 {
     assert(data == nullptr);
 
@@ -141,6 +141,13 @@ std::string RawData::get_info()
     return "RawData";
 }
 
+void RawData::init_from_string(Worker &worker, const std::string &str)
+{
+    auto size = str.size();
+    char *mem = init_empty(worker, size);
+    memcpy(mem, str.c_str(), size);
+}
+
 void RawData::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
     buffer.add(data_ptr, get_raw_data(worker), size);
@@ -156,7 +163,7 @@ bool RawDataUnpacker::init(Worker &worker, Connection &connection, const loomcom
     this->data = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*this->data);
     size_t size = msg.size();
-    pointer = data.init_empty_file(worker, size);
+    pointer = data.init_empty(worker, size);
     if (size == 0) {
         return true;
     }

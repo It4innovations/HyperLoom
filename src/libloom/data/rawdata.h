@@ -27,7 +27,8 @@ public:
 
     std::string get_info();
 
-    char* init_empty_file(Worker &worker, size_t size);
+    char* init_empty(Worker &worker, size_t size);
+    void init_from_string(Worker &worker, const std::string &str);
     void assign_filename(Worker &worker);
     void init_from_file(Worker &worker);
 
