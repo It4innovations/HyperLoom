@@ -13,7 +13,11 @@ add_library(loom-server-lib OBJECT
                freshconn.cpp
                freshconn.h
                clientconn.cpp
-               clientconn.h)
+               clientconn.h
+               compstate.h
+               compstate.cpp
+               plan.h
+               plan.cpp)
 
 target_include_directories(loom-server-lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
 

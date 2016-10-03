@@ -5,22 +5,20 @@
 #include <iomanip>
 
 
-void TaskNode::replace_input(TaskNode *old_input, const std::vector<TaskNode *> &new_inputs)
+void TaskNode::replace_input(loom::Id old_input, const std::vector<loom::Id> &new_inputs)
 {
     auto i = std::find(inputs.begin(), inputs.end(), old_input);
     assert (i != inputs.end());
     auto i2 = inputs.erase(i);
     inputs.insert(i2, new_inputs.begin(), new_inputs.end());
+}
 
-    // Update next in new_inputs
-    for (TaskNode *n : new_inputs) {
-        n->add_next(this);
-    }
-
-    // Update next in old_input
-    auto i3 = std::find(old_input->nexts.begin(), old_input->nexts.end(), this);
-    assert (i3 != inputs.end());
-    old_input->nexts.erase(i3);
+void TaskNode::replace_next(loom::Id old_next, const std::vector<loom::Id> &new_nexts)
+{
+    auto i = std::find(nexts.begin(), nexts.end(), old_next);
+    assert (i != nexts.end());
+    nexts.erase(i);
+    nexts.insert(nexts.end(), new_nexts.begin(), new_nexts.end());
 }
 
 std::string TaskNode::get_type_name(Server &server)
@@ -31,7 +29,7 @@ std::string TaskNode::get_type_name(Server &server)
 std::string TaskNode::get_info(Server &server)
 {
     std::stringstream s;
-    s << "T[" << id << "/" << client_id << " refs=" << ref_count;
+    s << "T[" << id << "/" << client_id;
     s << " task=" << get_type_name(server);
     s << " config(" << config.size() << ")=";
     size_t sz = config.size();

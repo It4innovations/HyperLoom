@@ -4,10 +4,9 @@
 #include "libloom/connection.h"
 #include "libloom/types.h"
 
-#include <unordered_map>
-
 class Server;
 class TaskNode;
+
 
 /** Connection to worker */
 class WorkerConnection : public loom::ConnectionCallback {
@@ -23,13 +22,9 @@ public:
     void on_close();
 
 
-    void send_task(TaskNode *task);
+    void send_task(const TaskNode &task);
     void send_data(loom::Id id, const std::string &address, bool with_size);
     void remove_data(loom::Id id);
-
-    std::unordered_map<loom::Id, TaskNode*>& get_tasks() {
-        return tasks;
-    }
 
     const std::string &get_address() {
         return address;
@@ -41,8 +36,7 @@ public:
 
 private:
     Server &server;
-    std::unique_ptr<loom::Connection> connection;
-    std::unordered_map<loom::Id, TaskNode*> tasks;
+    std::unique_ptr<loom::Connection> connection;    
     int resource_cpus;
     std::string address;
 

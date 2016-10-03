@@ -37,15 +37,8 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
     loomcomm::WorkerResponse msg;
     msg.ParseFromArray(buffer, size);
 
-    const auto it = tasks.find(msg.id());
-    assert(it != tasks.end());
-    TaskNode *task = it->second;
-    tasks.erase(it);
-
     if (msg.type() == loomcomm::WorkerResponse_Type_FINISH) {
-        task->add_owner(this);
-        task->set_finished(msg.size(), msg.length());
-        server.on_task_finished(*task);
+        server.on_task_finished(msg.id(), msg.size(), msg.length(), this);
         return;
     }
 
@@ -61,26 +54,20 @@ void WorkerConnection::on_close()
     server.remove_worker_connection(*this);
 }
 
-void WorkerConnection::send_task(TaskNode *task)
+void WorkerConnection::send_task(const TaskNode &task)
 {
-    assert(task->is_waiting());
-    task->set_state(TaskNode::RUNNING);
-    tasks[task->get_id()] = task;
-
-    auto id = task->get_id();
+    auto id = task.get_id();
     llog->debug("Assigning task id={} to address={}", id, address);
 
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_TASK);
-
     msg.set_id(id);
-    msg.set_task_type(task->get_task_type());
-    msg.set_task_config(task->get_config());
+    msg.set_task_type(task.get_task_type());
+    msg.set_task_config(task.get_config());
 
-    for (TaskNode *t : task->get_inputs()) {
-        msg.add_task_inputs(t->get_id());
+    for (loom::Id id : task.get_inputs()) {
+        msg.add_task_inputs(id);
     }
-
     connection->send_message(msg);
 }
 

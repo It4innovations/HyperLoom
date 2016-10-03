@@ -29,6 +29,12 @@ Server::Server(uv_loop_t *loop, int port)
     }
 }
 
+void Server::add_worker_connection(std::unique_ptr<WorkerConnection> conn)
+{
+    task_manager.register_worker(conn.get());
+    connections.push_back(std::move(conn));
+}
+
 void Server::remove_worker_connection(WorkerConnection &conn)
 {
     auto i = std::find_if(
@@ -53,6 +59,11 @@ void Server::remove_client_connection(ClientConnection &conn)
     client_connection.reset();
 }
 
+loom::Id Server::translate_to_client_id(loom::Id id) const
+{
+    return task_manager.get_plan().get_node(id).get_client_id();
+}
+
 void Server::remove_freshconnection(FreshConnection &conn)
 {
     auto i = std::find_if(
@@ -63,14 +74,16 @@ void Server::remove_freshconnection(FreshConnection &conn)
     fresh_connections.erase(i);
 }
 
-void Server::on_task_finished(TaskNode &task)
+void Server::on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
     assert(client_connection);
     if (client_connection->has_info_flag()) {
-        loomcomm::ClientMessage cmsg;
+        assert(0);
+        /*loomcomm::ClientMessage cmsg;
         cmsg.set_type(loomcomm::ClientMessage_Type_INFO);
         loomcomm::Info *info = cmsg.mutable_info();
         info->set_id(task.get_id());
+
         const auto& owners = task.get_owners();
         assert(owners.size());
         info->set_worker(owners.back()->get_address());
@@ -78,9 +91,9 @@ void Server::on_task_finished(TaskNode &task)
         SendBuffer *buffer = new SendBuffer;
         buffer->add(cmsg);
 
-        client_connection->send_buffer(buffer);
+        client_connection->send_buffer(buffer);*/
     }
-    task_manager.on_task_finished(task);
+    task_manager.on_task_finished(id, size, length, wc);
 }
 
 void Server::inform_about_error(std::string &error_msg)

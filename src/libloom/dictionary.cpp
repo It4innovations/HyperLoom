@@ -1,5 +1,6 @@
 
 #include "dictionary.h"
+#include "log.h"
 
 #include <assert.h>
 
@@ -13,7 +14,10 @@ Dictionary::Dictionary()
 Id Dictionary::lookup_symbol(const std::string &symbol)
 {
     auto i = symbol_to_id.find(symbol);
-    assert(i != symbol_to_id.end());
+    if(i == symbol_to_id.end()) {
+        llog->critical("Unknown symbol '{}'", symbol);
+        exit(1);
+    }
     assert(i->second != -1);
     return i->second;
 }

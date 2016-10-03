@@ -8,20 +8,15 @@
 #include <algorithm>
 #include <assert.h>
 
-class WorkerConnection;
+class Plan;
 class Server;
+class WorkerConnection;
 
 /** A task in the task graph in the server */
 class TaskNode {
 public:
-
+    friend class Plan;
     typedef std::vector<TaskNode*> Vector;
-
-    enum State {
-        WAITING,
-        RUNNING,
-        FINISHED
-    };
 
     enum Policy {
         POLICY_STANDARD,
@@ -29,65 +24,32 @@ public:
         POLICY_SCHEDULER
     };
 
-    TaskNode(loom::Id id, loom::Id client_id, Policy policy, int task_type, const std::string &config)
-        : state(WAITING), id(id), policy(policy), ref_count(0), task_type(task_type),
-          config(config),
-          size(0), length(0), client_id(client_id)
+    TaskNode(loom::Id id,
+             loom::Id client_id,
+             Policy policy,
+             bool result_flag,
+             int task_type,
+             const std::string &config,
+             std::vector<loom::Id> &&inputs)
+        : id(id), policy(policy), result_flag(result_flag), task_type(task_type),
+          inputs(std::move(inputs)), config(config),
+          client_id(client_id)
     {}
 
-    bool is_ready() {
-        assert(state == WAITING);
-        for (TaskNode *task : inputs) {
-            if (task->state != FINISHED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    void collect_ready_nexts(std::vector<TaskNode*> &ready)
-    {
-        for (TaskNode *task : nexts) {
-            if (task->is_ready()) {
-                ready.push_back(task);
-            }
-        }
-    }
-
-    void set_inputs(const TaskNode::Vector &inputs) {
-        this->inputs = inputs;
-    }
-
-    void add_input(TaskNode *task) {
-        inputs.push_back(task);
-    }
-
-    void add_next(TaskNode *task) {
-        nexts.push_back(task);
-    }
-
-    void inc_ref_counter(int count = 1) {
-        ref_count += count;
-    }
-
-    bool dec_ref_counter() {
-        return --ref_count <= 0;
-    }
-
-    int get_ref_counter() const {
-        return ref_count;
-    }
+    TaskNode(loom::Id id,
+             loom::Id client_id,
+             Policy policy,
+             bool result_flag,
+             int task_type,
+             const std::string &config,
+             const std::vector<loom::Id> &inputs)
+        : id(id), policy(policy), result_flag(result_flag), task_type(task_type),
+          inputs(inputs), config(config),
+          client_id(client_id)
+    {}
 
     Policy get_policy() const {
         return policy;
-    }
-
-    void set_state(State state) {
-        this->state = state;
-    }
-
-    bool is_waiting() const {
-        return state == WAITING;
     }
 
     loom::Id get_id() const {
@@ -106,58 +68,45 @@ public:
         return config;
     }
 
-    void add_owner(WorkerConnection *wconn) {
-        owners.push_back(wconn);
+    void set_nexts(const std::vector<int> &nexts) {
+        this->nexts = nexts;
     }
 
-    const std::vector<WorkerConnection*>& get_owners() const {
-        return owners;
+    void set_nexts(std::vector<int> &&nexts) {
+        this->nexts = nexts;
     }
 
-    bool is_owner(WorkerConnection &wconn) {
-        return std::find(owners.begin(), owners.end(), &wconn) != owners.end();
-    }
-
-    void set_finished(size_t size, size_t length) {
-        assert(state == RUNNING);
-        state = FINISHED;
-        this->size = size;
-        this->length = length;
-    }
-
-    const Vector& get_inputs() const {
+    const std::vector<loom::Id>& get_inputs() const {
         return inputs;
     }
 
-    const Vector& get_nexts() const {
+    const std::vector<loom::Id>& get_nexts() const {
         return nexts;
     }
 
-    size_t get_length() const {
-        return length;
-    }
-
-    void replace_input(TaskNode *old_input, const std::vector<TaskNode*> &new_inputs);
+    void replace_input(loom::Id old_input, const std::vector<loom::Id> &new_inputs);
+    void replace_next(loom::Id old_next, const std::vector<loom::Id> &new_nexts);
 
     std::string get_type_name(Server &server);
     std::string get_info(Server &server);
 
+    bool is_result() const {
+        return result_flag;
+    }
+
+    void set_as_result() {
+        result_flag = true;
+    }
+
 
 private:
-    State state;
     loom::Id id;
     Policy policy;
-    int ref_count;
+    bool result_flag;
     loom::TaskId task_type;
-    Vector inputs;
-    Vector nexts;
+    std::vector<loom::Id> inputs;
+    std::vector<loom::Id> nexts;
     std::string config;
-
-    std::vector<WorkerConnection*> owners;
-
-    size_t size;
-    size_t length;
-
     loom::Id client_id;
 };
 

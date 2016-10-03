@@ -82,8 +82,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
     msg.ParseFromArray(buffer, size);
 
     auto data_id = msg.id();
-    TaskNode &node = worker.server.get_task_manager().get_task(data_id);
-    auto client_id = node.get_client_id();
+    auto client_id = worker.server.translate_to_client_id(data_id);
     msg.set_id(client_id);
 
     loomcomm::ClientMessage cmsg;

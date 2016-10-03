@@ -12,7 +12,7 @@ def test_cv_iris(loom_env):
         CHUNK_SIZE = 150 / CHUNKS  # There are 150 irises
 
         loom_env.start(2)
-        loom_env.info = True
+        loom_env.info = False
 
         p = loom_env.plan()
         data = p.task_open(IRIS_DATA)

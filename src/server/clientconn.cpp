@@ -39,7 +39,9 @@ void ClientConnection::on_message(const char *buffer, size_t size)
     loomplan::Plan plan;
     plan.ParseFromArray(buffer, size);
     auto& task_manager = server.get_task_manager();
-    task_manager.add_plan(plan);
+
+    loom::Id id_base = server.new_id(plan.tasks_size());
+    task_manager.add_plan(Plan(plan, id_base));
     llog->info("Plan submitted tasks={}", plan.tasks_size());
 }
 

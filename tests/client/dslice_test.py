@@ -19,7 +19,7 @@ def test_dslice(loom_env):
     result = loom_env.submit(p, r)
 
     assert len(result) >= 2
-    assert sum(result, []) == ["data{}".format(i) for i in xrange(16)]
+    assert result == ["data{}".format(i) for i in xrange(0, 16, 2)]
 
 
 def test_dget(loom_env):
