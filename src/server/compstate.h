@@ -2,103 +2,9 @@
 #define LOOM_SERVER_COMPSTATE_H
 
 #include "plan.h"
+#include "taskstate.h"
 
-#include <unordered_map>
-
-class WorkerConnection;
-template<typename T> using WorkerMap = std::unordered_map<WorkerConnection*, T>;
-class ComputationState;
 class Server;
-
-class TaskState {
-
-public:
-    enum WStatus {
-        NONE,
-        READY,
-        RUNNING,
-        OWNER,
-    };
-
-    TaskState(const TaskNode &node);
-
-    loom::Id get_id() const {
-        return id;
-    }
-
-    void inc_ref_counter(int count = 1) {
-        ref_count += count;
-    }
-
-    bool dec_ref_counter() {
-        return --ref_count <= 0;
-    }
-
-    int get_ref_counter() const {
-        return ref_count;
-    }
-
-    WorkerMap<WStatus>& get_workers() {
-        return workers;
-    }
-
-    size_t get_size() const {
-        return size;
-    }
-
-    void set_size(size_t size) {
-        this->size = size;
-    }
-
-    size_t get_length() const {
-        return length;
-    }
-
-    void set_length(size_t length) {
-        this->length = length;
-    }
-
-    WStatus get_worker_status(WorkerConnection *wc) {
-        auto i = workers.find(wc);
-        if (i == workers.end()) {
-            return NONE;
-        }
-        return i->second;
-    }
-
-    WorkerConnection *get_first_owner() {
-        for (auto &p : workers) {
-            if (p.second == OWNER) {
-                return p.first;
-            }
-        }
-        return nullptr;
-    }
-
-    void set_worker_status(WorkerConnection *wc, WStatus ws) {
-        workers[wc] = ws;
-    }
-
-    template<typename F> void foreach_owner(F f) {
-        for(auto &pair : workers) {
-            if (pair.second == OWNER) {
-                f(pair.first);
-            }
-        }
-    }
-
-private:
-    loom::Id id;
-    WorkerMap<WStatus> workers;
-    int ref_count;
-    size_t size;
-    size_t length;
-};
-
-struct WorkerInfo {
-    WorkerInfo() : n_tasks(0) {}
-    int n_tasks;
-};
 
 using TaskDistribution = std::unordered_map<WorkerConnection*, std::vector<loom::Id>>;
 
@@ -138,7 +44,7 @@ public:
         return it->second;
     }
 
-    const TaskNode& get_node(loom::Id id) {
+    const PlanNode& get_node(loom::Id id) {
         return plan.get_node(id);
     }
 
@@ -151,8 +57,8 @@ public:
 
     void remove_state(loom::Id id);
 
-    bool is_ready(const TaskNode &node);
-    void add_ready_nexts(const TaskNode &node);
+    bool is_ready(const PlanNode &node);
+    void add_ready_nexts(const PlanNode &node);
 
 private:
     std::unordered_map<loom::Id, TaskState> states;
@@ -167,14 +73,14 @@ private:
     loom::Id slice_task_id;
     loom::Id get_task_id;
 
-    WorkerConnection *get_best_holder_of_deps(TaskNode *task);
-    WorkerConnection *find_best_worker_for_node(TaskNode *task);
+    WorkerConnection *get_best_holder_of_deps(PlanNode *task);
+    WorkerConnection *find_best_worker_for_node(PlanNode *task);
 
-    void expand_node(const TaskNode &node);
-    void expand_dslice(const TaskNode &node);
-    void expand_dget(const TaskNode &node);
-    void make_expansion(std::vector<std::string> &configs, const TaskNode &node1,
-                        const TaskNode &node2, loom::Id id_base1, loom::Id id_base2);
+    void expand_node(const PlanNode &node);
+    void expand_dslice(const PlanNode &node);
+    void expand_dget(const PlanNode &node);
+    void make_expansion(std::vector<std::string> &configs, const PlanNode &node1,
+                        const PlanNode &node2, loom::Id id_base1, loom::Id id_base2);
 };
 
 

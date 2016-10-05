@@ -45,7 +45,7 @@ void TaskManager::distribute_work(TaskDistribution &distribution)
 
 void TaskManager::start_task(WorkerConnection *wc, Id task_id)
 {
-    const TaskNode &node = cstate.get_node(task_id);
+    const PlanNode &node = cstate.get_node(task_id);
     for (loom::Id id : node.get_inputs()) {
         TaskState state = cstate.get_state_or_create(id);
         TaskState::WStatus st = state.get_worker_status(wc);
@@ -73,7 +73,7 @@ void TaskManager::remove_state(TaskState &state)
 void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
     cstate.set_task_finished(id, size, length, wc);
-    const TaskNode &node = cstate.get_node(id);
+    const PlanNode &node = cstate.get_node(id);
 
     if (node.is_result()) {
         llog->debug("Job id={} [RESULT] finished", id);

@@ -54,7 +54,7 @@ void WorkerConnection::on_close()
     server.remove_worker_connection(*this);
 }
 
-void WorkerConnection::send_task(const TaskNode &task)
+void WorkerConnection::send_task(const PlanNode &task)
 {
     auto id = task.get_id();
     llog->debug("Assigning task id={} to address={}", id, address);

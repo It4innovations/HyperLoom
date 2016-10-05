@@ -19,11 +19,11 @@ class TaskManager
 public:
 
     struct WorkerLoad {
-        WorkerLoad(WorkerConnection &connection, TaskNode::Vector &&tasks)
+        WorkerLoad(WorkerConnection &connection, PlanNode::Vector &&tasks)
             : connection(connection), tasks(tasks) {}
 
         WorkerConnection &connection;
-        TaskNode::Vector tasks;
+        PlanNode::Vector tasks;
     };
     typedef std::vector<WorkerLoad> WorkDistribution;
 

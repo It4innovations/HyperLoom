@@ -1,11 +1,11 @@
-#include "tasknode.h"
+#include "plannode.h"
 #include "server.h"
 
 #include <sstream>
 #include <iomanip>
 
 
-void TaskNode::replace_input(loom::Id old_input, const std::vector<loom::Id> &new_inputs)
+void PlanNode::replace_input(loom::Id old_input, const std::vector<loom::Id> &new_inputs)
 {
     auto i = std::find(inputs.begin(), inputs.end(), old_input);
     assert (i != inputs.end());
@@ -13,7 +13,7 @@ void TaskNode::replace_input(loom::Id old_input, const std::vector<loom::Id> &ne
     inputs.insert(i2, new_inputs.begin(), new_inputs.end());
 }
 
-void TaskNode::replace_next(loom::Id old_next, const std::vector<loom::Id> &new_nexts)
+void PlanNode::replace_next(loom::Id old_next, const std::vector<loom::Id> &new_nexts)
 {
     auto i = std::find(nexts.begin(), nexts.end(), old_next);
     assert (i != nexts.end());
@@ -21,12 +21,12 @@ void TaskNode::replace_next(loom::Id old_next, const std::vector<loom::Id> &new_
     nexts.insert(nexts.end(), new_nexts.begin(), new_nexts.end());
 }
 
-std::string TaskNode::get_type_name(Server &server)
+std::string PlanNode::get_type_name(Server &server)
 {
     return server.get_dictionary().translate(task_type);
 }
 
-std::string TaskNode::get_info(Server &server)
+std::string PlanNode::get_info(Server &server)
 {
     std::stringstream s;
     s << "T[" << id << "/" << client_id;

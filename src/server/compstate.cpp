@@ -61,12 +61,12 @@ void ComputationState::remove_state(loom::Id id)
     states.erase(it);
 }
 
-void ComputationState::add_ready_nexts(const TaskNode &node)
+void ComputationState::add_ready_nexts(const PlanNode &node)
 {
     for (loom::Id id : node.get_nexts()) {
-        const TaskNode &node = get_node(id);
+        const PlanNode &node = get_node(id);
         if (is_ready(node)) {
-            if (node.get_policy() == TaskNode::POLICY_SCHEDULER) {
+            if (node.get_policy() == PlanNode::POLICY_SCHEDULER) {
                 expand_node(node);
             } else {
                 pending_tasks.insert(id);
@@ -75,7 +75,7 @@ void ComputationState::add_ready_nexts(const TaskNode &node)
     }
 }
 
-void ComputationState::expand_node(const TaskNode &node)
+void ComputationState::expand_node(const PlanNode &node)
 {
     loom::Id id = node.get_task_type();
 
@@ -89,7 +89,7 @@ void ComputationState::expand_node(const TaskNode &node)
     }
 }
 
-void ComputationState::expand_dslice(const TaskNode &node)
+void ComputationState::expand_dslice(const PlanNode &node)
 {
     size_t n_cpus = 0;
     for (auto& pair : workers) {
@@ -97,10 +97,10 @@ void ComputationState::expand_dslice(const TaskNode &node)
     }
     assert(n_cpus);
 
-    const TaskNode &node1 = node;
+    const PlanNode &node1 = node;
     assert(node1.get_nexts().size() == 1);
     // Do a copy again
-    const TaskNode &node2 = get_node(node.get_nexts()[0]);
+    const PlanNode &node2 = get_node(node.get_nexts()[0]);
 
     std::vector<loom::Id> inputs = node.get_inputs();
     assert(inputs.size() == 1);
@@ -132,17 +132,17 @@ void ComputationState::expand_dslice(const TaskNode &node)
     loom::llog->debug("Expanding 'dslice' id={} length={} pieces={} new_id_base={}",
                       node1.get_id(), length, configs.size(), id_base1);
 
-    TaskNode new_node(node1.get_id(),-1, TaskNode::POLICY_SIMPLE, false,
+    PlanNode new_node(node1.get_id(),-1, PlanNode::POLICY_SIMPLE, false,
                       slice_task_id, "", node1.get_inputs());
     make_expansion(configs, new_node, node2, id_base1, id_base2);
 }
 
-void ComputationState::expand_dget(const TaskNode &node)
+void ComputationState::expand_dget(const PlanNode &node)
 {
-    const TaskNode &node1 = node;
+    const PlanNode &node1 = node;
     assert(node1.get_nexts().size() == 1);
     // Do a copy again
-    const TaskNode &node2 = get_node(node.get_nexts()[0]);
+    const PlanNode &node2 = get_node(node.get_nexts()[0]);
 
     std::vector<loom::Id> inputs = node.get_inputs();
     assert(inputs.size() == 1);
@@ -160,20 +160,20 @@ void ComputationState::expand_dget(const TaskNode &node)
     loom::llog->debug("Expanding 'dget' id={} length={} new_id_base={}",
                       node1.get_id(), length, id_base1);
 
-    TaskNode new_node(node1.get_id(),-1, TaskNode::POLICY_SIMPLE, false,
+    PlanNode new_node(node1.get_id(),-1, PlanNode::POLICY_SIMPLE, false,
                       get_task_id, "", node1.get_inputs());
     make_expansion(configs, new_node, node2, id_base1, id_base2);
 }
 
 void ComputationState::make_expansion(std::vector<std::string> &configs,
-                                      const TaskNode &n1,
-                                      const TaskNode &n2,
+                                      const PlanNode &n1,
+                                      const PlanNode &n2,
                                       loom::Id id_base1,
                                       loom::Id id_base2)
 
 {
-    TaskNode node1 = n1; // Make copy
-    TaskNode node2 = n2; // Make copy
+    PlanNode node1 = n1; // Make copy
+    PlanNode node2 = n2; // Make copy
     plan.remove_node(node1.get_id());
     plan.remove_node(node2.get_id());
 
@@ -185,7 +185,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
     ids2.reserve(size);
 
     for (std::string &config1 : configs) {
-        TaskNode t1(id_base1, -1,
+        PlanNode t1(id_base1, -1,
                     node1.get_policy(), false,
                     node1.get_task_type(), config1, node1.get_inputs());
         t1.set_nexts(std::vector<loom::Id>{id_base2});
@@ -193,7 +193,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
 
         pending_tasks.insert(id_base1);
 
-        TaskNode t2(id_base2, -1,
+        PlanNode t2(id_base2, -1,
                     node2.get_policy(), false,
                     node2.get_task_type(), node2.get_config(),
                     std::vector<int>{id_base1});
@@ -217,7 +217,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
 }
 
 
-bool ComputationState::is_ready(const TaskNode &node)
+bool ComputationState::is_ready(const PlanNode &node)
 {
     for (loom::Id id : node.get_inputs()) {
         if (states.find(id) == states.end()) {
@@ -252,7 +252,7 @@ TaskDistribution ComputationState::compute_distribution()
     }
 
     for (loom::Id id : pending_tasks) {
-        const TaskNode &node = get_node(id);
+        const PlanNode &node = get_node(id);
         int index;
         if (node.get_inputs().size() == 1) {
             index = node.get_inputs()[0];
@@ -268,13 +268,5 @@ void ComputationState::add_ready_nodes(std::vector<loom::Id> &ids)
 {
     for (loom::Id id : ids) {
         pending_tasks.insert(id);
-    }
-}
-
-TaskState::TaskState(const TaskNode &node)
-    : id(node.get_id()), ref_count(node.get_nexts().size())
-{
-    if (node.is_result()) {
-        inc_ref_counter();
     }
 }

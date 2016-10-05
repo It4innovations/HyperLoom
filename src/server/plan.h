@@ -1,7 +1,7 @@
 #ifndef LOOM_SERVER_PLAN_H
 #define LOOM_SERVER_PLAN_H
 
-#include "tasknode.h"
+#include "plannode.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <memory.h>
@@ -22,13 +22,13 @@ public:
         }
     }
 
-    const TaskNode& get_node(loom::Id id) const {
+    const PlanNode& get_node(loom::Id id) const {
         auto it = tasks.find(id);
         assert(it != tasks.end());
         return it->second;
     }
 
-    TaskNode& get_node(loom::Id id) {
+    PlanNode& get_node(loom::Id id) {
         auto it = tasks.find(id);
         assert(it != tasks.end());
         return it->second;
@@ -52,7 +52,7 @@ public:
     }
 
 private:
-    std::unordered_map<loom::Id, TaskNode> tasks;
+    std::unordered_map<loom::Id, PlanNode> tasks;
 };
 
 #endif // LOOM_SERVER_PLAN_H

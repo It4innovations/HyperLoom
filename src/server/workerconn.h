@@ -5,7 +5,7 @@
 #include "libloom/types.h"
 
 class Server;
-class TaskNode;
+class PlanNode;
 
 
 /** Connection to worker */
@@ -22,7 +22,7 @@ public:
     void on_close();
 
 
-    void send_task(const TaskNode &task);
+    void send_task(const PlanNode &task);
     void send_data(loom::Id id, const std::string &address, bool with_size);
     void remove_data(loom::Id id);
 

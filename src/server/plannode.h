@@ -13,10 +13,10 @@ class Server;
 class WorkerConnection;
 
 /** A task in the task graph in the server */
-class TaskNode {
+class PlanNode {
 public:
     friend class Plan;
-    typedef std::vector<TaskNode*> Vector;
+    typedef std::vector<PlanNode*> Vector;
 
     enum Policy {
         POLICY_STANDARD,
@@ -24,7 +24,7 @@ public:
         POLICY_SCHEDULER
     };
 
-    TaskNode(loom::Id id,
+    PlanNode(loom::Id id,
              loom::Id client_id,
              Policy policy,
              bool result_flag,
@@ -36,7 +36,7 @@ public:
           client_id(client_id)
     {}
 
-    TaskNode(loom::Id id,
+    PlanNode(loom::Id id,
              loom::Id client_id,
              Policy policy,
              bool result_flag,

@@ -13,7 +13,7 @@ template<typename T> std::set<T> v_to_s(std::vector<T> &v) {
     return std::set<T>(v.begin(), v.end());
 }
 
-typedef std::unordered_set<TaskNode*> TaskSet;
+typedef std::unordered_set<PlanNode*> TaskSet;
 
 typedef
 std::unordered_map<WorkerConnection*, TaskSet>

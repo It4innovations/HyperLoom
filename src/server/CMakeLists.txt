@@ -6,8 +6,6 @@ add_library(loom-server-lib OBJECT
                dummyworker.h
                taskmanager.cpp
                taskmanager.h
-               tasknode.cpp
-               tasknode.h
                workerconn.cpp
                workerconn.h
                freshconn.cpp
@@ -16,6 +14,10 @@ add_library(loom-server-lib OBJECT
                clientconn.h
                compstate.h
                compstate.cpp
+               taskstate.h
+               taskstate.cpp
+               plannode.cpp
+               plannode.h
                plan.h
                plan.cpp)
 

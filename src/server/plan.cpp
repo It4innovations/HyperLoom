@@ -5,14 +5,14 @@
 #include "libloom/loomplan.pb.h"
 #include "libloom/log.h"
 
-static TaskNode::Policy read_task_policy(loomplan::Task_Policy policy) {
+static PlanNode::Policy read_task_policy(loomplan::Task_Policy policy) {
     switch(policy) {
         case loomplan::Task_Policy_POLICY_STANDARD:
-            return TaskNode::POLICY_STANDARD;
+            return PlanNode::POLICY_STANDARD;
         case loomplan::Task_Policy_POLICY_SIMPLE:
-            return TaskNode::POLICY_SIMPLE;
+            return PlanNode::POLICY_SIMPLE;
         case loomplan::Task_Policy_POLICY_SCHEDULER:
-            return TaskNode::POLICY_SCHEDULER;
+            return PlanNode::POLICY_SCHEDULER;
         default:
             loom::llog->critical("Invalid task policy");
             exit(1);
@@ -41,9 +41,9 @@ Plan::Plan(const loomplan::Plan &plan, loom::Id id_base)
             inputs.push_back(id_base + pt.input_ids(j));
         }
 
-        TaskNode tnode(id, i, read_task_policy(pt.policy()), false,
+        PlanNode pnode(id, i, read_task_policy(pt.policy()), false,
                        pt.task_type(), pt.config(), std::move(inputs));
-        tasks.emplace(std::make_pair(id, std::move(tnode)));
+        tasks.emplace(std::make_pair(id, std::move(pnode)));
     }
 
     for (auto& pair : tasks) {
@@ -73,7 +73,7 @@ Plan::Plan(const loomplan::Plan &plan, loom::Id id_base)
 std::vector<loom::Id> Plan::get_init_tasks() const
 {
     std::vector<loom::Id> result;
-    foreach_task([&result](const TaskNode &node){
+    foreach_task([&result](const PlanNode &node){
           if (node.get_inputs().empty()) {
             result.push_back(node.id);
        }
