@@ -19,7 +19,9 @@ add_library(loom-server-lib OBJECT
                plannode.cpp
                plannode.h
                plan.h
-               plan.cpp)
+               plan.cpp
+               solver.h
+               solver.cpp)
 
 target_include_directories(loom-server-lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
 
@@ -28,6 +30,7 @@ add_executable(loom-server
                main.cpp)
 
 target_link_libraries(loom-server libloom ${LIBUV_LIBRARY} pthread)
+target_link_libraries(loom-server ${LPSOLVE_LIBRARY} ${COLAMD_LIBRARY} dl)
 target_link_libraries(loom-server ${PROTOBUF_LIBRARIES})
 
 install (TARGETS loom-server DESTINATION bin)

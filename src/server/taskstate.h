@@ -14,10 +14,10 @@ class TaskState {
 
 public:
     enum WStatus {
-        NONE,
-        READY,
-        RUNNING,
-        OWNER,
+        S_NONE,
+        S_READY,
+        S_RUNNING,
+        S_OWNER,
     };
 
     TaskState(const PlanNode &node);
@@ -61,14 +61,14 @@ public:
     WStatus get_worker_status(WorkerConnection *wc) {
         auto i = workers.find(wc);
         if (i == workers.end()) {
-            return NONE;
+            return S_NONE;
         }
         return i->second;
     }
 
     WorkerConnection *get_first_owner() {
         for (auto &p : workers) {
-            if (p.second == OWNER) {
+            if (p.second == S_OWNER) {
                 return p.first;
             }
         }
@@ -81,7 +81,7 @@ public:
 
     template<typename F> void foreach_owner(F f) {
         for(auto &pair : workers) {
-            if (pair.second == OWNER) {
+            if (pair.second == S_OWNER) {
                 f(pair.first);
             }
         }
@@ -93,11 +93,6 @@ private:
     int ref_count;
     size_t size;
     size_t length;
-};
-
-struct WorkerInfo {
-    WorkerInfo() : n_tasks(0) {}
-    int n_tasks;
 };
 
 #endif // LOOM_SERVER_TASKSTATE_H

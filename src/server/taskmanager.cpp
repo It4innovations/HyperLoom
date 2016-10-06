@@ -49,11 +49,11 @@ void TaskManager::start_task(WorkerConnection *wc, Id task_id)
     for (loom::Id id : node.get_inputs()) {
         TaskState state = cstate.get_state_or_create(id);
         TaskState::WStatus st = state.get_worker_status(wc);
-        if (st == TaskState::NONE) {
+        if (st == TaskState::S_NONE) {
             WorkerConnection *owner = state.get_first_owner();
             assert(owner);
             owner->send_data(id, wc->get_address(), false);
-            state.set_worker_status(wc, TaskState::OWNER);
+            state.set_worker_status(wc, TaskState::S_OWNER);
         }
     }
     wc->send_task(node);
@@ -89,10 +89,15 @@ void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, Work
         llog->debug("Job id={} finished (size={}, length={})", id, size, length);
     }
 
-    for (loom::Id id : node.get_inputs()) {
-        TaskState *state = cstate.get_state_ptr(id);
-        if (state && state->dec_ref_counter()) {
-            remove_state(*state);
+    // Remove duplicates
+    std::vector<loom::Id> inputs = node.get_inputs();
+    std::sort(inputs.begin(), inputs.end());
+    inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
+
+    for (loom::Id id : inputs) {
+        TaskState &state = cstate.get_state(id);
+        if (state.dec_ref_counter()) {
+            remove_state(state);
         }
     }
 

@@ -9,6 +9,11 @@ class Server;
 using TaskDistribution = std::unordered_map<WorkerConnection*, std::vector<loom::Id>>;
 
 class ComputationState {
+    struct WorkerInfo {
+        WorkerInfo() : n_tasks(0) {}
+        size_t index;
+        int n_tasks;
+    };
 public:
     ComputationState(Server &server);
 
@@ -20,11 +25,7 @@ public:
     TaskDistribution compute_initial_distribution();
     TaskDistribution compute_distribution();
 
-    TaskState& get_state(loom::Id id) {
-        auto it = states.find(id);
-        assert(it != states.end());
-        return it->second;
-    }
+    TaskState& get_state(loom::Id id);
 
     TaskState* get_state_ptr(loom::Id id) {
         auto it = states.find(id);
@@ -48,7 +49,7 @@ public:
         return plan.get_node(id);
     }
 
-    void add_ready_nodes(std::vector<loom::Id> &ids);
+    void add_ready_nodes(const std::vector<loom::Id> &ids);
     void set_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc);
 
     const Plan& get_plan() const {
@@ -81,6 +82,10 @@ private:
     void expand_dget(const PlanNode &node);
     void make_expansion(std::vector<std::string> &configs, const PlanNode &node1,
                         const PlanNode &node2, loom::Id id_base1, loom::Id id_base2);
+    void collect_requirements_for_node(WorkerConnection *wc,
+                                       const PlanNode &node,
+                                       std::unordered_set<loom::Id> &nonlocals);
+    size_t task_transfer_cost(const PlanNode &node);
 };
 
 
