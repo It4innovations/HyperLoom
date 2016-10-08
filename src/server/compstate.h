@@ -36,7 +36,7 @@ public:
         }
     }
 
-    TaskState& get_state_or_create(loom::Id id);
+    //TaskState& get_state_or_create(loom::Id id);
 
     const PlanNode& get_node(loom::Id id) {
         return plan.get_node(id);
@@ -79,6 +79,7 @@ private:
                                        const PlanNode &node,
                                        std::unordered_set<loom::Id> &nonlocals);
     size_t task_transfer_cost(const PlanNode &node);
+    void add_pending_task(loom::Id id);
 };
 
 

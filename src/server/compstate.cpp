@@ -40,7 +40,7 @@ void ComputationState::add_worker(WorkerConnection* wconn)
 
 void ComputationState::set_running_task(WorkerConnection *wc, loom::Id id)
 {
-   TaskState &state = get_state_or_create(id);
+   TaskState &state = get_state(id);
    auto it = pending_tasks.find(id);
    assert(it != pending_tasks.end());
    pending_tasks.erase(it);
@@ -75,10 +75,18 @@ void ComputationState::add_ready_nexts(const PlanNode &node)
          if (node.get_policy() == PlanNode::POLICY_SCHEDULER) {
             expand_node(node);
          } else {
-            pending_tasks.insert(id);
+            add_pending_task(id);
          }
       }
    }
+}
+
+void ComputationState::add_pending_task(loom::Id id)
+{
+   loom::llog->debug("Add pending task and creating state id={}", id);
+   auto pair = states.emplace(std::make_pair(id, TaskState(get_node(id))));
+   assert(pair.second);
+   pending_tasks.insert(id);
 }
 
 void ComputationState::expand_node(const PlanNode &node)
@@ -197,7 +205,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
       t1.set_nexts(std::vector<loom::Id>{id_base2});
       plan.add_node(std::move(t1));
 
-      pending_tasks.insert(id_base1);
+      add_pending_task(id_base1);
 
       PlanNode t2(id_base2, -1,
                   node2.get_policy(), false,
@@ -238,6 +246,8 @@ bool ComputationState::is_ready(const PlanNode &node)
 
 TaskDistribution ComputationState::compute_distribution()
 {
+   loom::llog->debug("Computation for distribution of {} task(s)", pending_tasks.size());
+
    TaskDistribution result;
    if (pending_tasks.empty()) {
       return result;
@@ -390,7 +400,7 @@ TaskState &ComputationState::get_state(loom::Id id)
 
 }
 
-TaskState &ComputationState::get_state_or_create(loom::Id id)
+/*TaskState &ComputationState::get_state_or_create(loom::Id id)
 {
    auto it = states.find(id);
    if (it == states.end()) {
@@ -399,12 +409,12 @@ TaskState &ComputationState::get_state_or_create(loom::Id id)
       it = p.first;
    }
    return it->second;
-}
+}*/
 
 void ComputationState::add_ready_nodes(const std::vector<loom::Id> &ids)
 {
    for (loom::Id id : ids) {
-      pending_tasks.insert(id);
+      add_pending_task(id);
    }
 }
 

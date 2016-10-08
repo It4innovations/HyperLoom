@@ -87,6 +87,8 @@ public:
         }
     }
 
+    std::string get_info() const;
+
 private:
     loom::Id id;
     WorkerMap<WStatus> workers;

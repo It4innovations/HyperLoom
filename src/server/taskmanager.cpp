@@ -47,7 +47,7 @@ void TaskManager::start_task(WorkerConnection *wc, Id task_id)
 {
     const PlanNode &node = cstate.get_node(task_id);
     for (loom::Id id : node.get_inputs()) {
-        TaskState state = cstate.get_state_or_create(id);
+        TaskState &state = cstate.get_state(id);
         TaskState::WStatus st = state.get_worker_status(wc);
         if (st == TaskState::S_NONE) {
             WorkerConnection *owner = state.get_first_owner();
