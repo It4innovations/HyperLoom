@@ -17,6 +17,8 @@ namespace loom {
 
 void report_uv_error(int error_code, int line_number, const char *filename) __attribute__ ((noreturn));
 void log_errno_abort(const char *tmp)  __attribute__ ((noreturn));
+void log_errno_abort(const char *tmp, const char *tmp2)  __attribute__ ((noreturn));
+
 
 int make_path(const char *path, mode_t mode);
 size_t file_size(const char *path);

@@ -58,8 +58,9 @@ class LoomEnv(Env):
         server_args = (LOOM_SERVER_BIN,
                        "--debug",
                        "--port=" + str(self.PORT))
+        valgrind_args = ("valgrind", "--num-callers=40")
         if VALGRIND:
-            server_args = ("valgrind",) + server_args
+            server_args = valgrind_args + server_args
         server = self.start_process("server", server_args)
         time.sleep(0.1)
         assert not server.poll()
@@ -71,7 +72,7 @@ class LoomEnv(Env):
                        "localhost", str(self.PORT))
         if VALGRIND:
             time.sleep(2)
-            worker_args = ("valgrind",) + worker_args
+            worker_args = valgrind_args + worker_args
         for i in xrange(workers_count):
             w = self.start_process("worker{}".format(i), worker_args)
             workers.append(w)

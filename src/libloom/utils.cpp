@@ -72,5 +72,11 @@ int loom::make_path(const char *path, mode_t mode)
 void loom::log_errno_abort(const char *tmp)
 {
     llog->critical("{}: {}", tmp, strerror(errno));
-    exit(1);
+    abort();
+}
+
+void loom::log_errno_abort(const char *tmp, const char *tmp2)
+{
+    llog->critical("{}: {} ({})", tmp, strerror(errno), tmp2);
+    abort();
 }

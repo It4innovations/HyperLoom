@@ -476,7 +476,7 @@ void ServerConnection::on_message(const char *data, size_t size)
         if (address.size() > 2 && address[0] == '!' && address[1] == ':') {
             msg.set_address(worker.get_server_address() + ":" + address.substr(2, std::string::npos));
         }
-        llog->debug("Sending data {} to {}", msg.id(), msg.address());
+        llog->debug("Sending data id={} to {}", msg.id(), msg.address());
         bool with_size = msg.has_with_size() && msg.with_size();
         assert(worker.send_data(msg.address(), msg.id(), with_size));
         break;

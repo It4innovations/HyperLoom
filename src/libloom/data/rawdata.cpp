@@ -23,12 +23,12 @@ RawData::RawData()
 
 RawData::~RawData()
 {
-    llog->debug("Disposing raw data filename={}", filename);
+    llog->debug("Disposing raw data filename={} size={}", filename, size);
 
     if (filename.empty()) {
         assert(data == nullptr);
     } else {
-        if (munmap(data, size)) {
+        if (size > 0 && munmap(data, size)) {
             log_errno_abort("munmap");
         }
         if (unlink(filename.c_str())) {
@@ -41,15 +41,6 @@ std::string RawData::get_type_name() const
 {
     return RawDataUnpacker::get_type_name();
 }
-
-/*char* RawData::init_memonly(size_t size)
-{
-    assert(data == nullptr);
-    assert(file_id == 0);
-    this->size = size;
-    data = new char[size];
-    return data;
-}*/
 
 char* RawData::init_empty(Worker &worker, size_t size)
 {
@@ -124,6 +115,10 @@ void RawData::map(int fd, bool write)
     assert(data == nullptr);
     assert(!filename.empty());
     assert(fd >= 0);
+
+    if (size == 0) {
+       return;
+    }
 
     int flags = PROT_READ;
     if (write) {

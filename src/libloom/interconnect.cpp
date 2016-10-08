@@ -21,7 +21,7 @@ InterConnection::~InterConnection()
 
 void InterConnection::on_connection()
 {
-    llog->debug("Connected");
+    llog->info("Connected to {}", get_address());
     connection.start_read();
     loomcomm::Announce msg;
     msg.set_port(worker.get_listen_port());
