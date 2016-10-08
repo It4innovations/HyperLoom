@@ -390,6 +390,17 @@ TaskState &ComputationState::get_state(loom::Id id)
 
 }
 
+TaskState &ComputationState::get_state_or_create(loom::Id id)
+{
+   auto it = states.find(id);
+   if (it == states.end()) {
+      loom::llog->debug("Creating state id={}", id);
+      auto p = states.emplace(std::make_pair(id, TaskState(get_node(id))));
+      it = p.first;
+   }
+   return it->second;
+}
+
 void ComputationState::add_ready_nodes(const std::vector<loom::Id> &ids)
 {
    for (loom::Id id : ids) {

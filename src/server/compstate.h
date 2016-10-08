@@ -36,14 +36,7 @@ public:
         }
     }
 
-    TaskState& get_state_or_create(loom::Id id) {
-        auto it = states.find(id);
-        if (it == states.end()) {
-            auto p = states.emplace(std::make_pair(id, TaskState(get_node(id))));
-            it = p.first;
-        }
-        return it->second;
-    }
+    TaskState& get_state_or_create(loom::Id id);
 
     const PlanNode& get_node(loom::Id id) {
         return plan.get_node(id);

@@ -62,6 +62,7 @@ void TaskManager::start_task(WorkerConnection *wc, Id task_id)
 
 void TaskManager::remove_state(TaskState &state)
 {
+    llog->debug("Removing state id={}", state.get_id());
     assert(state.get_ref_counter() == 0);
     loom::Id id = state.get_id();
     state.foreach_owner([id](WorkerConnection *wc) {

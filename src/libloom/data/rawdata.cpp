@@ -133,7 +133,7 @@ void RawData::map(int fd, bool write)
 
 std::string RawData::get_info()
 {
-    return "RawData";
+    return "RawData file=" + filename;
 }
 
 void RawData::init_from_string(Worker &worker, const std::string &str)
