@@ -12,7 +12,7 @@
 using namespace loom;
 
 RunTask::RunTask(Worker &worker, std::unique_ptr<Task> task)
-   : TaskInstance(worker, std::move(task))
+   : TaskInstance(worker, std::move(task)), exit_status(0)
 {    
 }
 
@@ -60,11 +60,11 @@ void RunTask::start(DataVector &inputs)
    }
 
    /* Streams */
-   uv_stdio_container_t stdio[2];
+   uv_stdio_container_t stdio[3];
    options.stdio = stdio;
    stdio[0].flags = UV_IGNORE;
    stdio[1].flags = UV_IGNORE;
-   options.stdio_count = 2;
+   options.stdio_count = 3;
 
    assert(msg.map_inputs_size() <= static_cast<int>(inputs.size()));
 
@@ -103,6 +103,13 @@ void RunTask::start(DataVector &inputs)
       }
    }
 
+   int stderr_fd = ::open(get_path("+err").c_str(), O_CREAT | O_RDWR,  S_IRUSR | S_IWUSR);
+   if (stderr_fd < 0) {
+      log_errno_abort("open +err:");
+   }
+   stdio[2].flags = UV_IGNORE;
+   stdio[2].data.fd = stderr_fd;
+
    int r;
    r = uv_spawn(worker.get_loop(), &process, &options);
    process.data = this;
@@ -114,6 +121,8 @@ void RunTask::start(DataVector &inputs)
    if (stdio[1].flags == UV_INHERIT_FD) {
       close(stdio[1].data.fd);
    }
+
+   close(stderr_fd);
 
    if (r) {
        fail_libuv("uv_spawn", r);
@@ -128,15 +137,16 @@ std::string RunTask::get_path(const std::string &filename)
 
 void RunTask::_on_exit(uv_process_t *process, int64_t exit_status, int term_signal)
 {
-   //RunTask *task = static_cast<RunTask*>(process->data);
-   assert(exit_status == 0);
+   RunTask *task = static_cast<RunTask*>(process->data);
+   task->exit_status = exit_status;
    uv_close((uv_handle_t*) process, _on_close);
 }
 
 void RunTask::_on_close(uv_handle_t *handle)
 {
    RunTask *task = static_cast<RunTask*>(handle->data);
-   llog->debug("Process id={} finished.", task->get_id());
+   llog->debug("Process id={} finished (exit_status={})", task->get_id(), task->exit_status);
+   assert(task->exit_status == 0);
    loomrun::Run msg;
    msg.ParseFromString(task->task->get_config());
    std::unique_ptr<Data> result;

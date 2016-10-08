@@ -22,6 +22,7 @@ private:
     uv_process_t process;
     uv_pipe_t pipes[2];
     uv_write_t write_request;
+    int64_t exit_status;
 
     static void _on_exit(uv_process_t *process, int64_t exit_status, int term_signal);
     static void _on_close(uv_handle_t *handle);
