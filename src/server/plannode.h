@@ -27,11 +27,12 @@ public:
     PlanNode(loom::Id id,
              loom::Id client_id,
              Policy policy,
+             int n_cpus,
              bool result_flag,
              int task_type,
              const std::string &config,
              std::vector<loom::Id> &&inputs)
-        : id(id), policy(policy), result_flag(result_flag), task_type(task_type),
+        : id(id), policy(policy), n_cpus(n_cpus), result_flag(result_flag), task_type(task_type),
           inputs(std::move(inputs)), config(config),
           client_id(client_id)
     {}
@@ -39,11 +40,12 @@ public:
     PlanNode(loom::Id id,
              loom::Id client_id,
              Policy policy,
+             int n_cpus,
              bool result_flag,
              int task_type,
              const std::string &config,
              const std::vector<loom::Id> &inputs)
-        : id(id), policy(policy), result_flag(result_flag), task_type(task_type),
+        : id(id), policy(policy), n_cpus(n_cpus), result_flag(result_flag), task_type(task_type),
           inputs(inputs), config(config),
           client_id(client_id)
     {}
@@ -98,10 +100,14 @@ public:
         result_flag = true;
     }
 
+    int get_n_cpus() const {
+        return n_cpus;
+    }
 
 private:
     loom::Id id;
     Policy policy;
+    int n_cpus; // TODO: Replace by resource index
     bool result_flag;
     loom::TaskId task_type;
     std::vector<loom::Id> inputs;

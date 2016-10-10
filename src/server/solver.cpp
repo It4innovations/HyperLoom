@@ -92,9 +92,13 @@ void Solver::set_objective_fn(const std::vector<double> &values)
 
 std::vector<double> Solver::solve()
 {
+    constexpr bool debug = false;
+
     lprec *lp = static_cast<lprec*>(lp_solver);
     set_add_rowmode(lp, FALSE);
-    //write_LP(lp, stdout);
+    if (debug) {
+        write_LP(lp, stdout);
+    }
     set_verbose(lp, IMPORTANT);
 
     set_presolve(lp, /* PRESOLVE_ROWS | */ PRESOLVE_REDUCEMIP + PRESOLVE_KNAPSACK + PRESOLVE_COLS + PRESOLVE_LINDEP, get_presolveloops(lp));
@@ -105,8 +109,10 @@ std::vector<double> Solver::solve()
     std::vector<double> result(variables);
     get_variables(lp, &result[0]);
 
-    /*for (size_t i = 0; i < variables; i++) {
-        loom::llog->alert("{}: {}", i + 1, result[i]);
-    }*/
+    if (debug) {
+        for (size_t i = 0; i < variables; i++) {
+            loom::llog->alert("{}: {}", i + 1, result[i]);
+        }
+    }
     return result;
 }

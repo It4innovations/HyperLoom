@@ -13,9 +13,20 @@ message Task {
 	required bytes config = 2;
 	repeated int32 input_ids = 3;
 	optional Policy policy = 4 [default = POLICY_STANDARD];
+	optional int32 resource_request_index = 5 [default = -1];
+}
+
+message Resource {
+	required int32 resource_type = 1;
+	required int32 value = 2;
+}
+
+message ResourceRequest {
+	repeated Resource resources = 1;
 }
 
 message Plan {
+	repeated ResourceRequest resource_requests = 1;
 	repeated Task tasks = 2;
 	repeated int32 result_ids = 3;
 }

@@ -146,7 +146,7 @@ void ComputationState::expand_dslice(const PlanNode &node)
    loom::llog->debug("Expanding 'dslice' id={} length={} pieces={} new_id_base={}",
                      node1.get_id(), length, configs.size(), id_base1);
 
-   PlanNode new_node(node1.get_id(),-1, PlanNode::POLICY_SIMPLE, false,
+   PlanNode new_node(node1.get_id(),-1, PlanNode::POLICY_SIMPLE, -1, false,
                      slice_task_id, "", node1.get_inputs());
    make_expansion(configs, new_node, node2, id_base1, id_base2);
 }
@@ -174,7 +174,7 @@ void ComputationState::expand_dget(const PlanNode &node)
    loom::llog->debug("Expanding 'dget' id={} length={} new_id_base={}",
                      node1.get_id(), length, id_base1);
 
-   PlanNode new_node(node1.get_id(),-1, PlanNode::POLICY_SIMPLE, false,
+   PlanNode new_node(node1.get_id(),-1, PlanNode::POLICY_SIMPLE, -1, false,
                      get_task_id, "", node1.get_inputs());
    make_expansion(configs, new_node, node2, id_base1, id_base2);
 }
@@ -200,7 +200,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
 
    for (std::string &config1 : configs) {
       PlanNode t1(id_base1, -1,
-                  node1.get_policy(), false,
+                  node1.get_policy(), node1.get_n_cpus(), false,
                   node1.get_task_type(), config1, node1.get_inputs());
       t1.set_nexts(std::vector<loom::Id>{id_base2});
       plan.add_node(std::move(t1));
@@ -208,7 +208,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
       add_pending_task(id_base1);
 
       PlanNode t2(id_base2, -1,
-                  node2.get_policy(), false,
+                  node2.get_policy(), node1.get_n_cpus(), false,
                   node2.get_task_type(), node2.get_config(),
                   std::vector<int>{id_base1});
       t2.set_nexts(node2.get_nexts());
@@ -244,6 +244,18 @@ bool ComputationState::is_ready(const PlanNode &node)
    return true;
 }
 
+size_t ComputationState::get_max_cpus()
+{
+    size_t max_cpus = 0;
+    for (auto &pair : workers) {
+        if (max_cpus < pair.first->get_resource_cpus()) {
+            max_cpus = pair.first->get_resource_cpus();
+        }
+    }
+    return max_cpus;
+}
+
+
 TaskDistribution ComputationState::compute_distribution()
 {
    loom::llog->debug("Computation for distribution of {} task(s)", pending_tasks.size());
@@ -255,6 +267,11 @@ TaskDistribution ComputationState::compute_distribution()
    size_t n_workers = workers.size();
    if (n_workers == 0) {
       return result;
+   }
+
+   size_t max_cpus = get_max_cpus();
+   if (max_cpus == 0) {
+       max_cpus = 1;
    }
 
    size_t n_tasks = pending_tasks.size();
@@ -271,9 +288,12 @@ TaskDistribution ComputationState::compute_distribution()
 
    /* Gather all inputs */
    std::unordered_map<loom::Id, int> inputs;
+   std::vector<double> n_cpus; // we will later use it for coefs, we store it directly as double
+   n_cpus.reserve(pending_tasks.size());
    size_t total_size = 0;
    for (loom::Id id : pending_tasks) {
       const PlanNode &node = get_node(id);
+      n_cpus.push_back(node.get_n_cpus());
       for (loom::Id id2 : node.get_inputs()) {
          auto it = inputs.find(id2);
          if (it == inputs.end()) {
@@ -289,8 +309,18 @@ TaskDistribution ComputationState::compute_distribution()
    }
 
    double task_cost = (total_size + 1) * 2 * TRANSFER_COST_COEF;
-   for (size_t i = 1; i <= t_variables; i++) {
-      costs[i] = -task_cost;
+   for (size_t i = 0; i < n_tasks; i++) {
+      double cpus = n_cpus[i];
+      double coef;
+      if (cpus < 1) {
+          coef = task_cost;
+      } else {
+          coef = task_cost * (cpus + (cpus * cpus) / (max_cpus * max_cpus));
+      }
+      for (size_t j = 0; j < n_workers; j++) {
+        // + 1 because we are counting from 1 ...
+        costs[i * n_workers + j + 1] = -coef;
+      }
    }
 
    size_t variables = costs.size() - 1;
@@ -306,8 +336,6 @@ TaskDistribution ComputationState::compute_distribution()
    std::vector<loom::Id> tasks(pending_tasks.begin(), pending_tasks.end());
 
    for (loom::Id id : tasks) {
-      /* Task must be mapped or not-mapped
-         * Set [t_X,A] + [t_X,B] ... + [t_X,n_workers] = 1 */
       indices.clear();
       for (size_t i = 0; i < n_workers; i++) {
          indices.push_back(task_id + i);
@@ -343,7 +371,7 @@ TaskDistribution ComputationState::compute_distribution()
       for (size_t j = 0; j < n_tasks; j++) {
          indices[j] = j * n_workers + index + 1;
       }
-      solver.add_constraint_lq(indices, ones, free_cpus);
+      solver.add_constraint_lq(indices, n_cpus, free_cpus);
    }
    solver.set_objective_fn(costs);
 

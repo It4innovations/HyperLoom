@@ -17,6 +17,8 @@ namespace loomplan {
 
 void protobuf_ShutdownFile_loomplan_2eproto() {
   delete Task::default_instance_;
+  delete Resource::default_instance_;
+  delete ResourceRequest::default_instance_;
   delete Plan::default_instance_;
 }
 
@@ -33,8 +35,12 @@ void protobuf_AddDesc_loomplan_2eproto() {
 
 #endif
   Task::default_instance_ = new Task();
+  Resource::default_instance_ = new Resource();
+  ResourceRequest::default_instance_ = new ResourceRequest();
   Plan::default_instance_ = new Plan();
   Task::default_instance_->InitAsDefaultInstance();
+  Resource::default_instance_->InitAsDefaultInstance();
+  ResourceRequest::default_instance_->InitAsDefaultInstance();
   Plan::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_loomplan_2eproto);
 }
@@ -80,6 +86,7 @@ const int Task::kTaskTypeFieldNumber;
 const int Task::kConfigFieldNumber;
 const int Task::kInputIdsFieldNumber;
 const int Task::kPolicyFieldNumber;
+const int Task::kResourceRequestIndexFieldNumber;
 #endif  // !_MSC_VER
 
 Task::Task()
@@ -104,6 +111,7 @@ void Task::SharedCtor() {
   task_type_ = 0;
   config_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   policy_ = 1;
+  resource_request_index_ = -1;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -145,7 +153,7 @@ Task* Task::New() const {
 }
 
 void Task::Clear() {
-  if (_has_bits_[0 / 32] & 11) {
+  if (_has_bits_[0 / 32] & 27) {
     task_type_ = 0;
     if (has_config()) {
       if (config_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
@@ -153,6 +161,7 @@ void Task::Clear() {
       }
     }
     policy_ = 1;
+    resource_request_index_ = -1;
   }
   input_ids_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -236,6 +245,21 @@ bool Task::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(40)) goto parse_resource_request_index;
+        break;
+      }
+
+      // optional int32 resource_request_index = 5 [default = -1];
+      case 5: {
+        if (tag == 40) {
+         parse_resource_request_index:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &resource_request_index_)));
+          set_has_resource_request_index();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -288,6 +312,11 @@ void Task::SerializeWithCachedSizes(
       4, this->policy(), output);
   }
 
+  // optional int32 resource_request_index = 5 [default = -1];
+  if (has_resource_request_index()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->resource_request_index(), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomplan.Task)
@@ -315,6 +344,13 @@ int Task::ByteSize() const {
     if (has_policy()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->policy());
+    }
+
+    // optional int32 resource_request_index = 5 [default = -1];
+    if (has_resource_request_index()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->resource_request_index());
     }
 
   }
@@ -354,6 +390,9 @@ void Task::MergeFrom(const Task& from) {
     if (from.has_policy()) {
       set_policy(from.policy());
     }
+    if (from.has_resource_request_index()) {
+      set_resource_request_index(from.resource_request_index());
+    }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
 }
@@ -376,6 +415,7 @@ void Task::Swap(Task* other) {
     std::swap(config_, other->config_);
     input_ids_.Swap(&other->input_ids_);
     std::swap(policy_, other->policy_);
+    std::swap(resource_request_index_, other->resource_request_index_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -390,6 +430,433 @@ void Task::Swap(Task* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
+const int Resource::kResourceTypeFieldNumber;
+const int Resource::kValueFieldNumber;
+#endif  // !_MSC_VER
+
+Resource::Resource()
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:loomplan.Resource)
+}
+
+void Resource::InitAsDefaultInstance() {
+}
+
+Resource::Resource(const Resource& from)
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:loomplan.Resource)
+}
+
+void Resource::SharedCtor() {
+  _cached_size_ = 0;
+  resource_type_ = 0;
+  value_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+Resource::~Resource() {
+  // @@protoc_insertion_point(destructor:loomplan.Resource)
+  SharedDtor();
+}
+
+void Resource::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
+  if (this != default_instance_) {
+  #endif
+  }
+}
+
+void Resource::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const Resource& Resource::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_loomplan_2eproto();
+#else
+  if (default_instance_ == NULL) protobuf_AddDesc_loomplan_2eproto();
+#endif
+  return *default_instance_;
+}
+
+Resource* Resource::default_instance_ = NULL;
+
+Resource* Resource::New() const {
+  return new Resource;
+}
+
+void Resource::Clear() {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<Resource*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  ZR_(resource_type_, value_);
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->clear();
+}
+
+bool Resource::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  ::google::protobuf::io::StringOutputStream unknown_fields_string(
+      mutable_unknown_fields());
+  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(
+      &unknown_fields_string);
+  // @@protoc_insertion_point(parse_start:loomplan.Resource)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // required int32 resource_type = 1;
+      case 1: {
+        if (tag == 8) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &resource_type_)));
+          set_has_resource_type();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(16)) goto parse_value;
+        break;
+      }
+
+      // required int32 value = 2;
+      case 2: {
+        if (tag == 16) {
+         parse_value:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &value_)));
+          set_has_value();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(
+            input, tag, &unknown_fields_stream));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:loomplan.Resource)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:loomplan.Resource)
+  return false;
+#undef DO_
+}
+
+void Resource::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:loomplan.Resource)
+  // required int32 resource_type = 1;
+  if (has_resource_type()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->resource_type(), output);
+  }
+
+  // required int32 value = 2;
+  if (has_value()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->value(), output);
+  }
+
+  output->WriteRaw(unknown_fields().data(),
+                   unknown_fields().size());
+  // @@protoc_insertion_point(serialize_end:loomplan.Resource)
+}
+
+int Resource::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required int32 resource_type = 1;
+    if (has_resource_type()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->resource_type());
+    }
+
+    // required int32 value = 2;
+    if (has_value()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->value());
+    }
+
+  }
+  total_size += unknown_fields().size();
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void Resource::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const Resource*>(&from));
+}
+
+void Resource::MergeFrom(const Resource& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_resource_type()) {
+      set_resource_type(from.resource_type());
+    }
+    if (from.has_value()) {
+      set_value(from.value());
+    }
+  }
+  mutable_unknown_fields()->append(from.unknown_fields());
+}
+
+void Resource::CopyFrom(const Resource& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Resource::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+
+  return true;
+}
+
+void Resource::Swap(Resource* other) {
+  if (other != this) {
+    std::swap(resource_type_, other->resource_type_);
+    std::swap(value_, other->value_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.swap(other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::std::string Resource::GetTypeName() const {
+  return "loomplan.Resource";
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int ResourceRequest::kResourcesFieldNumber;
+#endif  // !_MSC_VER
+
+ResourceRequest::ResourceRequest()
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:loomplan.ResourceRequest)
+}
+
+void ResourceRequest::InitAsDefaultInstance() {
+}
+
+ResourceRequest::ResourceRequest(const ResourceRequest& from)
+  : ::google::protobuf::MessageLite() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:loomplan.ResourceRequest)
+}
+
+void ResourceRequest::SharedCtor() {
+  _cached_size_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ResourceRequest::~ResourceRequest() {
+  // @@protoc_insertion_point(destructor:loomplan.ResourceRequest)
+  SharedDtor();
+}
+
+void ResourceRequest::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
+  if (this != default_instance_) {
+  #endif
+  }
+}
+
+void ResourceRequest::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ResourceRequest& ResourceRequest::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_loomplan_2eproto();
+#else
+  if (default_instance_ == NULL) protobuf_AddDesc_loomplan_2eproto();
+#endif
+  return *default_instance_;
+}
+
+ResourceRequest* ResourceRequest::default_instance_ = NULL;
+
+ResourceRequest* ResourceRequest::New() const {
+  return new ResourceRequest;
+}
+
+void ResourceRequest::Clear() {
+  resources_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->clear();
+}
+
+bool ResourceRequest::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  ::google::protobuf::io::StringOutputStream unknown_fields_string(
+      mutable_unknown_fields());
+  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(
+      &unknown_fields_string);
+  // @@protoc_insertion_point(parse_start:loomplan.ResourceRequest)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // repeated .loomplan.Resource resources = 1;
+      case 1: {
+        if (tag == 10) {
+         parse_resources:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+                input, add_resources()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(10)) goto parse_resources;
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(
+            input, tag, &unknown_fields_stream));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:loomplan.ResourceRequest)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:loomplan.ResourceRequest)
+  return false;
+#undef DO_
+}
+
+void ResourceRequest::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:loomplan.ResourceRequest)
+  // repeated .loomplan.Resource resources = 1;
+  for (int i = 0; i < this->resources_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
+      1, this->resources(i), output);
+  }
+
+  output->WriteRaw(unknown_fields().data(),
+                   unknown_fields().size());
+  // @@protoc_insertion_point(serialize_end:loomplan.ResourceRequest)
+}
+
+int ResourceRequest::ByteSize() const {
+  int total_size = 0;
+
+  // repeated .loomplan.Resource resources = 1;
+  total_size += 1 * this->resources_size();
+  for (int i = 0; i < this->resources_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->resources(i));
+  }
+
+  total_size += unknown_fields().size();
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ResourceRequest::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const ResourceRequest*>(&from));
+}
+
+void ResourceRequest::MergeFrom(const ResourceRequest& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  resources_.MergeFrom(from.resources_);
+  mutable_unknown_fields()->append(from.unknown_fields());
+}
+
+void ResourceRequest::CopyFrom(const ResourceRequest& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ResourceRequest::IsInitialized() const {
+
+  if (!::google::protobuf::internal::AllAreInitialized(this->resources())) return false;
+  return true;
+}
+
+void ResourceRequest::Swap(ResourceRequest* other) {
+  if (other != this) {
+    resources_.Swap(&other->resources_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.swap(other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::std::string ResourceRequest::GetTypeName() const {
+  return "loomplan.ResourceRequest";
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int Plan::kResourceRequestsFieldNumber;
 const int Plan::kTasksFieldNumber;
 const int Plan::kResultIdsFieldNumber;
 #endif  // !_MSC_VER
@@ -450,6 +917,7 @@ Plan* Plan::New() const {
 }
 
 void Plan::Clear() {
+  resource_requests_.Clear();
   tasks_.Clear();
   result_ids_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -470,6 +938,20 @@ bool Plan::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // repeated .loomplan.ResourceRequest resource_requests = 1;
+      case 1: {
+        if (tag == 10) {
+         parse_resource_requests:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+                input, add_resource_requests()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(10)) goto parse_resource_requests;
+        if (input->ExpectTag(18)) goto parse_tasks;
+        break;
+      }
+
       // repeated .loomplan.Task tasks = 2;
       case 2: {
         if (tag == 18) {
@@ -528,6 +1010,12 @@ failure:
 void Plan::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:loomplan.Plan)
+  // repeated .loomplan.ResourceRequest resource_requests = 1;
+  for (int i = 0; i < this->resource_requests_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
+      1, this->resource_requests(i), output);
+  }
+
   // repeated .loomplan.Task tasks = 2;
   for (int i = 0; i < this->tasks_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
@@ -547,6 +1035,14 @@ void Plan::SerializeWithCachedSizes(
 
 int Plan::ByteSize() const {
   int total_size = 0;
+
+  // repeated .loomplan.ResourceRequest resource_requests = 1;
+  total_size += 1 * this->resource_requests_size();
+  for (int i = 0; i < this->resource_requests_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->resource_requests(i));
+  }
 
   // repeated .loomplan.Task tasks = 2;
   total_size += 1 * this->tasks_size();
@@ -581,6 +1077,7 @@ void Plan::CheckTypeAndMergeFrom(
 
 void Plan::MergeFrom(const Plan& from) {
   GOOGLE_CHECK_NE(&from, this);
+  resource_requests_.MergeFrom(from.resource_requests_);
   tasks_.MergeFrom(from.tasks_);
   result_ids_.MergeFrom(from.result_ids_);
   mutable_unknown_fields()->append(from.unknown_fields());
@@ -594,12 +1091,14 @@ void Plan::CopyFrom(const Plan& from) {
 
 bool Plan::IsInitialized() const {
 
+  if (!::google::protobuf::internal::AllAreInitialized(this->resource_requests())) return false;
   if (!::google::protobuf::internal::AllAreInitialized(this->tasks())) return false;
   return true;
 }
 
 void Plan::Swap(Plan* other) {
   if (other != this) {
+    resource_requests_.Swap(&other->resource_requests_);
     tasks_.Swap(&other->tasks_);
     result_ids_.Swap(&other->result_ids_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);

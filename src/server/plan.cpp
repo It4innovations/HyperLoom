@@ -24,13 +24,21 @@ Plan::Plan()
 
 }
 
-Plan::Plan(const loomplan::Plan &plan, loom::Id id_base)
+Plan::Plan(const loomplan::Plan &plan, loom::Id id_base, loom::Dictionary &dictionary)
 {
-    /*
+    std::vector<int> resources;
+
+    loom::Id resource_ncpus = dictionary.find_or_create("loom/resource/cpus");
+    auto rr_size = plan.resource_requests_size();
+    for (int i = 0; i < rr_size; i++) {
+        auto &rr = plan.resource_requests(i);
+        assert(rr.resources_size() == 1);
+        assert(rr.resources(0).resource_type() == resource_ncpus);
+        resources.push_back(rr.resources(0).value());
+    }
+
     auto task_size = plan.tasks_size();
-    int id_base = server.new_id(task_size);
-    */
-    auto task_size = plan.tasks_size();
+    tasks.reserve(task_size);
     for (int i = 0; i < task_size; i++) {
         const auto& pt = plan.tasks(i);
         auto id = i + id_base;
@@ -41,7 +49,13 @@ Plan::Plan(const loomplan::Plan &plan, loom::Id id_base)
             inputs.push_back(id_base + pt.input_ids(j));
         }
 
-        PlanNode pnode(id, i, read_task_policy(pt.policy()), false,
+        int n_cpus = 0;
+        if (pt.resource_request_index() != -1) {
+            assert(pt.resource_request_index() >= 0);
+            assert(pt.resource_request_index() < (int) resources.size());
+            n_cpus = resources[pt.resource_request_index()];
+        }
+        PlanNode pnode(id, i, read_task_policy(pt.policy()), n_cpus, false,
                        pt.task_type(), pt.config(), std::move(inputs));
         tasks.emplace(std::make_pair(id, std::move(pnode)));
     }

@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='loomplan.proto',
   package='loomplan',
-  serialized_pb=_b('\n\x0eloomplan.proto\x12\x08loomplan\"\xbc\x01\n\x04Task\x12\x11\n\ttask_type\x18\x01 \x02(\x05\x12\x0e\n\x06\x63onfig\x18\x02 \x02(\x0c\x12\x11\n\tinput_ids\x18\x03 \x03(\x05\x12\x36\n\x06policy\x18\x04 \x01(\x0e\x32\x15.loomplan.Task.Policy:\x0fPOLICY_STANDARD\"F\n\x06Policy\x12\x13\n\x0fPOLICY_STANDARD\x10\x01\x12\x11\n\rPOLICY_SIMPLE\x10\x02\x12\x14\n\x10POLICY_SCHEDULER\x10\x03\"9\n\x04Plan\x12\x1d\n\x05tasks\x18\x02 \x03(\x0b\x32\x0e.loomplan.Task\x12\x12\n\nresult_ids\x18\x03 \x03(\x05\x42\x02H\x03')
+  serialized_pb=_b('\n\x0eloomplan.proto\x12\x08loomplan\"\xe0\x01\n\x04Task\x12\x11\n\ttask_type\x18\x01 \x02(\x05\x12\x0e\n\x06\x63onfig\x18\x02 \x02(\x0c\x12\x11\n\tinput_ids\x18\x03 \x03(\x05\x12\x36\n\x06policy\x18\x04 \x01(\x0e\x32\x15.loomplan.Task.Policy:\x0fPOLICY_STANDARD\x12\"\n\x16resource_request_index\x18\x05 \x01(\x05:\x02-1\"F\n\x06Policy\x12\x13\n\x0fPOLICY_STANDARD\x10\x01\x12\x11\n\rPOLICY_SIMPLE\x10\x02\x12\x14\n\x10POLICY_SCHEDULER\x10\x03\"0\n\x08Resource\x12\x15\n\rresource_type\x18\x01 \x02(\x05\x12\r\n\x05value\x18\x02 \x02(\x05\"8\n\x0fResourceRequest\x12%\n\tresources\x18\x01 \x03(\x0b\x32\x12.loomplan.Resource\"o\n\x04Plan\x12\x34\n\x11resource_requests\x18\x01 \x03(\x0b\x32\x19.loomplan.ResourceRequest\x12\x1d\n\x05tasks\x18\x02 \x03(\x0b\x32\x0e.loomplan.Task\x12\x12\n\nresult_ids\x18\x03 \x03(\x05\x42\x02H\x03')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -45,8 +45,8 @@ _TASK_POLICY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=147,
-  serialized_end=217,
+  serialized_start=183,
+  serialized_end=253,
 )
 _sym_db.RegisterEnumDescriptor(_TASK_POLICY)
 
@@ -86,6 +86,13 @@ _TASK = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='resource_request_index', full_name='loomplan.Task.resource_request_index', index=4,
+      number=5, type=5, cpp_type=1, label=1,
+      has_default_value=True, default_value=-1,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -99,7 +106,74 @@ _TASK = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=29,
-  serialized_end=217,
+  serialized_end=253,
+)
+
+
+_RESOURCE = _descriptor.Descriptor(
+  name='Resource',
+  full_name='loomplan.Resource',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='resource_type', full_name='loomplan.Resource.resource_type', index=0,
+      number=1, type=5, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='loomplan.Resource.value', index=1,
+      number=2, type=5, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=255,
+  serialized_end=303,
+)
+
+
+_RESOURCEREQUEST = _descriptor.Descriptor(
+  name='ResourceRequest',
+  full_name='loomplan.ResourceRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='resources', full_name='loomplan.ResourceRequest.resources', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=305,
+  serialized_end=361,
 )
 
 
@@ -111,14 +185,21 @@ _PLAN = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='tasks', full_name='loomplan.Plan.tasks', index=0,
+      name='resource_requests', full_name='loomplan.Plan.resource_requests', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='tasks', full_name='loomplan.Plan.tasks', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='result_ids', full_name='loomplan.Plan.result_ids', index=1,
+      name='result_ids', full_name='loomplan.Plan.result_ids', index=2,
       number=3, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -135,14 +216,18 @@ _PLAN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=219,
-  serialized_end=276,
+  serialized_start=363,
+  serialized_end=474,
 )
 
 _TASK.fields_by_name['policy'].enum_type = _TASK_POLICY
 _TASK_POLICY.containing_type = _TASK
+_RESOURCEREQUEST.fields_by_name['resources'].message_type = _RESOURCE
+_PLAN.fields_by_name['resource_requests'].message_type = _RESOURCEREQUEST
 _PLAN.fields_by_name['tasks'].message_type = _TASK
 DESCRIPTOR.message_types_by_name['Task'] = _TASK
+DESCRIPTOR.message_types_by_name['Resource'] = _RESOURCE
+DESCRIPTOR.message_types_by_name['ResourceRequest'] = _RESOURCEREQUEST
 DESCRIPTOR.message_types_by_name['Plan'] = _PLAN
 
 Task = _reflection.GeneratedProtocolMessageType('Task', (_message.Message,), dict(
@@ -151,6 +236,20 @@ Task = _reflection.GeneratedProtocolMessageType('Task', (_message.Message,), dic
   # @@protoc_insertion_point(class_scope:loomplan.Task)
   ))
 _sym_db.RegisterMessage(Task)
+
+Resource = _reflection.GeneratedProtocolMessageType('Resource', (_message.Message,), dict(
+  DESCRIPTOR = _RESOURCE,
+  __module__ = 'loomplan_pb2'
+  # @@protoc_insertion_point(class_scope:loomplan.Resource)
+  ))
+_sym_db.RegisterMessage(Resource)
+
+ResourceRequest = _reflection.GeneratedProtocolMessageType('ResourceRequest', (_message.Message,), dict(
+  DESCRIPTOR = _RESOURCEREQUEST,
+  __module__ = 'loomplan_pb2'
+  # @@protoc_insertion_point(class_scope:loomplan.ResourceRequest)
+  ))
+_sym_db.RegisterMessage(ResourceRequest)
 
 Plan = _reflection.GeneratedProtocolMessageType('Plan', (_message.Message,), dict(
   DESCRIPTOR = _PLAN,

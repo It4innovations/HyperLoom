@@ -16,6 +16,10 @@ Server::Server(uv_loop_t *loop, int port)
       dummy_worker(*this),
       id_counter(1)
 {
+    /* Since the server do not implement fully resource management, we forces
+     * symbol for the only schedulable resouce: loom/resource/cpus */
+    dictionary.find_or_create("loom/resource/cpus");
+
     if (loop != NULL) {
         UV_CHECK(uv_tcp_init(loop, &listen_socket));
         listen_socket.data = this;

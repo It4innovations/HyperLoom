@@ -33,6 +33,8 @@ void protobuf_AssignDesc_loomplan_2eproto();
 void protobuf_ShutdownFile_loomplan_2eproto();
 
 class Task;
+class Resource;
+class ResourceRequest;
 class Plan;
 
 enum Task_Policy {
@@ -160,6 +162,13 @@ class Task : public ::google::protobuf::MessageLite {
   inline ::loomplan::Task_Policy policy() const;
   inline void set_policy(::loomplan::Task_Policy value);
 
+  // optional int32 resource_request_index = 5 [default = -1];
+  inline bool has_resource_request_index() const;
+  inline void clear_resource_request_index();
+  static const int kResourceRequestIndexFieldNumber = 5;
+  inline ::google::protobuf::int32 resource_request_index() const;
+  inline void set_resource_request_index(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:loomplan.Task)
  private:
   inline void set_has_task_type();
@@ -168,6 +177,8 @@ class Task : public ::google::protobuf::MessageLite {
   inline void clear_has_config();
   inline void set_has_policy();
   inline void clear_has_policy();
+  inline void set_has_resource_request_index();
+  inline void clear_has_resource_request_index();
 
   ::std::string _unknown_fields_;
 
@@ -177,6 +188,7 @@ class Task : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 task_type_;
   int policy_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > input_ids_;
+  ::google::protobuf::int32 resource_request_index_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomplan_2eproto_impl();
   #else
@@ -187,6 +199,201 @@ class Task : public ::google::protobuf::MessageLite {
 
   void InitAsDefaultInstance();
   static Task* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class Resource : public ::google::protobuf::MessageLite {
+ public:
+  Resource();
+  virtual ~Resource();
+
+  Resource(const Resource& from);
+
+  inline Resource& operator=(const Resource& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::std::string& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::std::string* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const Resource& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const Resource* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
+
+  void Swap(Resource* other);
+
+  // implements Message ----------------------------------------------
+
+  Resource* New() const;
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+  void CopyFrom(const Resource& from);
+  void MergeFrom(const Resource& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  void DiscardUnknownFields();
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::std::string GetTypeName() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required int32 resource_type = 1;
+  inline bool has_resource_type() const;
+  inline void clear_resource_type();
+  static const int kResourceTypeFieldNumber = 1;
+  inline ::google::protobuf::int32 resource_type() const;
+  inline void set_resource_type(::google::protobuf::int32 value);
+
+  // required int32 value = 2;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 2;
+  inline ::google::protobuf::int32 value() const;
+  inline void set_value(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:loomplan.Resource)
+ private:
+  inline void set_has_resource_type();
+  inline void clear_has_resource_type();
+  inline void set_has_value();
+  inline void clear_has_value();
+
+  ::std::string _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::int32 resource_type_;
+  ::google::protobuf::int32 value_;
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_loomplan_2eproto_impl();
+  #else
+  friend void  protobuf_AddDesc_loomplan_2eproto();
+  #endif
+  friend void protobuf_AssignDesc_loomplan_2eproto();
+  friend void protobuf_ShutdownFile_loomplan_2eproto();
+
+  void InitAsDefaultInstance();
+  static Resource* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ResourceRequest : public ::google::protobuf::MessageLite {
+ public:
+  ResourceRequest();
+  virtual ~ResourceRequest();
+
+  ResourceRequest(const ResourceRequest& from);
+
+  inline ResourceRequest& operator=(const ResourceRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::std::string& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::std::string* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ResourceRequest& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const ResourceRequest* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
+
+  void Swap(ResourceRequest* other);
+
+  // implements Message ----------------------------------------------
+
+  ResourceRequest* New() const;
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+  void CopyFrom(const ResourceRequest& from);
+  void MergeFrom(const ResourceRequest& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  void DiscardUnknownFields();
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::std::string GetTypeName() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .loomplan.Resource resources = 1;
+  inline int resources_size() const;
+  inline void clear_resources();
+  static const int kResourcesFieldNumber = 1;
+  inline const ::loomplan::Resource& resources(int index) const;
+  inline ::loomplan::Resource* mutable_resources(int index);
+  inline ::loomplan::Resource* add_resources();
+  inline const ::google::protobuf::RepeatedPtrField< ::loomplan::Resource >&
+      resources() const;
+  inline ::google::protobuf::RepeatedPtrField< ::loomplan::Resource >*
+      mutable_resources();
+
+  // @@protoc_insertion_point(class_scope:loomplan.ResourceRequest)
+ private:
+
+  ::std::string _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::loomplan::Resource > resources_;
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_loomplan_2eproto_impl();
+  #else
+  friend void  protobuf_AddDesc_loomplan_2eproto();
+  #endif
+  friend void protobuf_AssignDesc_loomplan_2eproto();
+  friend void protobuf_ShutdownFile_loomplan_2eproto();
+
+  void InitAsDefaultInstance();
+  static ResourceRequest* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -251,6 +458,18 @@ class Plan : public ::google::protobuf::MessageLite {
 
   // accessors -------------------------------------------------------
 
+  // repeated .loomplan.ResourceRequest resource_requests = 1;
+  inline int resource_requests_size() const;
+  inline void clear_resource_requests();
+  static const int kResourceRequestsFieldNumber = 1;
+  inline const ::loomplan::ResourceRequest& resource_requests(int index) const;
+  inline ::loomplan::ResourceRequest* mutable_resource_requests(int index);
+  inline ::loomplan::ResourceRequest* add_resource_requests();
+  inline const ::google::protobuf::RepeatedPtrField< ::loomplan::ResourceRequest >&
+      resource_requests() const;
+  inline ::google::protobuf::RepeatedPtrField< ::loomplan::ResourceRequest >*
+      mutable_resource_requests();
+
   // repeated .loomplan.Task tasks = 2;
   inline int tasks_size() const;
   inline void clear_tasks();
@@ -282,6 +501,7 @@ class Plan : public ::google::protobuf::MessageLite {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::loomplan::ResourceRequest > resource_requests_;
   ::google::protobuf::RepeatedPtrField< ::loomplan::Task > tasks_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > result_ids_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
@@ -457,9 +677,149 @@ inline void Task::set_policy(::loomplan::Task_Policy value) {
   // @@protoc_insertion_point(field_set:loomplan.Task.policy)
 }
 
+// optional int32 resource_request_index = 5 [default = -1];
+inline bool Task::has_resource_request_index() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void Task::set_has_resource_request_index() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void Task::clear_has_resource_request_index() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void Task::clear_resource_request_index() {
+  resource_request_index_ = -1;
+  clear_has_resource_request_index();
+}
+inline ::google::protobuf::int32 Task::resource_request_index() const {
+  // @@protoc_insertion_point(field_get:loomplan.Task.resource_request_index)
+  return resource_request_index_;
+}
+inline void Task::set_resource_request_index(::google::protobuf::int32 value) {
+  set_has_resource_request_index();
+  resource_request_index_ = value;
+  // @@protoc_insertion_point(field_set:loomplan.Task.resource_request_index)
+}
+
+// -------------------------------------------------------------------
+
+// Resource
+
+// required int32 resource_type = 1;
+inline bool Resource::has_resource_type() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void Resource::set_has_resource_type() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void Resource::clear_has_resource_type() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void Resource::clear_resource_type() {
+  resource_type_ = 0;
+  clear_has_resource_type();
+}
+inline ::google::protobuf::int32 Resource::resource_type() const {
+  // @@protoc_insertion_point(field_get:loomplan.Resource.resource_type)
+  return resource_type_;
+}
+inline void Resource::set_resource_type(::google::protobuf::int32 value) {
+  set_has_resource_type();
+  resource_type_ = value;
+  // @@protoc_insertion_point(field_set:loomplan.Resource.resource_type)
+}
+
+// required int32 value = 2;
+inline bool Resource::has_value() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void Resource::set_has_value() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void Resource::clear_has_value() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void Resource::clear_value() {
+  value_ = 0;
+  clear_has_value();
+}
+inline ::google::protobuf::int32 Resource::value() const {
+  // @@protoc_insertion_point(field_get:loomplan.Resource.value)
+  return value_;
+}
+inline void Resource::set_value(::google::protobuf::int32 value) {
+  set_has_value();
+  value_ = value;
+  // @@protoc_insertion_point(field_set:loomplan.Resource.value)
+}
+
+// -------------------------------------------------------------------
+
+// ResourceRequest
+
+// repeated .loomplan.Resource resources = 1;
+inline int ResourceRequest::resources_size() const {
+  return resources_.size();
+}
+inline void ResourceRequest::clear_resources() {
+  resources_.Clear();
+}
+inline const ::loomplan::Resource& ResourceRequest::resources(int index) const {
+  // @@protoc_insertion_point(field_get:loomplan.ResourceRequest.resources)
+  return resources_.Get(index);
+}
+inline ::loomplan::Resource* ResourceRequest::mutable_resources(int index) {
+  // @@protoc_insertion_point(field_mutable:loomplan.ResourceRequest.resources)
+  return resources_.Mutable(index);
+}
+inline ::loomplan::Resource* ResourceRequest::add_resources() {
+  // @@protoc_insertion_point(field_add:loomplan.ResourceRequest.resources)
+  return resources_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::loomplan::Resource >&
+ResourceRequest::resources() const {
+  // @@protoc_insertion_point(field_list:loomplan.ResourceRequest.resources)
+  return resources_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::loomplan::Resource >*
+ResourceRequest::mutable_resources() {
+  // @@protoc_insertion_point(field_mutable_list:loomplan.ResourceRequest.resources)
+  return &resources_;
+}
+
 // -------------------------------------------------------------------
 
 // Plan
+
+// repeated .loomplan.ResourceRequest resource_requests = 1;
+inline int Plan::resource_requests_size() const {
+  return resource_requests_.size();
+}
+inline void Plan::clear_resource_requests() {
+  resource_requests_.Clear();
+}
+inline const ::loomplan::ResourceRequest& Plan::resource_requests(int index) const {
+  // @@protoc_insertion_point(field_get:loomplan.Plan.resource_requests)
+  return resource_requests_.Get(index);
+}
+inline ::loomplan::ResourceRequest* Plan::mutable_resource_requests(int index) {
+  // @@protoc_insertion_point(field_mutable:loomplan.Plan.resource_requests)
+  return resource_requests_.Mutable(index);
+}
+inline ::loomplan::ResourceRequest* Plan::add_resource_requests() {
+  // @@protoc_insertion_point(field_add:loomplan.Plan.resource_requests)
+  return resource_requests_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::loomplan::ResourceRequest >&
+Plan::resource_requests() const {
+  // @@protoc_insertion_point(field_list:loomplan.Plan.resource_requests)
+  return resource_requests_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::loomplan::ResourceRequest >*
+Plan::mutable_resource_requests() {
+  // @@protoc_insertion_point(field_mutable_list:loomplan.Plan.resource_requests)
+  return &resource_requests_;
+}
 
 // repeated .loomplan.Task tasks = 2;
 inline int Plan::tasks_size() const {

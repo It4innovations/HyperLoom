@@ -2,6 +2,9 @@
 #define LOOM_SERVER_PLAN_H
 
 #include "plannode.h"
+
+#include <libloom/dictionary.h>
+
 #include <unordered_map>
 #include <unordered_set>
 #include <memory.h>
@@ -14,7 +17,7 @@ class Plan {
 
 public:
     Plan();
-    Plan(const loomplan::Plan &plan, loom::Id id_base);
+    Plan(const loomplan::Plan &plan, loom::Id id_base, loom::Dictionary &dictionary);
 
     template<typename F> void foreach_task(F f) const {
         for (auto &pair : tasks) {

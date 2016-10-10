@@ -3,6 +3,7 @@ from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
 import struct
 from datetime import datetime
 import os
+import client
 
 FILE1 = os.path.join(LOOM_TEST_DATA_DIR, "file1")
 FILE2 = os.path.join(LOOM_TEST_DATA_DIR, "file2")
@@ -105,6 +106,30 @@ def test_run_separated_4_cpu(loom_env):
         else:
             c = b - a
         assert c.total_seconds() < 0.06
+
+
+def test_run_separated_4cpu_tasks_4_cpu(loom_env):
+    loom_env.start(1, cpus=4)
+    p = loom_env.plan()
+
+    args = pytestprog(0.3, stamp=True)
+    tasks = [p.task_run(args, request=client.cpus(4)) for i in range(4)]
+    results = loom_env.submit(p, tasks)
+
+    starts = []
+
+    for result in results:
+        line1, line2 = result.strip().split("\n")
+        starts.append(str2datetime(line1))
+
+    for i in range(len(starts) - 1):
+        a = starts[i + 1]
+        b = starts[i]
+        if a > b:
+            c = a - b
+        else:
+            c = b - a
+        assert 0.3 < c.total_seconds() < 0.45
 
 
 def test_run_double_lines(loom_env):
