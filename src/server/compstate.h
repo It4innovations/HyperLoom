@@ -80,7 +80,7 @@ private:
                                        std::unordered_set<loom::Id> &nonlocals);
     size_t task_transfer_cost(const PlanNode &node);
     void add_pending_task(loom::Id id);
-    size_t get_max_cpus();
+    int get_max_cpus();
 };
 
 

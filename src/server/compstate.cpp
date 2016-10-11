@@ -244,9 +244,9 @@ bool ComputationState::is_ready(const PlanNode &node)
    return true;
 }
 
-size_t ComputationState::get_max_cpus()
+int ComputationState::get_max_cpus()
 {
-    size_t max_cpus = 0;
+    int max_cpus = 0;
     for (auto &pair : workers) {
         if (max_cpus < pair.first->get_resource_cpus()) {
             max_cpus = pair.first->get_resource_cpus();
@@ -269,7 +269,7 @@ TaskDistribution ComputationState::compute_distribution()
       return result;
    }
 
-   size_t max_cpus = get_max_cpus();
+   int max_cpus = get_max_cpus();
    if (max_cpus == 0) {
        max_cpus = 1;
    }
