@@ -285,18 +285,20 @@ TaskDistribution ComputationState::compute_distribution()
    // + 1 because lp solve indexes from 1 :(
    std::vector<double> costs(t_variables + 1, 0.0);
 
+   std::vector<loom::Id> tasks(pending_tasks.begin(), pending_tasks.end());
 
    /* [t_0,A] [t_0,B] ... [t_1,A] [t_1,B] ... [m_0,A] [m_0,B] ... [m_2,A] [m_2,B]
      * pending tasks t_X,A - X=task_index, A=worker_index
      * movable tasks m_X,A - X=task_index, A=worker_index
      */
 
-   /* Gather all inputs */
+   /* Gather all inputs
+      and estimate the max transfer cost */
    std::unordered_map<loom::Id, int> inputs;
    std::vector<double> n_cpus; // we will later use it for coefs, we store it directly as double
-   n_cpus.reserve(pending_tasks.size());
+   n_cpus.reserve(tasks.size());
    size_t total_size = 0;
-   for (loom::Id id : pending_tasks) {
+   for (loom::Id id : tasks) {
       const PlanNode &node = get_node(id);
       n_cpus.push_back(node.get_n_cpus());
       for (loom::Id id2 : node.get_inputs()) {
@@ -313,6 +315,7 @@ TaskDistribution ComputationState::compute_distribution()
       }
    }
 
+   /* Setup coeficients for exexuting a task */
    double task_cost = (total_size + 1) * 2 * TRANSFER_COST_COEF;
    for (size_t i = 0; i < n_tasks; i++) {
       double cpus = n_cpus[i];
@@ -328,23 +331,22 @@ TaskDistribution ComputationState::compute_distribution()
       }
    }
 
+   /* Initialize solver and helper structures */
    size_t variables = costs.size() - 1;
    Solver solver(variables);
-
    std::vector<int> indices;
    indices.reserve(n_workers * n_tasks);
-
    std::vector<double> ones(variables, 1.0);
 
    size_t task_id = 1;
 
-   std::vector<loom::Id> tasks(pending_tasks.begin(), pending_tasks.end());
-
+   /* Task constraints */
    for (loom::Id id : tasks) {
       indices.clear();
       for (size_t i = 0; i < n_workers; i++) {
          indices.push_back(task_id + i);
       }
+      /* Task can be executed only once */
       solver.add_constraint_lq(indices, ones, 1);
 
       const PlanNode &node = get_node(id);
@@ -355,13 +357,9 @@ TaskDistribution ComputationState::compute_distribution()
          nonlocals.clear();
          collect_requirements_for_node(wc, node, nonlocals);
          for (loom::Id id2 : nonlocals) {
+             /* What dataobjects have to be transfered? */
             solver.add_constraint_lq(task_id + index, inputs[id2] + index);
          }
-         /*size_t local_size = 0;
-            for (loom::Id id2 : locals) {
-                local_size += get_state(id2).get_size();
-            }
-            costs[task_id + index] -= local_size * TRANSFER_COST_COEF;*/
       }
       task_id += n_workers;
    }
@@ -374,6 +372,7 @@ TaskDistribution ComputationState::compute_distribution()
       for (size_t j = 0; j < n_tasks; j++) {
          indices[j] = j * n_workers + index + 1;
       }
+      /* Capacity limit for each worker */
       solver.add_constraint_lq(indices, n_cpus, free_cpus);
    }
    solver.set_objective_fn(costs);

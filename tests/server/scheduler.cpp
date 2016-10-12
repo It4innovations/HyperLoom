@@ -107,6 +107,51 @@ static loomplan::Plan make_plan2(Server &server)
    return plan;
 }
 
+/* Plan3
+
+      n0    n1     n2
+     / \   / \   / \
+    /   \ /  |  /   \
+   n3    n5   n4   n6 <-- Changed order!
+    \     \ /     /
+     \     X     /
+      \   / \   /
+        n7    n8
+
+*/
+static loomplan::Plan make_plan3(Server &server)
+{
+   loomplan::Plan plan;
+   add_cpu_request(server, plan, 1);
+
+   new_task(plan, 0); // n0
+   new_task(plan, 0); // n1
+   new_task(plan, 0); // n2
+
+   loomplan::Task *n3 = new_task(plan, 0);
+   loomplan::Task *n4 = new_task(plan, 0);
+   loomplan::Task *n5 = new_task(plan, 0);
+   loomplan::Task *n6 = new_task(plan, 0);
+
+   n3->add_input_ids(0);
+   n4->add_input_ids(1);
+   n4->add_input_ids(2);
+   n5->add_input_ids(0);
+   n5->add_input_ids(1);
+   n6->add_input_ids(2);
+
+   loomplan::Task *n7 = new_task(plan, 0);
+   loomplan::Task *n8 = new_task(plan, 0);
+
+   n7->add_input_ids(3);
+   n7->add_input_ids(4);
+   n8->add_input_ids(5);
+   n8->add_input_ids(6);
+
+   return plan;
+}
+
+
 static loomplan::Plan make_big_plan(Server &server, size_t plan_size)
 {
    loomplan::Plan plan;
@@ -563,5 +608,84 @@ TEST_CASE("Request plan", "[scheduling]") {
        s.add_ready_nodes(std::vector<loom::Id>{4, 5, 6, 7});
        TaskDistribution d = s.compute_distribution();
        REQUIRE((check_uvector(d[w1.get()], {6, 7})));
+   }
+}
+
+
+TEST_CASE("Plan continution (plan2)", "[scheduling]") {
+   Server server(NULL, 0);
+   ComputationState s(server);
+   s.set_plan(Plan(make_plan2(server), 0, server.get_dictionary()));
+
+   SECTION("Stick to gether") {
+       auto w1 = simple_worker(server, "w1", 2);
+       s.add_worker(w1.get());
+       auto w2 = simple_worker(server, "w2", 2);
+       s.add_worker(w2.get());
+
+       s.add_ready_nodes({0, 1});
+       TaskDistribution d = s.compute_distribution();
+       dump_dist(d);
+       REQUIRE((d[w1.get()].size() == 2 || d[w2.get()].size() == 2));
+   }
+
+   SECTION("Stick to gether - 2") {
+       auto w1 = simple_worker(server, "w1", 2);
+       s.add_worker(w1.get());
+       auto w2 = simple_worker(server, "w2", 1);
+       s.add_worker(w2.get());
+
+       s.add_ready_nodes({0, 3, 4});
+       TaskDistribution d = s.compute_distribution();
+       dump_dist(d);
+       REQUIRE(check_uvector(d[w1.get()], {3, 4}));
+       REQUIRE(check_uvector(d[w1.get()], {0}));
+   }
+}
+
+
+TEST_CASE("Plan continution (plan3)", "[scheduling]") {
+   Server server(NULL, 0);
+   ComputationState s(server);
+   s.set_plan(Plan(make_plan3(server), 0, server.get_dictionary()));
+
+   SECTION("Stick to gether - inpuits dominant ") {
+       auto w1 = simple_worker(server, "w1", 2);
+       s.add_worker(w1.get());
+       auto w2 = simple_worker(server, "w2", 2);
+       s.add_worker(w2.get());
+       auto w3 = simple_worker(server, "w3", 0);
+       s.add_worker(w3.get());
+
+       finish(s, 0, 20000000, 0, w3.get());
+       finish(s, 1, 20000, 0, w3.get());
+       finish(s, 2, 20000000, 0, w3.get());
+
+       s.add_ready_nodes({3, 4, 5, 6});
+
+       TaskDistribution d = s.compute_distribution();
+       dump_dist(d);
+       REQUIRE((check_uvector(d[w1.get()], {3, 5}) || (check_uvector(d[w1.get()], {4, 6}))));
+       REQUIRE((check_uvector(d[w2.get()], {3, 5}) || (check_uvector(d[w2.get()], {4, 6}))));
+   }
+
+   SECTION("Stick to gether - follows dominant") {
+       auto w1 = simple_worker(server, "w1", 2);
+       s.add_worker(w1.get());
+       auto w2 = simple_worker(server, "w2", 2);
+       s.add_worker(w2.get());
+       auto w3 = simple_worker(server, "w3", 0);
+       s.add_worker(w3.get());
+
+       finish(s, 0, 20000, 0, w3.get());
+       finish(s, 1, 20000, 0, w3.get());
+       finish(s, 2, 20000, 0, w3.get());
+
+       s.add_ready_nodes({3, 4, 5, 6});
+
+       TaskDistribution d = s.compute_distribution();
+       dump_dist(d);
+       REQUIRE((check_uvector(d[w1.get()], {3, 4}) || (check_uvector(d[w1.get()], {5, 6}))));
+       REQUIRE((check_uvector(d[w2.get()], {3, 4}) || (check_uvector(d[w2.get()], {5, 6}))));
    }
 }
