@@ -8,6 +8,7 @@
 #include "loomrun.pb.h"
 
 #include <sstream>
+#include <fstream>
 
 using namespace loom;
 
@@ -108,7 +109,8 @@ void RunTask::start(DataVector &inputs)
    if (stderr_fd < 0) {
       log_errno_abort("open +err:");
    }
-   stdio[2].flags = UV_IGNORE;
+
+   stdio[2].flags = UV_INHERIT_FD;
    stdio[2].data.fd = stderr_fd;
 
    int r;
@@ -147,7 +149,25 @@ void RunTask::_on_close(uv_handle_t *handle)
 {
    RunTask *task = static_cast<RunTask*>(handle->data);
    llog->debug("Process id={} finished (exit_status={})", task->get_id(), task->exit_status);
-   assert(task->exit_status == 0);
+
+   if (task->exit_status) {
+       std::stringstream s;
+       s << "Program terminated with status " << task->exit_status;
+       s << "\nStderr:\n";
+       std::ifstream err(task->get_path("+err").c_str());
+       assert(err.is_open());
+
+       int max_buffer_size = 128 * 1024;
+       auto buffer = std::make_unique<char[]>(max_buffer_size);
+       err.read(buffer.get(), max_buffer_size);
+       s.write(buffer.get(), err.gcount());
+       if (err.gcount() == max_buffer_size) {
+           s << "\n ... stderr truncated by Loom";
+       }
+       task->fail(s.str());
+       return;
+   }
+
    loomrun::Run msg;
    msg.ParseFromString(task->task->get_config());
    std::unique_ptr<Data> result;
