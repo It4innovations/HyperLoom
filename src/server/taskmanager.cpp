@@ -86,6 +86,9 @@ void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, Work
         if (state.dec_ref_counter()) {
             remove_state(state);
         }
+        if (cstate.is_finished()) {
+            loom::llog->debug("Plan is finished");
+        }
     } else {
         llog->debug("Job id={} finished (size={}, length={})", id, size, length);
     }
@@ -103,6 +106,7 @@ void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, Work
     }
 
     cstate.add_ready_nexts(node);
+
     TaskDistribution distribution(cstate.compute_distribution());
     distribute_work(distribution);
 }

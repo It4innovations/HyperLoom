@@ -53,6 +53,7 @@ public:
 
     bool is_ready(const PlanNode &node);
     void add_ready_nexts(const PlanNode &node);
+    bool is_finished() const;
 
 private:
     std::unordered_map<loom::Id, TaskState> states;

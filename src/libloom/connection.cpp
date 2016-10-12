@@ -18,7 +18,7 @@ Connection::Connection(ConnectionCallback *callback, uv_loop_t *loop)
 }
 
 Connection::~Connection()
-{    
+{
     assert(state == ConnectionClosed);
 }
 
@@ -49,7 +49,7 @@ void Connection::close_and_discard_remaining_data()
 }
 
 void Connection::accept(uv_tcp_t *listen_socket)
-{    
+{
     UV_CHECK(uv_accept((uv_stream_t*) listen_socket, (uv_stream_t*) &socket));
     uv_read_start((uv_stream_t *)&socket, _buf_alloc, _on_read);
     state = ConnectionOpen;
@@ -137,7 +137,7 @@ void Connection::send_buffer(SendBuffer *buffer)
 }
 
 void Connection::_on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
-{        
+{
     Connection *connection = static_cast<Connection *>(stream->data);
     if (nread == UV_EOF) {
         if (buf->base) {

@@ -79,6 +79,16 @@ public:
         workers[wc] = ws;
     }
 
+    bool is_running() const {
+        for(auto &pair : workers) {
+            if (pair.second == S_RUNNING) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     template<typename F> void foreach_owner(F f) {
         for(auto &pair : workers) {
             if (pair.second == S_OWNER) {

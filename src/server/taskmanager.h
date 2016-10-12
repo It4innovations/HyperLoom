@@ -38,6 +38,10 @@ public:
     void on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc);
     void register_worker(WorkerConnection *wc);
 
+    bool is_plan_finished() const {
+        return cstate.is_finished();
+    }
+
 private:    
     Server &server;
     ComputationState cstate;

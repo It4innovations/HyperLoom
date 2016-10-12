@@ -81,6 +81,11 @@ void ComputationState::add_ready_nexts(const PlanNode &node)
    }
 }
 
+bool ComputationState::is_finished() const
+{
+    return states.empty();
+}
+
 void ComputationState::add_pending_task(loom::Id id)
 {
    loom::llog->debug("Add pending task and creating state id={}", id);
@@ -361,8 +366,6 @@ TaskDistribution ComputationState::compute_distribution()
       task_id += n_workers;
    }
 
-   /* Linit for each worker
-     * Set [t_0,A] + [t_1,A] ... + [t_L,A] <= free_cpus(A) */
    indices.resize(n_tasks);
    for (auto &pair : workers) {
       WorkerConnection *wc = pair.first;
