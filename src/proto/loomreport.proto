@@ -1,0 +1,12 @@
+package loomcomm;
+
+option optimize_for = LITE_RUNTIME;
+
+import "loomplan.proto";
+import "loomcomm.proto";
+
+message Report {
+	repeated string symbols = 1;
+	required loomplan.Plan plan = 2;
+	repeated loomcomm.Event events = 3;
+}

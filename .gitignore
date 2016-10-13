@@ -12,6 +12,7 @@ _build
 *.so.*
 *_pch.h.cpp
 *_resource.rc
+.*
 
 # qtcreator generated files
 *.pro.user*

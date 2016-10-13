@@ -7,8 +7,9 @@
 
 using namespace loom;
 
-ClientConnection::ClientConnection(Server &server, std::unique_ptr<loom::Connection> connection, bool info_flag)
-    : server(server), connection(std::move(connection)), info_flag(info_flag)
+ClientConnection::ClientConnection(Server &server,
+                                   std::unique_ptr<loom::Connection> connection)
+    : server(server), connection(std::move(connection))
 {
     this->connection->set_callback(this);
     llog->info("Client {} connected", this->connection->get_peername());
@@ -36,13 +37,14 @@ ClientConnection::~ClientConnection()
 void ClientConnection::on_message(const char *buffer, size_t size)
 {
     llog->debug("Plan received");
-    loomplan::Plan plan;
-    plan.ParseFromArray(buffer, size);
+    loomcomm::ClientSubmit submit;
+    submit.ParseFromArray(buffer, size);
     auto& task_manager = server.get_task_manager();
 
+    const loomplan::Plan &plan = submit.plan();
     loom::Id id_base = server.new_id(plan.tasks_size());
     task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()));
-    llog->info("Plan submitted tasks={}", plan.tasks_size());
+    llog->info("Plan submitted tasks={} report={}", plan.tasks_size(), submit.report());
 }
 
 void ClientConnection::on_close()

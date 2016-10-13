@@ -13,7 +13,7 @@ class Server;
 class ClientConnection : public loom::ConnectionCallback {
 public:
     ClientConnection(Server &server,
-                     std::unique_ptr<loom::Connection> connection, bool info_flag);
+                     std::unique_ptr<loom::Connection> connection);
     ~ClientConnection();
     void on_message(const char *buffer, size_t size);
     void on_close();
@@ -22,14 +22,9 @@ public:
         connection->send_buffer(buffer);
     }
 
-    bool has_info_flag() const {
-        return info_flag;
-    }
-
 protected:
     Server &server;
     std::unique_ptr<loom::Connection> connection;
-    bool info_flag;
 };
 
 

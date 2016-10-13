@@ -15,3 +15,4 @@ protoc loomrun.proto --cpp_out=${LIBLOOM_DIR}/tasks
 protoc loomcomm.proto --python_out=${CLIENT_DIR}
 protoc loomplan.proto --python_out=${CLIENT_DIR}
 protoc loomrun.proto --python_out=${CLIENT_DIR}
+protoc loomreport.proto --python_out=${CLIENT_DIR}

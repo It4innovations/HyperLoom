@@ -81,9 +81,10 @@ void Server::remove_freshconnection(FreshConnection &conn)
 void Server::on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
     assert(client_connection);
-    if (client_connection->has_info_flag()) {
+    /*
+    if (client_connection->is_report_enabled()) {
         assert(0);
-        /*loomcomm::ClientMessage cmsg;
+        loomcomm::ClientMessage cmsg;
         cmsg.set_type(loomcomm::ClientMessage_Type_INFO);
         loomcomm::Info *info = cmsg.mutable_info();
         info->set_id(task.get_id());
@@ -95,8 +96,8 @@ void Server::on_task_finished(loom::Id id, size_t size, size_t length, WorkerCon
         SendBuffer *buffer = new SendBuffer;
         buffer->add(cmsg);
 
-        client_connection->send_buffer(buffer);*/
-    }
+        client_connection->send_buffer(buffer);
+    }*/
     task_manager.on_task_finished(id, size, length, wc);
 }
 

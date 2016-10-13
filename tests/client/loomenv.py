@@ -47,7 +47,6 @@ class Env():
 class LoomEnv(Env):
 
     PORT = 19010
-    info = False
     _client = None
 
     def start(self, workers_count, cpus=1):
@@ -88,11 +87,13 @@ class LoomEnv(Env):
     @property
     def client(self):
         if self._client is None:
-            self._client = client.Client("localhost", self.PORT, self.info)
+            self._client = client.Client("localhost", self.PORT)
         return self._client
 
-    def submit(self, plan, results):
-        return self.client.submit(plan, results)
+    def submit(self, plan, results, report=None):
+        if report:
+            report = os.path.join(LOOM_TEST_BUILD_DIR, report)
+        return self.client.submit(plan, results, report)
 
 
 @pytest.yield_fixture(autouse=True, scope="function")

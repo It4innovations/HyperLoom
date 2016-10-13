@@ -61,10 +61,8 @@ void FreshConnection::on_message(const char *buffer, size_t size)
         return;
     }
     if (msg.type() == loomcomm::Register_Type_REGISTER_CLIENT) {
-        bool info_flag = msg.has_info() && msg.info();
         auto cconn = std::make_unique<ClientConnection>(server,
-                                                        std::move(connection),
-                                                        info_flag);
+                                                        std::move(connection));
         server.add_client_connection(std::move(cconn));
         assert(connection.get() == nullptr);
         server.remove_freshconnection(*this);

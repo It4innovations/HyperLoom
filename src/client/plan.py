@@ -1,7 +1,6 @@
 
 import loomplan_pb2
 import loomrun_pb2
-import gv
 
 import struct
 
@@ -204,9 +203,7 @@ class Plan(object):
         task.policy = POLICY_SIMPLE
         return self.add(task)
 
-    def create_message(self, symbols):
-        msg = loomplan_pb2.Plan()
-
+    def set_message(self, msg, symbols):
         requests = set()
         for task in self.tasks:
             if task.resource_request:
@@ -221,23 +218,3 @@ class Plan(object):
             t = msg.tasks.add()
             task.set_message(t, symbols, requests)
         return msg
-
-    def write_dot(self, filename, info=None):
-        colors = ["red", "green", "blue", "orange", "violet"]
-        if info:
-            w = sorted(set(worker for id, worker in info))
-            workers = {}
-            for id, worker in info:
-                workers[id] = w.index(worker)
-            del w
-        else:
-            workers = None
-        graph = gv.Graph()
-        for task in self.tasks:
-            node = graph.node(task.id)
-            if workers:
-                node.color = colors[workers[task.id] % len(colors)]
-            node.label = "{}\n{}".format(str(task.id), task.task_type)
-            for inp in task.inputs:
-                graph.node(inp.id).add_arc(node)
-        graph.write(filename)

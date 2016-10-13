@@ -1,6 +1,7 @@
 package loomcomm;
 
 option optimize_for = LITE_RUNTIME;
+import "loomplan.proto";
 
 message Register {
 	enum Type {
@@ -15,9 +16,6 @@ message Register {
 	repeated string task_types = 4;
 	repeated string data_types = 5;
 	optional int32 cpus = 6;
-
-	// Client
-	optional bool info = 10;
 }
 
 message ServerMessage {
@@ -85,9 +83,17 @@ message Data
 	optional uint64 arg1_u64 = 9;
 }
 
-message Info {
-	required int32 id = 1;
-	required string worker = 2;
+message Event {
+	enum Type {
+		TASK_START = 1;
+		TASK_END = 2;
+		SEND_START = 3;
+		SEND_END = 4;
+	}
+	required uint64 time = 1;
+	required Type type = 2;
+	required int32 id = 3;
+	optional int32 worker_index = 4;
 }
 
 message Error {
@@ -99,13 +105,18 @@ message Error {
 message ClientMessage {
 	enum Type {
 		DATA = 1;
-		INFO = 2;
+		EVENT = 2;
 		ERROR = 3;
 		DICTIONARY = 4;
 	}
 	required Type type = 1;
 	optional DataPrologue data = 2;
-	optional Info info = 3;
+	optional Event event = 3;
 	optional Error error = 4;
 	repeated string symbols = 5;
+}
+
+message ClientSubmit {
+	required loomplan.Plan plan = 1;
+	required bool report = 2;
 }

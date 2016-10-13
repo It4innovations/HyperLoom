@@ -62,11 +62,14 @@ private:
     Plan plan;
     Server &server;
 
+    uint64_t base_time;
+
     loom::Id dslice_task_id;
     loom::Id dget_task_id;
 
     loom::Id slice_task_id;
     loom::Id get_task_id;
+
 
     WorkerConnection *get_best_holder_of_deps(PlanNode *task);
     WorkerConnection *find_best_worker_for_node(PlanNode *task);

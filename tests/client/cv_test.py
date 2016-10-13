@@ -37,7 +37,7 @@ def test_cv_iris(loom_env):
                               [(chunk, "testdata"), (model, "model")])
             predict.append(task)
 
-        results = loom_env.submit(p, predict)
+        results = loom_env.submit(p, predict, report="cv")
 
         assert len(results) == CHUNKS
         for line in results:

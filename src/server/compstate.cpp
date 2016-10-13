@@ -16,6 +16,8 @@ ComputationState::ComputationState(Server &server) : server(server)
    get_task_id = dictionary.find_or_create("loom/base/get");
    dslice_task_id = dictionary.find_or_create("loom/scheduler/dslice");
    dget_task_id = dictionary.find_or_create("loom/scheduler/dget");
+
+   base_time = uv_now(server.get_loop());
 }
 
 void ComputationState::set_plan(Plan &&plan)
