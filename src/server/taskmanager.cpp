@@ -139,11 +139,18 @@ void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, Work
 
     cstate.add_ready_nexts(node);
 
-    TaskDistribution distribution(cstate.compute_distribution());
-    distribute_work(distribution);
+    if (cstate.has_pending_tasks()) {
+        server.need_task_distribution();
+    }
 }
 
 void TaskManager::register_worker(WorkerConnection *wc)
 {
     cstate.add_worker(wc);
+}
+
+void TaskManager::run_task_distribution()
+{
+    TaskDistribution d = cstate.compute_distribution();
+    distribute_work(d);
 }

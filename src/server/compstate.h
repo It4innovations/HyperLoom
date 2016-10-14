@@ -45,6 +45,10 @@ public:
     void add_ready_nodes(const std::vector<loom::Id> &ids);
     void set_task_finished(const PlanNode& node, size_t size, size_t length, WorkerConnection *wc);
 
+    bool has_pending_tasks() const {
+        return !pending_tasks.empty();
+    }
+
     const Plan& get_plan() const {
         return plan;
     }

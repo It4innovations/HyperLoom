@@ -77,6 +77,8 @@ public:
     int get_worker_ncpus();
     void report_event(std::unique_ptr<loomcomm::Event> event);
 
+    void need_task_distribution();
+
 private:
     void start_listen();
 
@@ -96,6 +98,10 @@ private:
 
     loom::Id id_counter;
     static void _on_new_connection(uv_stream_t *stream, int status);
+
+    bool task_distribution_active;
+    uv_idle_t distribution_idle;
+    static void _distribution_callback(uv_idle_t *idle);
 };
 
 #endif // LOOM_SERVER_SERVER_H

@@ -14,7 +14,8 @@ Server::Server(uv_loop_t *loop, int port)
       listen_port(port),
       task_manager(*this),
       dummy_worker(*this),
-      id_counter(1)
+      id_counter(1),
+      task_distribution_active(false)
 {
     /* Since the server do not implement fully resource management, we forces
      * symbol for the only schedulable resouce: loom/resource/cpus */
@@ -31,6 +32,8 @@ Server::Server(uv_loop_t *loop, int port)
         dummy_worker.start_listen();
         loom::llog->debug("Dummy worker started at {}", dummy_worker.get_listen_port());
     }
+    UV_CHECK(uv_idle_init(loop, &distribution_idle));
+    distribution_idle.data = this;
 }
 
 void Server::add_worker_connection(std::unique_ptr<WorkerConnection> conn)
@@ -163,4 +166,21 @@ void Server::report_event(std::unique_ptr<loomcomm::Event> event)
     auto buffer = std::make_unique<SendBuffer>();
     buffer->add(cmsg);
     client_connection->send_buffer(std::move(buffer));
+}
+
+void Server::need_task_distribution()
+{
+    if (task_distribution_active) {
+        return;
+    }
+    task_distribution_active = true;
+    UV_CHECK(uv_idle_start(&distribution_idle, _distribution_callback));
+}
+
+void Server::_distribution_callback(uv_idle_t *idle)
+{
+    UV_CHECK(uv_idle_stop(idle));
+    Server *server = static_cast<Server*>(idle->data);
+    server->task_distribution_active = false;
+    server->task_manager.run_task_distribution();
 }

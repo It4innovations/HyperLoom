@@ -42,6 +42,8 @@ public:
         return cstate.is_finished();
     }
 
+    void run_task_distribution();
+
 private:    
     Server &server;
     ComputationState cstate;
