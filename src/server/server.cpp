@@ -80,24 +80,6 @@ void Server::remove_freshconnection(FreshConnection &conn)
 
 void Server::on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
-    assert(client_connection);
-    /*
-    if (client_connection->is_report_enabled()) {
-        assert(0);
-        loomcomm::ClientMessage cmsg;
-        cmsg.set_type(loomcomm::ClientMessage_Type_INFO);
-        loomcomm::Info *info = cmsg.mutable_info();
-        info->set_id(task.get_id());
-
-        const auto& owners = task.get_owners();
-        assert(owners.size());
-        info->set_worker(owners.back()->get_address());
-
-        SendBuffer *buffer = new SendBuffer;
-        buffer->add(cmsg);
-
-        client_connection->send_buffer(buffer);
-    }*/
     task_manager.on_task_finished(id, size, length, wc);
 }
 
@@ -120,9 +102,9 @@ void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::
     error->set_error_msg(error_msg);
 
     if (client_connection) {
-        SendBuffer *buffer = new SendBuffer();
+        auto buffer = std::make_unique<SendBuffer>();
         buffer->add(msg);
-        client_connection->send_buffer(buffer);
+        client_connection->send_buffer(std::move(buffer));
     }
     exit(1);
 }
@@ -136,9 +118,9 @@ void Server::send_dictionary(Connection &connection)
         std::string *s = msg.add_symbols();
         *s = symbol;
     }
-    SendBuffer *send_buffer = new SendBuffer();
+    auto send_buffer = std::make_unique<SendBuffer>();
     send_buffer->add(msg);
-    connection.send_buffer(send_buffer);
+    connection.send_buffer(std::move(send_buffer));
 }
 
 int Server::get_worker_ncpus()
@@ -166,4 +148,19 @@ void Server::_on_new_connection(uv_stream_t *stream, int status)
     auto connection = std::make_unique<FreshConnection>(*server);
     connection->accept((uv_tcp_t*) stream);
     server->fresh_connections.push_back(std::move(connection));
+}
+
+void Server::report_event(std::unique_ptr<loomcomm::Event> event)
+{
+    if (!client_connection) {
+        return;
+    }
+
+    loomcomm::ClientMessage cmsg;
+    cmsg.set_type(loomcomm::ClientMessage_Type_EVENT);
+    cmsg.set_allocated_event(event.release());
+
+    auto buffer = std::make_unique<SendBuffer>();
+    buffer->add(cmsg);
+    client_connection->send_buffer(std::move(buffer));
 }

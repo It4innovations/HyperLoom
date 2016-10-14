@@ -20,7 +20,7 @@ public:
     void set_plan(Plan &&plan);
     void add_worker(WorkerConnection* wc);
 
-    void set_running_task(WorkerConnection *wc, loom::Id id);
+    void set_running_task(const PlanNode &node, WorkerConnection *wc);
 
     TaskDistribution compute_initial_distribution();
     TaskDistribution compute_distribution();
@@ -43,7 +43,7 @@ public:
     }
 
     void add_ready_nodes(const std::vector<loom::Id> &ids);
-    void set_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc);
+    void set_task_finished(const PlanNode& node, size_t size, size_t length, WorkerConnection *wc);
 
     const Plan& get_plan() const {
         return plan;
@@ -54,6 +54,10 @@ public:
     bool is_ready(const PlanNode &node);
     void add_ready_nexts(const PlanNode &node);
     bool is_finished() const;
+
+    uint64_t get_base_time() const {
+        return base_time;
+    }
 
 private:
     std::unordered_map<loom::Id, TaskState> states;

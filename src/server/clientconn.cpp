@@ -1,8 +1,10 @@
 #include "clientconn.h"
 #include "server.h"
 
+
 #include "libloom/loomplan.pb.h"
 #include "libloom/loomcomm.pb.h"
+#include "libloom/compat.h"
 #include "libloom/log.h"
 
 using namespace loom;
@@ -23,9 +25,9 @@ ClientConnection::ClientConnection(Server &server,
         std::string *s = cmsg.add_symbols();
         *s = symbol;
     }
-    SendBuffer *send_buffer = new SendBuffer();
+    auto send_buffer = std::make_unique<SendBuffer>();
     send_buffer->add(cmsg);
-    this->connection->send_buffer(send_buffer);
+    this->connection->send_buffer(std::move(send_buffer));
     // End of send dictionary
 }
 
@@ -43,7 +45,7 @@ void ClientConnection::on_message(const char *buffer, size_t size)
 
     const loomplan::Plan &plan = submit.plan();
     loom::Id id_base = server.new_id(plan.tasks_size());
-    task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()));
+    task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()), submit.report());
     llog->info("Plan submitted tasks={} report={}", plan.tasks_size(), submit.report());
 }
 

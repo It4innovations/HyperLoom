@@ -40,26 +40,26 @@ void ComputationState::add_worker(WorkerConnection* wconn)
    w.n_tasks = 0;
 }
 
-void ComputationState::set_running_task(WorkerConnection *wc, loom::Id id)
+void ComputationState::set_running_task(const PlanNode &node, WorkerConnection *wc)
 {
-   TaskState &state = get_state(id);
-   auto it = pending_tasks.find(id);
+   TaskState &state = get_state(node.get_id());
+   auto it = pending_tasks.find(node.get_id());
    assert(it != pending_tasks.end());
    pending_tasks.erase(it);
 
    assert(state.get_worker_status(wc) == TaskState::S_NONE);
    state.set_worker_status(wc, TaskState::S_RUNNING);
-   workers[wc].n_tasks++;
+   workers[wc].n_tasks += node.get_n_cpus();
 }
 
-void ComputationState::set_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc)
+void ComputationState::set_task_finished(const PlanNode&node, size_t size, size_t length, WorkerConnection *wc)
 {
-   TaskState &state = get_state(id);
+   TaskState &state = get_state(node.get_id());
    assert(state.get_worker_status(wc) == TaskState::S_RUNNING);
    state.set_worker_status(wc, TaskState::S_OWNER);
    state.set_size(size);
    state.set_length(length);
-   workers[wc].n_tasks--;
+   workers[wc].n_tasks -= node.get_n_cpus();
 }
 
 void ComputationState::remove_state(loom::Id id)
@@ -265,7 +265,7 @@ int ComputationState::get_max_cpus()
 
 TaskDistribution ComputationState::compute_distribution()
 {
-   loom::llog->debug("Computation for distribution of {} task(s)", pending_tasks.size());
+   loom::llog->debug("Computation of distribution: {} task(s)", pending_tasks.size());
 
    TaskDistribution result;
    if (pending_tasks.empty()) {

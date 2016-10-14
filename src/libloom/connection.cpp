@@ -2,6 +2,7 @@
 #include "utils.h"
 
 #include <string.h>
+#include <libloom/compat.h>
 
 using namespace loom;
 
@@ -124,16 +125,19 @@ void Connection::_on_write(uv_write_t *write_req, int status)
 
 void Connection::send_message(google::protobuf::MessageLite &message)
 {
-    SendBuffer *buffer = new SendBuffer();
+    auto buffer = std::make_unique<SendBuffer>();
     buffer->add(message);
-    send_buffer(buffer);
+    send_buffer(std::move(buffer));
 }
 
-void Connection::send_buffer(SendBuffer *buffer)
+void Connection::send_buffer(std::unique_ptr<SendBuffer> buffer)
 {
     uv_buf_t *bufs = buffer->get_uv_bufs();
     size_t count = buffer->get_uv_bufs_count();
-    UV_CHECK(uv_write(&buffer->request, (uv_stream_t *) &socket, bufs, count, _on_write));
+    SendBuffer *b = buffer.release();
+    // It will be released in _on_write callback
+    // It is stored in b->request.data
+    UV_CHECK(uv_write(&b->request, (uv_stream_t *) &socket, bufs, count, _on_write));
 }
 
 void Connection::_on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)

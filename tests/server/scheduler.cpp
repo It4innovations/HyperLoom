@@ -24,7 +24,7 @@ static std::unique_ptr<WorkerConnection>
 simple_worker(Server &server, const std::string &name, int cpus=1)
 {
    std::vector<loom::Id> tt, dt;
-   return std::make_unique<WorkerConnection>(server, nullptr, name, tt, dt, cpus);
+   return std::make_unique<WorkerConnection>(server, nullptr, name, tt, dt, cpus, 0);
 }
 
 template<typename T>
@@ -242,8 +242,9 @@ static void finish(ComputationState &cstate, loom::Id id, size_t size, size_t le
 {
    std::vector<loom::Id> ids = {id};
    cstate.add_ready_nodes(ids);
-   cstate.set_running_task(wc, id);
-   cstate.set_task_finished(id, size, length, wc);
+   auto &node = cstate.get_node(id);
+   cstate.set_running_task(node, wc);
+   cstate.set_task_finished(node, size, length, wc);
 }
 
 TEST_CASE( "Server scheduling - plan construction", "[scheduling]" ) {

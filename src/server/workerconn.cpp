@@ -13,13 +13,14 @@ WorkerConnection::WorkerConnection(Server &server,
                                    const std::string& address,
                                    const std::vector<loom::Id> &task_types,
                                    const std::vector<loom::Id> &data_types,
-                                   int resource_cpus)
+                                   int resource_cpus, int worker_id)
     : server(server),
       connection(std::move(connection)),
       resource_cpus(resource_cpus),
       address(address),
       task_types(task_types),
-      data_types(data_types)
+      data_types(data_types),
+      worker_id(worker_id)
 {
     llog->info("Worker {} connected (cpus={})", address, resource_cpus);
     if (this->connection) {
@@ -57,7 +58,7 @@ void WorkerConnection::on_close()
 void WorkerConnection::send_task(const PlanNode &task)
 {
     auto id = task.get_id();
-    llog->debug("Assigning task id={} to address={}", id, address);
+    llog->debug("Assigning task id={} to address={} cpu={}", id, address, task.get_n_cpus());
 
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_TASK);

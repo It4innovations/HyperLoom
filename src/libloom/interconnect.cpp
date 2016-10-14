@@ -28,7 +28,7 @@ void InterConnection::on_connection()
     send_message(msg);
 
     for (auto& buffer : early_sends) {
-        connection.send_buffer(buffer.release());
+        connection.send_buffer(std::move(buffer));
     }
     early_sends.clear();
 }
@@ -100,7 +100,7 @@ void InterConnection::on_data_finish()
 
 void InterConnection::send(Id id, std::shared_ptr<Data> &data, bool with_size)
 {
-    SendBuffer *buffer = new SendBuffer();
+    auto buffer = std::make_unique<SendBuffer>();
     loomcomm::DataPrologue msg;
     msg.set_id(id);
 
@@ -119,9 +119,9 @@ void InterConnection::send(Id id, std::shared_ptr<Data> &data, bool with_size)
     assert(state == Connection::ConnectionOpen ||
            state == Connection::ConnectionConnecting);
     if (state == Connection::ConnectionOpen) {
-        connection.send_buffer(buffer);
+        connection.send_buffer(std::move(buffer));
     } else {
-        early_sends.push_back(std::unique_ptr<SendBuffer>(buffer));
+        early_sends.push_back(std::move(buffer));
     }
 }
 

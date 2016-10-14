@@ -103,7 +103,7 @@ std::vector<double> Solver::solve()
 
     set_presolve(lp, /* PRESOLVE_ROWS | */ PRESOLVE_REDUCEMIP + PRESOLVE_KNAPSACK + PRESOLVE_COLS + PRESOLVE_LINDEP, get_presolveloops(lp));
 
-    int ret = ::solve(lp);    
+    int ret = ::solve(lp);
     assert(ret == OPTIMAL || ret == SUBOPTIMAL);
 
     std::vector<double> result(variables);

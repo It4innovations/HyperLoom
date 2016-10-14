@@ -93,7 +93,7 @@ message Event {
 	required uint64 time = 1;
 	required Type type = 2;
 	required int32 id = 3;
-	optional int32 worker_index = 4;
+	optional int32 worker_id = 4;
 }
 
 message Error {

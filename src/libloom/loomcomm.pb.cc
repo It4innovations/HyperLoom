@@ -2295,7 +2295,7 @@ const int Event::Type_ARRAYSIZE;
 const int Event::kTimeFieldNumber;
 const int Event::kTypeFieldNumber;
 const int Event::kIdFieldNumber;
-const int Event::kWorkerIndexFieldNumber;
+const int Event::kWorkerIdFieldNumber;
 #endif  // !_MSC_VER
 
 Event::Event()
@@ -2319,7 +2319,7 @@ void Event::SharedCtor() {
   time_ = GOOGLE_ULONGLONG(0);
   type_ = 1;
   id_ = 0;
-  worker_index_ = 0;
+  worker_id_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -2369,7 +2369,7 @@ void Event::Clear() {
   } while (0)
 
   if (_has_bits_[0 / 32] & 15) {
-    ZR_(id_, worker_index_);
+    ZR_(id_, worker_id_);
     time_ = GOOGLE_ULONGLONG(0);
     type_ = 1;
   }
@@ -2441,18 +2441,18 @@ bool Event::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(32)) goto parse_worker_index;
+        if (input->ExpectTag(32)) goto parse_worker_id;
         break;
       }
 
-      // optional int32 worker_index = 4;
+      // optional int32 worker_id = 4;
       case 4: {
         if (tag == 32) {
-         parse_worker_index:
+         parse_worker_id:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &worker_index_)));
-          set_has_worker_index();
+                 input, &worker_id_)));
+          set_has_worker_id();
         } else {
           goto handle_unusual;
         }
@@ -2501,9 +2501,9 @@ void Event::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->id(), output);
   }
 
-  // optional int32 worker_index = 4;
-  if (has_worker_index()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->worker_index(), output);
+  // optional int32 worker_id = 4;
+  if (has_worker_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->worker_id(), output);
   }
 
   output->WriteRaw(unknown_fields().data(),
@@ -2535,11 +2535,11 @@ int Event::ByteSize() const {
           this->id());
     }
 
-    // optional int32 worker_index = 4;
-    if (has_worker_index()) {
+    // optional int32 worker_id = 4;
+    if (has_worker_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->worker_index());
+          this->worker_id());
     }
 
   }
@@ -2568,8 +2568,8 @@ void Event::MergeFrom(const Event& from) {
     if (from.has_id()) {
       set_id(from.id());
     }
-    if (from.has_worker_index()) {
-      set_worker_index(from.worker_index());
+    if (from.has_worker_id()) {
+      set_worker_id(from.worker_id());
     }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
@@ -2592,7 +2592,7 @@ void Event::Swap(Event* other) {
     std::swap(time_, other->time_);
     std::swap(type_, other->type_);
     std::swap(id_, other->id_);
-    std::swap(worker_index_, other->worker_index_);
+    std::swap(worker_id_, other->worker_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

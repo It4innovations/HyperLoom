@@ -111,7 +111,7 @@ void DWConnection::on_data_chunk(const char *buffer, size_t size)
 void DWConnection::on_data_finish()
 {
     llog->debug("Resending data to client");
-    worker.server.get_client_connection().send_buffer(send_buffer.release());
+    worker.server.get_client_connection().send_buffer(std::move(send_buffer));
     if (worker.server.get_task_manager().is_plan_finished()) {
         loom::llog->info("Plan is finished");
     }

@@ -11,6 +11,10 @@
 
 #include <vector>
 
+namespace loomcomm {
+    class Event;
+}
+
 /** Main class of the server */
 class Server {
 
@@ -48,6 +52,10 @@ public:
         return *client_connection;
     }
 
+    bool has_client_connection() {
+        return client_connection.get() != nullptr;
+    }
+
     void add_resend_task(loom::Id id);
 
     void on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc);
@@ -66,8 +74,8 @@ public:
     }
 
     void send_dictionary(loom::Connection &connection);
-
     int get_worker_ncpus();
+    void report_event(std::unique_ptr<loomcomm::Event> event);
 
 private:
     void start_listen();

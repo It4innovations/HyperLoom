@@ -72,7 +72,7 @@ public:
     
     void connect(std::string host, int port);
     void send_message(::google::protobuf::MessageLite &message);
-    void send_buffer(SendBuffer *buffer);
+    void send_buffer(std::unique_ptr<SendBuffer> buffer);
 
     void close();
     void close_and_discard_remaining_data();

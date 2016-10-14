@@ -18,8 +18,8 @@ public:
     void on_message(const char *buffer, size_t size);
     void on_close();
 
-    void send_buffer(loom::SendBuffer *buffer) {
-        connection->send_buffer(buffer);
+    void send_buffer(std::unique_ptr<loom::SendBuffer> buffer) {
+        connection->send_buffer(std::move(buffer));
     }
 
 protected:

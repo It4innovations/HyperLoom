@@ -1132,12 +1132,12 @@ class Event : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 id() const;
   inline void set_id(::google::protobuf::int32 value);
 
-  // optional int32 worker_index = 4;
-  inline bool has_worker_index() const;
-  inline void clear_worker_index();
-  static const int kWorkerIndexFieldNumber = 4;
-  inline ::google::protobuf::int32 worker_index() const;
-  inline void set_worker_index(::google::protobuf::int32 value);
+  // optional int32 worker_id = 4;
+  inline bool has_worker_id() const;
+  inline void clear_worker_id();
+  static const int kWorkerIdFieldNumber = 4;
+  inline ::google::protobuf::int32 worker_id() const;
+  inline void set_worker_id(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:loomcomm.Event)
  private:
@@ -1147,8 +1147,8 @@ class Event : public ::google::protobuf::MessageLite {
   inline void clear_has_type();
   inline void set_has_id();
   inline void clear_has_id();
-  inline void set_has_worker_index();
-  inline void clear_has_worker_index();
+  inline void set_has_worker_id();
+  inline void clear_has_worker_id();
 
   ::std::string _unknown_fields_;
 
@@ -1157,7 +1157,7 @@ class Event : public ::google::protobuf::MessageLite {
   ::google::protobuf::uint64 time_;
   int type_;
   ::google::protobuf::int32 id_;
-  ::google::protobuf::int32 worker_index_;
+  ::google::protobuf::int32 worker_id_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -2563,28 +2563,28 @@ inline void Event::set_id(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:loomcomm.Event.id)
 }
 
-// optional int32 worker_index = 4;
-inline bool Event::has_worker_index() const {
+// optional int32 worker_id = 4;
+inline bool Event::has_worker_id() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void Event::set_has_worker_index() {
+inline void Event::set_has_worker_id() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void Event::clear_has_worker_index() {
+inline void Event::clear_has_worker_id() {
   _has_bits_[0] &= ~0x00000008u;
 }
-inline void Event::clear_worker_index() {
-  worker_index_ = 0;
-  clear_has_worker_index();
+inline void Event::clear_worker_id() {
+  worker_id_ = 0;
+  clear_has_worker_id();
 }
-inline ::google::protobuf::int32 Event::worker_index() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Event.worker_index)
-  return worker_index_;
+inline ::google::protobuf::int32 Event::worker_id() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Event.worker_id)
+  return worker_id_;
 }
-inline void Event::set_worker_index(::google::protobuf::int32 value) {
-  set_has_worker_index();
-  worker_index_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Event.worker_index)
+inline void Event::set_worker_id(::google::protobuf::int32 value) {
+  set_has_worker_id();
+  worker_id_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Event.worker_id)
 }
 
 // -------------------------------------------------------------------

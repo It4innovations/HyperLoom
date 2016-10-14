@@ -12,7 +12,8 @@
 using namespace loom;
 
 FreshConnection::FreshConnection(Server &server) :
-    server(server), connection(std::make_unique<Connection>(this, server.get_loop()))
+    server(server),
+    connection(std::make_unique<Connection>(this, server.get_loop()))
 {
 }
 
@@ -54,7 +55,8 @@ void FreshConnection::on_message(const char *buffer, size_t size)
                                                         address.str(),
                                                         task_types,
                                                         data_types,
-                                                        msg.cpus());
+                                                        msg.cpus(),
+                                                        server.new_id());
 
         server.add_worker_connection(std::move(wconn));
         server.remove_freshconnection(*this);

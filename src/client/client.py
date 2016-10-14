@@ -62,6 +62,9 @@ class Client(object):
 
         self._send_message(msg)
 
+        if report:
+            report_data = self._create_report(plan)
+
         data = {}
         while expected != len(data):
             msg = self.connection.receive_message()
@@ -71,14 +74,14 @@ class Client(object):
                 prologue = cmsg.data
                 data[prologue.id] = self._receive_data()
             elif cmsg.type == ClientMessage.EVENT:
-                self.process_event(cmsg.event)
+                self.process_event(cmsg.event, report_data)
             elif cmsg.type == ClientMessage.ERROR:
                 self.process_error(cmsg)
             else:
                 assert 0
 
         if report:
-            self._write_report(report, plan)
+            self._write_report(report_data, report)
 
         if single_result:
             return data[results.id]
@@ -91,13 +94,15 @@ class Client(object):
             symbols[index] = name
         return symbols
 
-    def _write_report(self, report_filename, plan):
+    def _create_report(self, plan):
         report_msg = Report()
         report_msg.symbols.extend(self._symbol_list())
         plan.set_message(report_msg.plan, self.symbols)
+        return report_msg
 
+    def _write_report(self, report_data, report_filename):
         with open(report_filename + ".report", "w") as f:
-            f.write(report_msg.SerializeToString())
+            f.write(report_data.SerializeToString())
 
     def _read_symbols(self):
         msg = self.connection.receive_message()
@@ -115,8 +120,9 @@ class Client(object):
         error = cmsg.error
         raise TaskFailed(error.id, error.worker, error.error_msg)
 
-    def process_event(self, event):
-        assert 0
+    def process_event(self, event, report_data):
+        new_event = report_data.events.add()
+        new_event.CopyFrom(event)
 
     def _receive_data(self):
         msg_data = Data()

@@ -8,10 +8,10 @@ loom_env  # silence flake8
 
 
 def test_cv_iris(loom_env):
-        CHUNKS = 5
+        CHUNKS = 15
         CHUNK_SIZE = 150 / CHUNKS  # There are 150 irises
 
-        loom_env.start(2)
+        loom_env.start(4, 4)
         loom_env.info = False
 
         p = loom_env.plan()

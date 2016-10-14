@@ -29,7 +29,7 @@ public:
 
     TaskManager(Server &server);
 
-    void add_plan(Plan &&plan);
+    void add_plan(Plan &&plan, bool report);
 
     const Plan& get_plan() const {
         return cstate.get_plan();
@@ -49,6 +49,10 @@ private:
     void distribute_work(TaskDistribution &distribution);
     void start_task(WorkerConnection *wc, loom::Id task_id);
     void remove_state(TaskState &state);
+
+    bool report;
+    void report_task_start(WorkerConnection *wc, const PlanNode &node);
+    void report_task_end(WorkerConnection *wc, const PlanNode &node);
 };
 
 

@@ -3,6 +3,7 @@
 
 #include "libloom/compat.h"
 #include "libloom/loomplan.pb.h"
+#include "libloom/loomcomm.pb.h"
 #include "libloom/log.h"
 
 #include <algorithm>
@@ -11,12 +12,13 @@
 using namespace loom;
 
 TaskManager::TaskManager(Server &server)
-    : server(server), cstate(server)
+    : server(server), cstate(server), report(false)
 {
 }
 
-void TaskManager::add_plan(Plan &&plan)
+void TaskManager::add_plan(Plan &&plan, bool report)
 {
+    this->report = report;
     cstate.set_plan(std::move(plan));
     TaskDistribution distribution(cstate.compute_initial_distribution());
     distribute_work(distribution);
@@ -56,8 +58,33 @@ void TaskManager::start_task(WorkerConnection *wc, Id task_id)
             state.set_worker_status(wc, TaskState::S_OWNER);
         }
     }
+
+    if (report) {
+        report_task_start(wc, node);
+    }
+
     wc->send_task(node);
-    cstate.set_running_task(wc, task_id);
+    cstate.set_running_task(node, wc);
+}
+
+void TaskManager::report_task_start(WorkerConnection *wc, const PlanNode &node)
+{
+    auto event = std::make_unique<loomcomm::Event>();
+    event->set_type(loomcomm::Event_Type_TASK_START);
+    event->set_time(uv_now(server.get_loop()) - cstate.get_base_time());
+    event->set_id(node.get_client_id());
+    event->set_worker_id(wc->get_worker_id());
+    server.report_event(std::move(event));
+}
+
+void TaskManager::report_task_end(WorkerConnection *wc, const PlanNode &node)
+{
+    auto event = std::make_unique<loomcomm::Event>();
+    event->set_type(loomcomm::Event_Type_TASK_END);
+    event->set_time(uv_now(server.get_loop()) - cstate.get_base_time());
+    event->set_id(node.get_client_id());
+    event->set_worker_id(wc->get_worker_id());
+    server.report_event(std::move(event));
 }
 
 void TaskManager::remove_state(TaskState &state)
@@ -73,8 +100,13 @@ void TaskManager::remove_state(TaskState &state)
 
 void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
-    cstate.set_task_finished(id, size, length, wc);
     const PlanNode &node = cstate.get_node(id);
+
+    cstate.set_task_finished(node, size, length, wc);
+
+    if (report) {
+        report_task_end(wc, node);
+    }
 
     if (node.is_result()) {
         llog->debug("Job id={} [RESULT] finished", id);
