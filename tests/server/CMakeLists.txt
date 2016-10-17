@@ -5,7 +5,7 @@ target_include_directories(Catch INTERFACE ${PROJECT_SOURCE_DIR}/tests)
 
 add_executable(server-test
                $<TARGET_OBJECTS:loom-server-lib>
-               scheduler.cpp
+               test_scheduler.cpp
                main.cpp)
 
 target_link_libraries(server-test Catch libloom ${LIBUV_LIBRARY} pthread)

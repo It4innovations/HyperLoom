@@ -6,15 +6,13 @@
 
 class Server;
 
-using TaskDistribution = std::unordered_map<WorkerConnection*, std::vector<loom::Id>>;
-
 class ComputationState {
-    struct WorkerInfo {
-        WorkerInfo() : n_tasks(0) {}
-        size_t index;
-        int n_tasks;
-    };
 public:
+
+    struct WorkerInfo {
+        int free_cpus;
+    };
+
     ComputationState(Server &server);
 
     void set_plan(Plan &&plan);
@@ -22,8 +20,8 @@ public:
 
     void set_running_task(const PlanNode &node, WorkerConnection *wc);
 
-    TaskDistribution compute_initial_distribution();
-    TaskDistribution compute_distribution();
+    /*TaskDistribution compute_initial_distribution();
+    TaskDistribution compute_distribution();*/
 
     TaskState& get_state(loom::Id id);
 
@@ -49,6 +47,10 @@ public:
         return !pending_tasks.empty();
     }
 
+    const std::unordered_set<loom::Id>& get_pending_tasks() const {
+        return pending_tasks;
+    }
+
     const Plan& get_plan() const {
         return plan;
     }
@@ -61,6 +63,11 @@ public:
 
     uint64_t get_base_time() const {
         return base_time;
+    }
+
+    const std::unordered_map<WorkerConnection*, WorkerInfo>&
+    get_worker_info() const {
+        return workers;
     }
 
 private:

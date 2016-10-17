@@ -2,7 +2,6 @@
 #include "compstate.h"
 #include "workerconn.h"
 #include "server.h"
-#include "solver.h"
 
 #include "libloom/log.h"
 
@@ -17,27 +16,22 @@ ComputationState::ComputationState(Server &server) : server(server)
    dslice_task_id = dictionary.find_or_create("loom/scheduler/dslice");
    dget_task_id = dictionary.find_or_create("loom/scheduler/dget");
 
-   base_time = uv_now(server.get_loop());
+   if (server.get_loop()) {
+        base_time = uv_now(server.get_loop());
+   }
 }
 
 void ComputationState::set_plan(Plan &&plan)
 {
    this->plan = std::move(plan);
-}
-
-TaskDistribution ComputationState::compute_initial_distribution()
-{
    auto task_ids = plan.get_init_tasks();
    add_ready_nodes(task_ids);
-   return compute_distribution();
 }
 
 void ComputationState::add_worker(WorkerConnection* wconn)
 {
-   int index = workers.size();
    auto &w = workers[wconn];
-   w.index = index;
-   w.n_tasks = 0;
+   w.free_cpus = wconn->get_resource_cpus();
 }
 
 void ComputationState::set_running_task(const PlanNode &node, WorkerConnection *wc)
@@ -49,7 +43,7 @@ void ComputationState::set_running_task(const PlanNode &node, WorkerConnection *
 
    assert(state.get_worker_status(wc) == TaskState::S_NONE);
    state.set_worker_status(wc, TaskState::S_RUNNING);
-   workers[wc].n_tasks += node.get_n_cpus();
+   workers[wc].free_cpus -= node.get_n_cpus();
 }
 
 void ComputationState::set_task_finished(const PlanNode&node, size_t size, size_t length, WorkerConnection *wc)
@@ -59,7 +53,7 @@ void ComputationState::set_task_finished(const PlanNode&node, size_t size, size_
    state.set_worker_status(wc, TaskState::S_OWNER);
    state.set_size(size);
    state.set_length(length);
-   workers[wc].n_tasks -= node.get_n_cpus();
+   workers[wc].free_cpus += node.get_n_cpus();
 }
 
 void ComputationState::remove_state(loom::Id id)
@@ -260,165 +254,6 @@ int ComputationState::get_max_cpus()
         }
     }
     return max_cpus;
-}
-
-
-TaskDistribution ComputationState::compute_distribution()
-{
-   loom::llog->debug("Computation of distribution: {} task(s)", pending_tasks.size());
-
-   TaskDistribution result;
-   if (pending_tasks.empty()) {
-      return result;
-   }
-   size_t n_workers = workers.size();
-   if (n_workers == 0) {
-      return result;
-   }
-
-   int max_cpus = get_max_cpus();
-   if (max_cpus == 0) {
-       max_cpus = 1;
-   }
-
-   size_t n_tasks = pending_tasks.size();
-
-   size_t t_variables = n_workers * n_tasks;
-   // + 1 because lp solve indexes from 1 :(
-   std::vector<double> costs(t_variables + 1, 0.0);
-
-   std::vector<loom::Id> tasks(pending_tasks.begin(), pending_tasks.end());
-
-   /* [t_0,A] [t_0,B] ... [t_1,A] [t_1,B] ... [m_0,A] [m_0,B] ... [m_2,A] [m_2,B]
-     * pending tasks t_X,A - X=task_index, A=worker_index
-     * movable tasks m_X,A - X=task_index, A=worker_index
-     */
-
-   /* Gather all inputs
-      and estimate the max transfer cost */
-   std::unordered_map<loom::Id, int> inputs;
-   std::vector<double> n_cpus; // we will later use it for coefs, we store it directly as double
-   n_cpus.reserve(tasks.size());
-   size_t total_size = 0;
-   for (loom::Id id : tasks) {
-      const PlanNode &node = get_node(id);
-      n_cpus.push_back(node.get_n_cpus());
-      for (loom::Id id2 : node.get_inputs()) {
-         auto it = inputs.find(id2);
-         if (it == inputs.end()) {
-            inputs[id2] = costs.size();
-            TaskState &state = get_state(id2);
-            total_size += state.get_size();
-            double cost = static_cast<double>(state.get_size()) * TRANSFER_COST_COEF;
-            for (size_t i = 0; i < n_workers; i++) {
-               costs.push_back(cost);
-            }
-         }
-      }
-   }
-
-   /* Setup coeficients for exexuting a task */
-   double task_cost = (total_size + 1) * 2 * TRANSFER_COST_COEF;
-   for (size_t i = 0; i < n_tasks; i++) {
-      double cpus = n_cpus[i];
-      double coef;
-      if (cpus < 1) {
-          coef = task_cost;
-      } else {
-          coef = task_cost * (cpus + (cpus * cpus) / (max_cpus * max_cpus));
-      }
-      for (size_t j = 0; j < n_workers; j++) {
-        // + 1 because we are counting from 1 ...
-        costs[i * n_workers + j + 1] = -coef;
-      }
-   }
-
-   /* Initialize solver and helper structures */
-   size_t variables = costs.size() - 1;
-   Solver solver(variables);
-   std::vector<int> indices;
-   indices.reserve(n_workers * n_tasks);
-   std::vector<double> ones(variables, 1.0);
-
-   size_t task_id = 1;
-
-   /* Task constraints */
-   for (loom::Id id : tasks) {
-      indices.clear();
-      for (size_t i = 0; i < n_workers; i++) {
-         indices.push_back(task_id + i);
-      }
-      /* Task can be executed only once */
-      solver.add_constraint_lq(indices, ones, 1);
-
-      const PlanNode &node = get_node(id);
-      std::unordered_set<loom::Id> nonlocals;
-      for (auto pair : workers) {
-         WorkerConnection *wc = pair.first;
-         size_t index = pair.second.index;
-         nonlocals.clear();
-         collect_requirements_for_node(wc, node, nonlocals);
-         for (loom::Id id2 : nonlocals) {
-             /* What dataobjects have to be transfered? */
-            solver.add_constraint_lq(task_id + index, inputs[id2] + index);
-         }
-      }
-      task_id += n_workers;
-   }
-
-   indices.resize(n_tasks);
-   for (auto &pair : workers) {
-      WorkerConnection *wc = pair.first;
-      size_t index = pair.second.index;
-      size_t free_cpus = wc->get_resource_cpus() - pair.second.n_tasks;
-      for (size_t j = 0; j < n_tasks; j++) {
-         indices[j] = j * n_workers + index + 1;
-      }
-      /* Capacity limit for each worker */
-      solver.add_constraint_lq(indices, n_cpus, free_cpus);
-   }
-   solver.set_objective_fn(costs);
-
-   std::vector<double> solution = solver.solve();
-   assert(solution.size() == variables);
-
-   std::vector<WorkerConnection*> wconns(n_workers, nullptr);
-   for (auto &pair : workers) {
-      wconns[pair.second.index] = pair.first;
-   }
-
-   for (size_t i = 0; i < t_variables; i++) {
-      if (solution[i]) {
-         size_t worker_index = i % n_workers;
-         size_t task_index = i / n_workers;
-         assert(task_index < n_tasks);
-         result[wconns[worker_index]].push_back(tasks[task_index]);
-      }
-   }
-
-
-   return result;
-
-   /*
-    std::vector<WorkerConnection*> wc(n_workers, NULL);
-
-    int i = 0;
-    for (auto &pair : workers) {
-        wc[i] = pair.first;
-        i++;
-    }
-
-    for (loom::Id id : pending_tasks) {
-        const PlanNode &node = get_node(id);
-        int index;
-        if (node.get_inputs().size() == 1) {
-            index = node.get_inputs()[0];
-        } else {
-            index = id;
-        }
-        result[wc[index % n_workers]].push_back(id);
-    }
-    */
 }
 
 TaskState &ComputationState::get_state(loom::Id id)

@@ -2,6 +2,7 @@
 #define LOOM_SERVER_TASKMANAGER_H
 
 #include "compstate.h"
+#include "scheduler.h"
 
 #include <vector>
 #include <unordered_map>
@@ -48,7 +49,7 @@ private:
     Server &server;
     ComputationState cstate;
 
-    void distribute_work(TaskDistribution &distribution);
+    void distribute_work(const TaskDistribution &distribution);
     void start_task(WorkerConnection *wc, loom::Id task_id);
     void remove_state(TaskState &state);
 

@@ -19,12 +19,11 @@ TaskManager::TaskManager(Server &server)
 void TaskManager::add_plan(Plan &&plan, bool report)
 {
     this->report = report;
-    cstate.set_plan(std::move(plan));
-    TaskDistribution distribution(cstate.compute_initial_distribution());
-    distribute_work(distribution);
+    cstate.set_plan(std::move(plan));        
+    distribute_work(Scheduler(cstate).schedule());
 }
 
-void TaskManager::distribute_work(TaskDistribution &distribution)
+void TaskManager::distribute_work(const TaskDistribution &distribution)
 {
     if (distribution.size() == 0) {
         return;
@@ -151,6 +150,5 @@ void TaskManager::register_worker(WorkerConnection *wc)
 
 void TaskManager::run_task_distribution()
 {
-    TaskDistribution d = cstate.compute_distribution();
-    distribute_work(d);
+    distribute_work(Scheduler(cstate).schedule());
 }

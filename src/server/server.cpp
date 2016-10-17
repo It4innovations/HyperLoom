@@ -32,7 +32,11 @@ Server::Server(uv_loop_t *loop, int port)
         dummy_worker.start_listen();
         loom::llog->debug("Dummy worker started at {}", dummy_worker.get_listen_port());
     }
-    UV_CHECK(uv_idle_init(loop, &distribution_idle));
+
+    if (loop) {
+        UV_CHECK(uv_idle_init(loop, &distribution_idle));
+    }
+
     distribution_idle.data = this;
 }
 

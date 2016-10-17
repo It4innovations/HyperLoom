@@ -89,7 +89,15 @@ public:
     }
 
 
-    template<typename F> void foreach_owner(F f) {
+    template<typename F> void foreach_source(F f) const {
+        for(auto &pair : workers) {
+            if (pair.second == S_OWNER || pair.second == S_RUNNING) {
+                f(pair.first);
+            }
+        }
+    }
+
+    template<typename F> void foreach_owner(F f) const {
         for(auto &pair : workers) {
             if (pair.second == S_OWNER) {
                 f(pair.first);
