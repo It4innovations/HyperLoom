@@ -81,8 +81,8 @@ class LoomEnv(Env):
         assert not server.poll()
         assert not any(w.poll() for w in workers)
 
-    def plan(self):
-        return client.Plan()
+    def plan_builder(self):
+        return client.PlanBuilder()
 
     @property
     def client(self):
@@ -91,6 +91,8 @@ class LoomEnv(Env):
         return self._client
 
     def submit(self, plan, results, report=None):
+        if isinstance(plan, client.PlanBuilder):
+            plan = plan.plan
         if report:
             report = os.path.join(LOOM_TEST_BUILD_DIR, report)
         return self.client.submit(plan, results, report)

@@ -14,7 +14,7 @@ def test_cv_iris(loom_env):
         loom_env.start(4, 4)
         loom_env.info = False
 
-        p = loom_env.plan()
+        p = loom_env.plan_builder()
         data = p.task_open(IRIS_DATA)
         data = p.task_run(("sort", "--random-sort", "-"), [(data, None)])
         lines = p.task_split(data)

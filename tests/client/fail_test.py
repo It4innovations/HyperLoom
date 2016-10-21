@@ -8,7 +8,7 @@ loom_env  # silence flake8
 
 def test_invalid_program(loom_env):
     loom_env.start(1)
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     a = p.task_run("/usr/bin/non-existing-program")
 
     with pytest.raises(client.TaskFailed):
@@ -17,7 +17,7 @@ def test_invalid_program(loom_env):
 
 def test_program_failed(loom_env):
     loom_env.start(1)
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     a = p.task_run("ls /non-existing-dictionary")
 
     with pytest.raises(client.TaskFailed):

@@ -32,7 +32,7 @@ def str2datetime(s):
 
 def test_single_result(loom_env):
         loom_env.start(1)
-        p = loom_env.plan()
+        p = loom_env.plan_builder()
 
         a = p.task_const("ABCDE")
         b = p.task_const("123")
@@ -42,7 +42,7 @@ def test_single_result(loom_env):
 
 def test_more_results(loom_env):
         loom_env.start(1)
-        p = loom_env.plan()
+        p = loom_env.plan_builder()
 
         a = p.task_const("ABCDE")
         b = p.task_const("123")
@@ -52,7 +52,7 @@ def test_more_results(loom_env):
 
 def test_merge_w3(loom_env):
         loom_env.start(3)
-        p = loom_env.plan()
+        p = loom_env.plan_builder()
 
         a = p.task_const("ABCDE")
         b = p.task_const("123")
@@ -62,7 +62,7 @@ def test_merge_w3(loom_env):
 
 def test_run_separated_1_cpu(loom_env):
     loom_env.start(1)
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     args = pytestprog(0.3, stamp=True)
     tasks = [p.task_run(args) for i in range(4)]
@@ -86,7 +86,7 @@ def test_run_separated_1_cpu(loom_env):
 
 def test_run_separated_4_cpu(loom_env):
     loom_env.start(1, cpus=4)
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     args = pytestprog(0.3, stamp=True)
     tasks = [p.task_run(args) for i in range(4)]
@@ -110,7 +110,7 @@ def test_run_separated_4_cpu(loom_env):
 
 def test_run_separated_4cpu_tasks_4_cpu(loom_env):
     loom_env.start(1, cpus=4)
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     args = pytestprog(0.3, stamp=True)
     tasks = [p.task_run(args, request=client.cpus(4)) for i in range(4)]
@@ -133,7 +133,7 @@ def test_run_separated_4cpu_tasks_4_cpu(loom_env):
 
 
 def test_run_double_lines(loom_env):
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     COUNT = 20000
 
@@ -157,7 +157,7 @@ def test_run_double_lines(loom_env):
 
 
 def test_run_files(loom_env):
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     a1 = p.task_const("abcd" * 100)
     b1 = p.task_run(
@@ -177,7 +177,7 @@ def test_run_files(loom_env):
 
 
 def test_open_and_merge(loom_env):
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     a = p.task_open(FILE1)
     b = p.task_open(FILE2)
     c = p.task_merge((a, b))
@@ -192,7 +192,7 @@ def test_open_and_merge(loom_env):
 def test_open_and_splitlines(loom_env):
     loom_env.start(1)
 
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     a = p.task_open(FILE2)
     lines = p.task_split(a)
     c1 = p.task_slice(lines, 2, 6)
@@ -212,7 +212,7 @@ def test_open_and_splitlines(loom_env):
 def test_split(loom_env):
     loom_env.start(1)
     text = "Line1\nLine2\nLine3\nLine4"
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     a = p.task_const(text)
     b = p.task_split(a)
@@ -232,7 +232,7 @@ def test_split(loom_env):
 def test_size_and_length(loom_env):
     loom_env.start(1)
 
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     text = "12345" * 5
 
     a1 = p.task_const(text)

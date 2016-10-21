@@ -6,7 +6,7 @@ loom_env  # silence flake8
 def test_make_array(loom_env):
     loom_env.start(1)
 
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     a = p.task_const("ABC")
     b = p.task_const("123456")
     c = p.task_const("")
@@ -27,7 +27,7 @@ def test_make_array(loom_env):
 def test_slice_array(loom_env):
     loom_env.start(1)
 
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     items = [p.task_const(str(i)) for i in xrange(20)]
     a = p.task_array_make(items)
 
@@ -47,7 +47,7 @@ def test_slice_array(loom_env):
 
 
 def test_make_empty_array(loom_env):
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     a = p.task_array_make(())
     loom_env.start(1)
     result_a = loom_env.submit(p, a)
@@ -55,7 +55,7 @@ def test_make_empty_array(loom_env):
 
 
 def test_array_of_array(loom_env):
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     a = p.task_const("ABC")
     b = p.task_const("123")
@@ -73,7 +73,7 @@ def test_array_of_array(loom_env):
 
 
 def test_array_same_value(loom_env):
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
     a = p.task_const("ABC")
     b = p.task_array_make((a, a, a, a))
     loom_env.start(1)

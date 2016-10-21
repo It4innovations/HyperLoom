@@ -7,7 +7,7 @@ loom_env  # silence flake8
 
 def test_dslice(loom_env):
     loom_env.start(2)
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     consts = []
     for i in xrange(16):
@@ -24,7 +24,7 @@ def test_dslice(loom_env):
 
 def test_dget(loom_env):
     loom_env.start(2)
-    p = loom_env.plan()
+    p = loom_env.plan_builder()
 
     consts = []
     for i in xrange(16):
