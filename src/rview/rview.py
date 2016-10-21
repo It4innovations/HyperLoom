@@ -22,6 +22,9 @@ def parse_args():
     parser.add_argument("--show-graph",
                         action="store_true")
 
+    parser.add_argument("--write-graph",
+                        metavar="FILENAME")
+
     parser.add_argument("--show-trace",
                         action="store_true")
 
@@ -41,6 +44,12 @@ def show_symbols(report):
 def show_graph(report):
     dot = report.create_graph().make_dot("Plan")
     run_program(("xdot", "-"), dot)
+
+
+def write_graph(report, filename):
+    dot = report.create_graph().make_dot("Plan")
+    with open(filename, "w") as f:
+        f.write(dot)
 
 
 def show_trace(report):
@@ -69,12 +78,16 @@ def main():
         empty = False
         show_graph(report)
 
+    if args.write_graph:
+        empty = False
+        write_graph(report, args.write_graph)
+
     if args.show_trace:
         empty = False
         show_trace(report)
 
     if empty:
-        sys.stderr.write("No operation specified\n")
+        sys.stderr.write("No operation specified (use --help)\n")
 
 if __name__ == "__main__":
     main()
