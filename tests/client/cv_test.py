@@ -30,12 +30,14 @@ def test_cv_iris(loom_env):
         for ts in trainsets:
             model = p.task_run("svm-train data",
                                [(ts, "data")], ["data.model"])
+            model.label = "svm-train"
             models.append(model)
 
         predict = []
         for chunk, model in zip(chunks, models):
             task = p.task_run("svm-predict testdata model out",
                               [(chunk, "testdata"), (model, "model")])
+            task.label = "svm-predict"
             predict.append(task)
 
         loom_env.make_dry_report(p.plan, "dry.report")

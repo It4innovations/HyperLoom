@@ -169,6 +169,18 @@ class Task : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 resource_request_index() const;
   inline void set_resource_request_index(::google::protobuf::int32 value);
 
+  // optional string label = 12;
+  inline bool has_label() const;
+  inline void clear_label();
+  static const int kLabelFieldNumber = 12;
+  inline const ::std::string& label() const;
+  inline void set_label(const ::std::string& value);
+  inline void set_label(const char* value);
+  inline void set_label(const char* value, size_t size);
+  inline ::std::string* mutable_label();
+  inline ::std::string* release_label();
+  inline void set_allocated_label(::std::string* label);
+
   // @@protoc_insertion_point(class_scope:loomplan.Task)
  private:
   inline void set_has_task_type();
@@ -179,6 +191,8 @@ class Task : public ::google::protobuf::MessageLite {
   inline void clear_has_policy();
   inline void set_has_resource_request_index();
   inline void clear_has_resource_request_index();
+  inline void set_has_label();
+  inline void clear_has_label();
 
   ::std::string _unknown_fields_;
 
@@ -188,6 +202,7 @@ class Task : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 task_type_;
   int policy_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > input_ids_;
+  ::std::string* label_;
   ::google::protobuf::int32 resource_request_index_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomplan_2eproto_impl();
@@ -699,6 +714,82 @@ inline void Task::set_resource_request_index(::google::protobuf::int32 value) {
   set_has_resource_request_index();
   resource_request_index_ = value;
   // @@protoc_insertion_point(field_set:loomplan.Task.resource_request_index)
+}
+
+// optional string label = 12;
+inline bool Task::has_label() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void Task::set_has_label() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void Task::clear_has_label() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void Task::clear_label() {
+  if (label_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    label_->clear();
+  }
+  clear_has_label();
+}
+inline const ::std::string& Task::label() const {
+  // @@protoc_insertion_point(field_get:loomplan.Task.label)
+  return *label_;
+}
+inline void Task::set_label(const ::std::string& value) {
+  set_has_label();
+  if (label_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    label_ = new ::std::string;
+  }
+  label_->assign(value);
+  // @@protoc_insertion_point(field_set:loomplan.Task.label)
+}
+inline void Task::set_label(const char* value) {
+  set_has_label();
+  if (label_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    label_ = new ::std::string;
+  }
+  label_->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomplan.Task.label)
+}
+inline void Task::set_label(const char* value, size_t size) {
+  set_has_label();
+  if (label_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    label_ = new ::std::string;
+  }
+  label_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomplan.Task.label)
+}
+inline ::std::string* Task::mutable_label() {
+  set_has_label();
+  if (label_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    label_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:loomplan.Task.label)
+  return label_;
+}
+inline ::std::string* Task::release_label() {
+  clear_has_label();
+  if (label_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = label_;
+    label_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void Task::set_allocated_label(::std::string* label) {
+  if (label_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete label_;
+  }
+  if (label) {
+    set_has_label();
+    label_ = label;
+  } else {
+    clear_has_label();
+    label_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:loomplan.Task.label)
 }
 
 // -------------------------------------------------------------------

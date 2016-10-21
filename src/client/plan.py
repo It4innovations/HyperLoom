@@ -15,6 +15,7 @@ class Task(object):
     config = ""
     policy = POLICY_STANDARD
     resource_request = None
+    label = None
 
     def set_message(self, msg, symbols, requests):
         msg.config = self.config
@@ -23,6 +24,8 @@ class Task(object):
         msg.policy = self.policy
         if self.resource_request:
             msg.resource_request_index = requests.index(self.resource_request)
+        if self.label:
+            msg.label = self.label
 
 
 class ResourceRequest(object):
