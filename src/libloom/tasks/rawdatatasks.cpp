@@ -18,17 +18,19 @@ void ConstTask::start(DataVector &inputs)
     finish(std::static_pointer_cast<Data>(output));
 }
 
-/** If there are more then 50 input or size is bigger then 20000,
+/** If there are more then 50 input or size is bigger then 200kB,
  *  then merge task is run in thread */
 bool MergeTask::run_in_thread(DataVector &input_data)
 {
+    const size_t SIZE_LIMIT = 200 * 1024;
+
     if (input_data.size() > 50) {
         return true;
     }
     size_t size = 0;
     for (auto& data : inputs) {
         size += data->get_size();
-        if (size > 20000) {
+        if (size > SIZE_LIMIT) {
             return true;
         }
     }
@@ -40,17 +42,42 @@ std::shared_ptr<Data> MergeTask::run() {
     for (auto& data : inputs) {
         size += data->get_size();
     }
+
+    const std::string &config = task->get_config();
+    if (inputs.size() > 1) {
+        size += (inputs.size() - 1) * config.size();
+    }
+
     std::shared_ptr<Data> output = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*output);
     data.init_empty(worker, size);
     char *dst = output->get_raw_data(worker);
 
-    for (auto& data : inputs) {
-        char *mem = data->get_raw_data(worker);
-        size_t size = data->get_size();
-        assert(mem || size == 0);
-        memcpy(dst, mem, size);
-        dst += size;
+    if (config.empty()) {
+        for (auto& data : inputs) {
+            char *mem = data->get_raw_data(worker);
+            size_t size = data->get_size();
+            assert(mem || size == 0);
+            memcpy(dst, mem, size);
+            dst += size;
+        }
+    } else {
+        bool first = true;
+        for (auto& data : inputs) {
+
+            if (first) {
+                first = false;
+            } else {
+                memcpy(dst, config.c_str(), config.size());
+                dst += config.size();
+            }
+
+            char *mem = data->get_raw_data(worker);
+            size_t size = data->get_size();
+            assert(mem || size == 0);
+            memcpy(dst, mem, size);
+            dst += size;
+        }
     }
     return output;
 }

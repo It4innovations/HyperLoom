@@ -60,6 +60,22 @@ def test_merge_w3(loom_env):
         assert "ABCDE123" == loom_env.submit(p, c)
 
 
+def test_merge_delimiter(loom_env):
+        loom_env.start(1)
+        p = loom_env.plan_builder()
+        consts = [p.task_const(str(i)) for i in xrange(10)]
+        c = p.task_merge(consts, "abc")
+        expected = "abc".join(str(i) for i in xrange(10))
+        assert expected == loom_env.submit(p, c)
+
+
+def test_merge_empty_with_delimiter(loom_env):
+        loom_env.start(1)
+        p = loom_env.plan_builder()
+        c = p.task_merge((), "abc")
+        assert "" == loom_env.submit(p, c)
+
+
 def test_run_separated_1_cpu(loom_env):
     loom_env.start(1)
     p = loom_env.plan_builder()
@@ -198,7 +214,7 @@ def test_open_and_splitlines(loom_env):
     c1 = p.task_slice(lines, 2, 6)
     c2 = p.task_slice(lines, 0, 6)
     c3 = p.task_slice(lines, 3, 60)
-    result1, result2, result3 = loom_env.submit(p, [c1,c2,c3])
+    result1, result2, result3 = loom_env.submit(p, [c1, c2, c3])
     expect1 = "\n".join("Line {}".format(i) for i in xrange(3, 7)) + "\n"
     assert result1 == expect1
 
@@ -243,4 +259,5 @@ def test_size_and_length(loom_env):
     c2 = p.task_length(a2)
 
     u64 = struct.Struct("<Q")
-    [25, 0, 50, 2] == map(lambda x: u64.unpack(x)[0], loom_env.submit(p, (b1, c1, b2, c2)))
+    [25, 0, 50, 2] == map(lambda x: u64.unpack(x)[0],
+                          loom_env.submit(p, (b1, c1, b2, c2)))

@@ -62,11 +62,13 @@ class PlanBuilder(object):
         task.policy = POLICY_SIMPLE
         return self.plan.add(task)
 
-    def task_merge(self, inputs):
+    def task_merge(self, inputs, delimiter=""):
         task = Task()
         task.task_type = self.TASK_DATA_MERGE
         task.inputs = inputs
         task.policy = POLICY_SIMPLE
+        if delimiter:
+            task.config = delimiter
         return self.plan.add(task)
 
     def task_open(self, filename):

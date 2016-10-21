@@ -1,7 +1,5 @@
 from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
 
-import os
-
 loom_env  # silence flake8
 
 
