@@ -9,6 +9,7 @@ POLICY_SCHEDULER = loomplan_pb2.Task.POLICY_SCHEDULER
 
 class Task(object):
 
+    task_type = None
     inputs = ()
     id = None
     config = ""
@@ -64,6 +65,14 @@ class Plan(object):
         task.id = len(self.tasks)
         self.tasks.append(task)
         return task
+
+    def collect_symbols(self):
+        symbols = set()
+        for task in self.tasks:
+            if task.resource_request:
+                symbols.update(task.resource_request.names)
+            symbols.add(task.task_type)
+        return symbols
 
     def set_message(self, msg, symbols):
         requests = set()

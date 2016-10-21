@@ -81,7 +81,7 @@ class Client(object):
                 assert 0
 
         if report:
-            self._write_report(report_data, report)
+            write_report(report_data, report)
 
         if single_result:
             return data[results.id]
@@ -99,10 +99,6 @@ class Client(object):
         report_msg.symbols.extend(self._symbol_list())
         plan.set_message(report_msg.plan, self.symbols)
         return report_msg
-
-    def _write_report(self, report_data, report_filename):
-        with open(report_filename + ".report", "w") as f:
-            f.write(report_data.SerializeToString())
 
     def _read_symbols(self):
         msg = self.connection.receive_message()
@@ -138,3 +134,23 @@ class Client(object):
     def _send_message(self, message):
         data = message.SerializeToString()
         self.connection.send_message(data)
+
+
+def make_dry_report(plan, report_filename):
+    # Create symbols
+    symbols = sorted(plan.collect_symbols())
+    symbol_table = {}
+    for i, s in enumerate(symbols):
+        symbol_table[s] = i
+
+    # Create report
+    report_data = Report()
+    report_data.symbols.extend(symbols)
+    plan.set_message(report_data.plan, symbol_table)
+
+    write_report(report_data, report_filename)
+
+
+def write_report(report_data, report_filename):
+    with open(report_filename, "w") as f:
+        f.write(report_data.SerializeToString())

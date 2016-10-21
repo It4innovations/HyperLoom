@@ -97,6 +97,12 @@ class LoomEnv(Env):
             report = os.path.join(LOOM_TEST_BUILD_DIR, report)
         return self.client.submit(plan, results, report)
 
+    def make_dry_report(self, plan, filename):
+        if isinstance(plan, client.PlanBuilder):
+            plan = plan.plan
+        filename = os.path.join(LOOM_TEST_BUILD_DIR, filename)
+        return client.make_dry_report(plan, filename)
+
 
 @pytest.yield_fixture(autouse=True, scope="function")
 def loom_env():

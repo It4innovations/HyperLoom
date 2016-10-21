@@ -5,6 +5,7 @@ import os
 IRIS_DATA = os.path.join(LOOM_TEST_DATA_DIR, "iris.data")
 
 loom_env  # silence flake8
+import client  # noqa
 
 
 def test_cv_iris(loom_env):
@@ -37,7 +38,9 @@ def test_cv_iris(loom_env):
                               [(chunk, "testdata"), (model, "model")])
             predict.append(task)
 
-        results = loom_env.submit(p, predict, report="cv")
+        loom_env.make_dry_report(p.plan, "dry.report")
+
+        results = loom_env.submit(p, predict, report="cv.report")
 
         assert len(results) == CHUNKS
         for line in results:
