@@ -13,15 +13,15 @@ LOOM_BUILD = os.path.join(LOOM_ROOT, "_build")
 
 LOOM_SERVER_BIN = os.path.join(LOOM_BUILD, "src", "server", "loom-server")
 LOOM_WORKER_BIN = os.path.join(LOOM_BUILD, "src", "worker", "loom-worker")
-LOOM_CLIENT = os.path.join(LOOM_ROOT, "src")
+LOOM_PYTHON = os.path.join(LOOM_ROOT, "python")
 LOOM_TEST_BUILD_DIR = os.path.join(LOOM_TESTDIR, "build")
 
 LOOM_TESTPROG = os.path.join(LOOM_TESTDIR, "testprog.py")
 LOOM_TEST_DATA_DIR = os.path.join(LOOM_TESTDIR, "testdata")
 
-sys.path.insert(0, LOOM_CLIENT)
+sys.path.insert(0, LOOM_PYTHON)
 
-import client  # noqa
+import loom.client as client  # noqa
 
 VALGRIND = False
 

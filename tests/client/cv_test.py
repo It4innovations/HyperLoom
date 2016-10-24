@@ -5,7 +5,6 @@ import os
 IRIS_DATA = os.path.join(LOOM_TEST_DATA_DIR, "iris.data")
 
 loom_env  # silence flake8
-import client  # noqa
 
 
 def test_cv_iris(loom_env):
@@ -47,5 +46,3 @@ def test_cv_iris(loom_env):
         assert len(results) == CHUNKS
         for line in results:
             assert line.startswith("Accuracy = ")
-
-        #p.write_dot("test.dot", loom_env.client.info)

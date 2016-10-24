@@ -1,10 +1,10 @@
 
-import loomplan_pb2
+from ..pb import loomplan_pb2 as loomplan
 
 
-POLICY_STANDARD = loomplan_pb2.Task.POLICY_STANDARD
-POLICY_SIMPLE = loomplan_pb2.Task.POLICY_SIMPLE
-POLICY_SCHEDULER = loomplan_pb2.Task.POLICY_SCHEDULER
+POLICY_STANDARD = loomplan.Task.POLICY_STANDARD
+POLICY_SIMPLE = loomplan.Task.POLICY_SIMPLE
+POLICY_SCHEDULER = loomplan.Task.POLICY_SCHEDULER
 
 
 class Task(object):

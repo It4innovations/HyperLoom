@@ -1,6 +1,6 @@
 from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
 
-import client
+from loom import client
 import pytest
 
 loom_env  # silence flake8

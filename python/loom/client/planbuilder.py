@@ -3,7 +3,7 @@ from .plan import Plan, Task, ResourceRequest
 from .plan import POLICY_SCHEDULER, POLICY_SIMPLE
 
 import struct
-import loomrun_pb2
+from ..pb import loomrun_pb2 as loomrun
 
 
 def cpus(value):
@@ -102,7 +102,7 @@ class PlanBuilder(object):
         task.task_type = self.TASK_RUN
         task.inputs = tuple(i for i, fname in inputs)
 
-        msg = loomrun_pb2.Run()
+        msg = loomrun.Run()
         msg.args.extend(args)
 
         msg.map_inputs.extend(fname if fname else "+in"

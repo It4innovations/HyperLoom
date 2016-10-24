@@ -1,17 +1,8 @@
 
-# HACK! We need to fix this
-import sys
-import os
-sys.path.insert(0,
-                os.path.join(
-                    os.path.dirname(__file__),
-                    "..",
-                    "client"))
-
-import loomreport_pb2  # noqa
-import loomcomm_pb2  # noqa
-import gv  # noqas
-import matplotlib.pyplot as plt  # noqa
+from ..pb import loomreport_pb2 as loomreport
+from ..pb import loomcomm_pb2 as loomcomm
+import gv
+import matplotlib.pyplot as plt
 
 
 def generate_colors(count):
@@ -38,7 +29,7 @@ class Report:
         with open(filename) as f:
             raw_data = f.read()
 
-        self.report_msg = loomreport_pb2.Report()
+        self.report_msg = loomreport.Report()
         self.report_msg.ParseFromString(raw_data)
 
         self.symbols = [s.replace("loom", "L")
@@ -56,7 +47,7 @@ class Report:
         return sorted(labels)
 
     def create_graph(self):
-        TASK_START = loomcomm_pb2.Event.TASK_START
+        TASK_START = loomcomm.Event.TASK_START
         graph = gv.Graph()
         symbols = self.symbols
 
@@ -85,8 +76,8 @@ class Report:
         return graph
 
     def get_events_hline_data(self):
-        TASK_START = loomcomm_pb2.Event.TASK_START
-        TASK_END = loomcomm_pb2.Event.TASK_END
+        TASK_START = loomcomm.Event.TASK_START
+        TASK_END = loomcomm.Event.TASK_END
         workers = {}
 
         symbols = self.symbols

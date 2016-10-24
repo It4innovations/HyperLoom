@@ -3,7 +3,7 @@ from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
 import struct
 from datetime import datetime
 import os
-import client
+from loom import client
 
 FILE1 = os.path.join(LOOM_TEST_DATA_DIR, "file1")
 FILE2 = os.path.join(LOOM_TEST_DATA_DIR, "file2")

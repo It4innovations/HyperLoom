@@ -1,5 +1,5 @@
-from loomcomm_pb2 import Register, Data, ClientMessage, ClientSubmit
-from loomreport_pb2 import Report
+from ..pb.loomcomm_pb2 import Register, Data, ClientMessage, ClientSubmit
+from ..pb.loomreport_pb2 import Report
 
 import socket
 from connection import Connection
