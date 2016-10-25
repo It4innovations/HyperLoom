@@ -37,29 +37,6 @@ void RunTask::start(DataVector &inputs)
    memset(&options, 0, sizeof(options));
    options.exit_cb = _on_exit;
 
-   /* Setup args */
-   auto args_size = msg.args_size();
-   assert(args_size > 0);
-   options.file = msg.args(0).c_str();
-
-   char *args[args_size + 1];
-   for (int i = 0; i < args_size; i++) {
-      args[i] = const_cast<char*>(msg.args(i).c_str());
-   }
-   args[args_size] = NULL;
-   options.args = args;
-   std::string work_dir = worker.get_run_dir(get_id());
-   options.cwd = work_dir.c_str();
-
-   if (llog->level() == spdlog::level::debug) {
-      std::stringstream s;
-      s << msg.args(0);
-      for (int i = 1; i < args_size; i++) {
-         s << ' ' << msg.args(i);
-      }
-      llog->debug("Running command {}", s.str());
-   }
-
    /* Streams */
    uv_stdio_container_t stdio[3];
    options.stdio = stdio;
@@ -69,8 +46,19 @@ void RunTask::start(DataVector &inputs)
 
    assert(msg.map_inputs_size() <= static_cast<int>(inputs.size()));
 
+   std::unordered_map<std::string, std::string> variables;
+
    for (int i = 0; i < msg.map_inputs_size(); i++) {
-      std::string path = get_path(msg.map_inputs(i));
+      const std::string &name = msg.map_inputs(i);
+
+      if (!name.empty() && name[0] == '$') {
+         const char *raw_data = inputs[i]->get_raw_data(worker);
+         assert(raw_data);
+         variables[name] = std::string(raw_data, inputs[i]->get_size());
+         continue;
+      }
+
+      std::string path = get_path(name);
       std::string filename = inputs[i]->get_filename();
       assert(!filename.empty());
       llog->debug("Creating symlink of '{}' for input id={} filename={}",
@@ -80,7 +68,7 @@ void RunTask::start(DataVector &inputs)
       }
 
       /* stdin */
-      if (msg.map_inputs(i) == "+in") {
+      if (name == "+in") {
          assert(stdio[0].flags == UV_IGNORE);
          int stdin_fd = ::open(path.c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
          if (stdin_fd < 0) {
@@ -104,6 +92,39 @@ void RunTask::start(DataVector &inputs)
          stdio[1].data.fd = stdout_fd;
       }
    }
+
+
+   /* Setup args */
+   auto args_size = msg.args_size();
+   assert(args_size > 0);
+   options.file = msg.args(0).c_str();
+
+   char *args[args_size + 1];
+   for (int i = 0; i < args_size; i++) {
+      const std::string &arg = msg.args(i);
+      if (!arg.empty() && arg[0] == '$') { // Variable check
+         auto it = variables.find(arg);
+         if (it != variables.end()) {
+            args[i] = const_cast<char*>(it->second.c_str());
+            continue;
+         }
+      }
+      args[i] = const_cast<char*>(arg.c_str());
+   }
+   args[args_size] = NULL;
+   options.args = args;
+   std::string work_dir = worker.get_run_dir(get_id());
+   options.cwd = work_dir.c_str();
+
+   if (llog->level() == spdlog::level::debug) {
+      std::stringstream s;
+      s << msg.args(0);
+      for (int i = 1; i < args_size; i++) {
+         s << ' ' << msg.args(i);
+      }
+      llog->debug("Running command {}", s.str());
+   }
+
 
    int stderr_fd = ::open(get_path("+err").c_str(), O_CREAT | O_RDWR,  S_IRUSR | S_IWUSR);
    if (stderr_fd < 0) {

@@ -192,6 +192,16 @@ def test_run_files(loom_env):
     assert result == "cdef" * 100
 
 
+def test_run_variable2(loom_env):
+    p = loom_env.plan_builder()
+    a = p.task_const("123")
+    b = p.task_const("456")
+    c = p.task_run("/bin/echo $xyz xyz $ab $c", inputs=[(a, "$xyz"), (b, "$c")])
+    loom_env.start(1)
+    result = loom_env.submit(p, c)
+    assert result == "123 xyz $ab 456\n"
+
+
 def test_open_and_merge(loom_env):
     p = loom_env.plan_builder()
     a = p.task_open(FILE1)
