@@ -1,4 +1,5 @@
 from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
+import loom.client.tasks as tasks  # noqa
 
 import struct
 from datetime import datetime
@@ -31,58 +32,48 @@ def str2datetime(s):
 
 
 def test_single_result(loom_env):
-        loom_env.start(1)
-        p = loom_env.plan_builder()
-
-        a = p.task_const("ABCDE")
-        b = p.task_const("123")
-        c = p.task_merge((a, b))
-        assert "ABCDE123" == loom_env.submit(p, c)
+    loom_env.start(1)
+    a = tasks.const("ABCDE")
+    b = tasks.const("123")
+    c = tasks.merge((a, b))
+    assert "ABCDE123" == loom_env.submit(c)
 
 
 def test_more_results(loom_env):
-        loom_env.start(1)
-        p = loom_env.plan_builder()
-
-        a = p.task_const("ABCDE")
-        b = p.task_const("123")
-        c = p.task_merge((a, b))
-        assert ["ABCDE123"] * 2 == loom_env.submit(p, [c, c])
+    loom_env.start(1)
+    a = tasks.const("ABCDE")
+    b = tasks.const("123")
+    c = tasks.merge((a, b))
+    assert ["ABCDE123"] * 2 == loom_env.submit([c, c])
 
 
 def test_merge_w3(loom_env):
-        loom_env.start(3)
-        p = loom_env.plan_builder()
-
-        a = p.task_const("ABCDE")
-        b = p.task_const("123")
-        c = p.task_merge((a, b))
-        assert "ABCDE123" == loom_env.submit(p, c)
+    loom_env.start(3)
+    a = tasks.const("ABCDE")
+    b = tasks.const("123")
+    c = tasks.merge((a, b))
+    assert "ABCDE123" == loom_env.submit(c)
 
 
 def test_merge_delimiter(loom_env):
-        loom_env.start(1)
-        p = loom_env.plan_builder()
-        consts = [p.task_const(str(i)) for i in xrange(10)]
-        c = p.task_merge(consts, "abc")
-        expected = "abc".join(str(i) for i in xrange(10))
-        assert expected == loom_env.submit(p, c)
+    loom_env.start(1)
+    consts = [tasks.const(str(i)) for i in xrange(10)]
+    c = tasks.merge(consts, "abc")
+    expected = "abc".join(str(i) for i in xrange(10))
+    assert expected == loom_env.submit(c)
 
 
 def test_merge_empty_with_delimiter(loom_env):
-        loom_env.start(1)
-        p = loom_env.plan_builder()
-        c = p.task_merge((), "abc")
-        assert "" == loom_env.submit(p, c)
+    loom_env.start(1)
+    c = tasks.merge((), "abc")
+    assert "" == loom_env.submit(c)
 
 
 def test_run_separated_1_cpu(loom_env):
     loom_env.start(1)
-    p = loom_env.plan_builder()
-
     args = pytestprog(0.3, stamp=True)
-    tasks = [p.task_run(args) for i in range(4)]
-    results = loom_env.submit(p, tasks)
+    ts = [tasks.run(args) for i in range(3)]
+    results = loom_env.submit(ts, "report")
 
     starts = []
 
@@ -90,23 +81,21 @@ def test_run_separated_1_cpu(loom_env):
         line1, line2 = result.strip().split("\n")
         starts.append(str2datetime(line1))
 
-    for i in range(len(starts) - 1):
-        a = starts[i + 1]
-        b = starts[i]
-        if a > b:
-            c = a - b
-        else:
-            c = b - a
-        assert 0.3 < c.total_seconds() < 0.45
+    for i in range(len(starts)):
+        for j in range(len(starts)):
+            if i == j:
+                continue
+            a = starts[i]
+            b = starts[j]
+            c = abs(a - b)
+            assert 0.3 < c.total_seconds() < 1.40
 
 
 def test_run_separated_4_cpu(loom_env):
     loom_env.start(1, cpus=4)
-    p = loom_env.plan_builder()
-
     args = pytestprog(0.3, stamp=True)
-    tasks = [p.task_run(args) for i in range(4)]
-    results = loom_env.submit(p, tasks)
+    ts = [tasks.run(args) for i in range(4)]
+    results = loom_env.submit(ts)
 
     starts = []
 
@@ -114,23 +103,21 @@ def test_run_separated_4_cpu(loom_env):
         line1, line2 = result.strip().split("\n")
         starts.append(str2datetime(line1))
 
-    for i in range(len(starts) - 1):
-        a = starts[i + 1]
-        b = starts[i]
-        if a > b:
-            c = a - b
-        else:
-            c = b - a
-        assert c.total_seconds() < 0.06
+    for i in range(len(starts)):
+        for j in range(len(starts)):
+            if i == j:
+                continue
+            a = starts[i]
+            b = starts[j]
+            c = abs(a - b)
+            assert c.total_seconds() < 0.55
 
 
 def test_run_separated_4cpu_tasks_4_cpu(loom_env):
     loom_env.start(1, cpus=4)
-    p = loom_env.plan_builder()
-
     args = pytestprog(0.3, stamp=True)
-    tasks = [p.task_run(args, request=client.cpus(4)) for i in range(4)]
-    results = loom_env.submit(p, tasks)
+    ts = [tasks.run(args, request=tasks.cpus(4)) for i in range(4)]
+    results = loom_env.submit(ts)
 
     starts = []
 
@@ -138,77 +125,71 @@ def test_run_separated_4cpu_tasks_4_cpu(loom_env):
         line1, line2 = result.strip().split("\n")
         starts.append(str2datetime(line1))
 
-    for i in range(len(starts) - 1):
-        a = starts[i + 1]
-        b = starts[i]
-        if a > b:
-            c = a - b
-        else:
-            c = b - a
-        assert 0.3 < c.total_seconds() < 0.45
+    for i in range(len(starts)):
+        for j in range(len(starts)):
+            if i == j:
+                continue
+            a = starts[i]
+            b = starts[j]
+            c = abs(a - b)
+            assert 0.3 < c.total_seconds() < 1.40
 
 
 def test_run_double_lines(loom_env):
-    p = loom_env.plan_builder()
-
     COUNT = 20000
 
-    a1 = p.task_const("afi" * 20000)
-    b1 = p.task_run(pytestprog(0.0, "plus1"), stdin=a1)
-    c1 = p.task_run(pytestprog(0.0, "plus1"), stdin=b1)
+    a1 = tasks.const("afi" * 20000)
+    b1 = tasks.run(pytestprog(0.0, "plus1"), stdin=a1)
+    c1 = tasks.run(pytestprog(0.0, "plus1"), stdin=b1)
 
-    a2 = p.task_const("kkllmm" * 20000)
-    b2 = p.task_run(pytestprog(0.0, "plus1"), stdin=a2)
-    c2 = p.task_run(pytestprog(0.0), stdin=b2)
+    a2 = tasks.const("kkllmm" * 20000)
+    b2 = tasks.run(pytestprog(0.0, "plus1"), stdin=a2)
+    c2 = tasks.run(pytestprog(0.0), stdin=b2)
 
-    result = p.task_merge((c1, c2, a2))
+    result = tasks.merge((c1, c2, a2))
 
     expect = "chk" * COUNT + "llmmnn" * COUNT + "kkllmm" * COUNT
 
     for i in range(1, 4):
         #  print "Runnig for {}".format(i)
         loom_env.start(i)
-        r = loom_env.submit(p, result)
+        r = loom_env.submit(result)
         assert r == expect
 
 
 def test_run_files(loom_env):
-    p = loom_env.plan_builder()
-
-    a1 = p.task_const("abcd" * 100)
-    b1 = p.task_run(
+    a1 = tasks.const("abcd" * 100)
+    b1 = tasks.run(
             pytestprog(0.0, "plus1", file_out="myfile1"),
             stdin=a1,
             outputs=["myfile1"])
 
-    c1 = p.task_run(pytestprog(
+    c1 = tasks.run(pytestprog(
         0.0, "plus1", file_in="input", file_out="output"),
         outputs=["output"],
         inputs=[(b1, "input")])
 
     loom_env.start(1)
-    result = loom_env.submit(p, c1)
+    result = loom_env.submit(c1)
 
     assert result == "cdef" * 100
 
 
 def test_run_variable2(loom_env):
-    p = loom_env.plan_builder()
-    a = p.task_const("123")
-    b = p.task_const("456")
-    c = p.task_run("/bin/echo $xyz xyz $ab $c", inputs=[(a, "$xyz"), (b, "$c")])
+    a = tasks.const("123")
+    b = tasks.const("456")
+    c = tasks.run("/bin/echo $xyz xyz $ab $c", inputs=[(a, "$xyz"), (b, "$c")])
     loom_env.start(1)
-    result = loom_env.submit(p, c)
+    result = loom_env.submit(c)
     assert result == "123 xyz $ab 456\n"
 
 
 def test_open_and_merge(loom_env):
-    p = loom_env.plan_builder()
-    a = p.task_open(FILE1)
-    b = p.task_open(FILE2)
-    c = p.task_merge((a, b))
+    a = tasks.open(FILE1)
+    b = tasks.open(FILE2)
+    c = tasks.merge((a, b))
     loom_env.start(1)
-    result = loom_env.submit(p, c)
+    result = loom_env.submit(c)
     expect = ("This is file 1\n" +
               "\n".join("Line {}".format(i) for i in xrange(1, 13)) +
               "\n")
@@ -217,14 +198,12 @@ def test_open_and_merge(loom_env):
 
 def test_open_and_splitlines(loom_env):
     loom_env.start(1)
-
-    p = loom_env.plan_builder()
-    a = p.task_open(FILE2)
-    lines = p.task_split(a)
-    c1 = p.task_slice(lines, 2, 6)
-    c2 = p.task_slice(lines, 0, 6)
-    c3 = p.task_slice(lines, 3, 60)
-    result1, result2, result3 = loom_env.submit(p, [c1, c2, c3])
+    a = tasks.open(FILE2)
+    lines = tasks.split(a)
+    c1 = tasks.slice(lines, 2, 6)
+    c2 = tasks.slice(lines, 0, 6)
+    c3 = tasks.slice(lines, 3, 60)
+    result1, result2, result3 = loom_env.submit([c1, c2, c3])
     expect1 = "\n".join("Line {}".format(i) for i in xrange(3, 7)) + "\n"
     assert result1 == expect1
 
@@ -238,16 +217,14 @@ def test_open_and_splitlines(loom_env):
 def test_split(loom_env):
     loom_env.start(1)
     text = "Line1\nLine2\nLine3\nLine4"
-    p = loom_env.plan_builder()
+    a = tasks.const(text)
+    b = tasks.split(a)
+    c = tasks.get(b, 1)
+    d = tasks.get(b, 3)
+    e = tasks.slice(b, 0, 2)
+    f = tasks.slice(b, 10, 20)
 
-    a = p.task_const(text)
-    b = p.task_split(a)
-    c = p.task_get(b, 1)
-    d = p.task_get(b, 3)
-    e = p.task_slice(b, 0, 2)
-    f = p.task_slice(b, 10, 20)
-
-    r1, r2, r3, r4 = loom_env.submit(p, (c, d, e, f))
+    r1, r2, r3, r4 = loom_env.submit((c, d, e, f))
 
     assert r1 == "Line2\n"
     assert r2 == "Line4"
@@ -257,17 +234,15 @@ def test_split(loom_env):
 
 def test_size_and_length(loom_env):
     loom_env.start(1)
-
-    p = loom_env.plan_builder()
     text = "12345" * 5
 
-    a1 = p.task_const(text)
-    a2 = p.task_array_make((a1, a1))
-    b1 = p.task_size(a1)
-    c1 = p.task_length(a1)
-    b2 = p.task_size(a2)
-    c2 = p.task_length(a2)
+    a1 = tasks.const(text)
+    a2 = tasks.array_make((a1, a1))
+    b1 = tasks.size(a1)
+    c1 = tasks.length(a1)
+    b2 = tasks.size(a2)
+    c2 = tasks.length(a2)
 
     u64 = struct.Struct("<Q")
     [25, 0, 50, 2] == map(lambda x: u64.unpack(x)[0],
-                          loom_env.submit(p, (b1, c1, b2, c2)))
+                          loom_env.submit((b1, c1, b2, c2)))

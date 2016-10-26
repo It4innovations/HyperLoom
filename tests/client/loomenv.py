@@ -68,7 +68,7 @@ class LoomEnv(Env):
                        "--debug",
                        "--wdir=" + LOOM_TEST_BUILD_DIR,
                        "--cpus=" + str(cpus),
-                       "localhost", str(self.PORT))
+                       "127.0.0.1", str(self.PORT))
         if VALGRIND:
             time.sleep(2)
             worker_args = valgrind_args + worker_args
@@ -81,27 +81,20 @@ class LoomEnv(Env):
         assert not server.poll()
         assert not any(w.poll() for w in workers)
 
-    def plan_builder(self):
-        return client.PlanBuilder()
-
     @property
     def client(self):
         if self._client is None:
             self._client = client.Client("localhost", self.PORT)
         return self._client
 
-    def submit(self, plan, results, report=None):
-        if isinstance(plan, client.PlanBuilder):
-            plan = plan.plan
+    def submit(self, results, report=None):
         if report:
             report = os.path.join(LOOM_TEST_BUILD_DIR, report)
-        return self.client.submit(plan, results, report)
+        return self.client.submit(results, report)
 
-    def make_dry_report(self, plan, filename):
-        if isinstance(plan, client.PlanBuilder):
-            plan = plan.plan
+    def make_dry_report(self, tasks, filename):
         filename = os.path.join(LOOM_TEST_BUILD_DIR, filename)
-        return client.make_dry_report(plan, filename)
+        return client.make_dry_report(tasks, filename)
 
 
 @pytest.yield_fixture(autouse=True, scope="function")

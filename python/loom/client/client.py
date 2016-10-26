@@ -3,7 +3,8 @@ from ..pb.loomreport_pb2 import Report
 
 import socket
 from connection import Connection
-from plan import Task
+from task import Task
+from plan import Plan
 
 LOOM_PROTOCOL_VERSION = 1
 
@@ -45,20 +46,25 @@ class Client(object):
         while self.symbols is None:
             self._read_symbols()
 
-    def submit(self, plan, results, report=None):
-        msg = ClientSubmit()
-        msg.report = bool(report)
-        plan.set_message(msg.plan, self.symbols)
-
-        if isinstance(results, Task):
+    def submit(self, tasks, report=None):
+        if isinstance(tasks, Task):
             single_result = True
-            msg.plan.result_ids.extend((results.id,))
-            expected = 1
+            tasks = (tasks,)
         else:
             single_result = False
-            r = set(results)
-            msg.plan.result_ids.extend(r.id for r in r)
-            expected = len(r)
+
+        task_set = set(tasks)
+
+        plan = Plan()
+        for task in task_set:
+            plan.add(task)
+
+        msg = ClientSubmit()
+        msg.report = bool(report)
+
+        msg.plan.result_ids.extend(plan.tasks[t] for t in task_set)
+        expected = len(task_set)
+        plan.set_message(msg.plan, self.symbols)
 
         self._send_message(msg)
 
@@ -84,9 +90,9 @@ class Client(object):
             write_report(report_data, report)
 
         if single_result:
-            return data[results.id]
+            return data[plan.tasks[tasks[0]]]
         else:
-            return [data[task.id] for task in results]
+            return [data[plan.tasks[t]] for t in tasks]
 
     def _symbol_list(self):
         symbols = [None] * len(self.symbols)
@@ -136,7 +142,14 @@ class Client(object):
         self.connection.send_message(data)
 
 
-def make_dry_report(plan, report_filename):
+def make_dry_report(tasks, report_filename):
+    if isinstance(tasks, Task):
+        tasks = (tasks,)
+
+    plan = Plan()
+    for task in tasks:
+        plan.add(task)
+
     # Create symbols
     symbols = sorted(plan.collect_symbols())
     symbol_table = {}
