@@ -26,10 +26,10 @@ def test_cv_iris(loom_env):
                      for i in xrange(CHUNKS)]
 
         models = []
-        for ts in trainsets:
+        for i, ts in enumerate(trainsets):
             model = tasks.run("svm-train data",
                                [(ts, "data")], ["data.model"])
-            model.label = "svm-train"
+            model.label = "svm-train: {}".format(i)
             models.append(model)
 
         predict = []
