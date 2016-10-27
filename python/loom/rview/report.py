@@ -13,7 +13,7 @@ def generate_colors(count):
         h = float(stop - start) / (n - 1)
         for i in range(n):
             yield start + h * i
-    return plt.cm.Set2(list(linspace(0, 1, 12)))
+    return plt.cm.Set2(list(linspace(0, 1, count)))
 
 
 def dot_color(color):
