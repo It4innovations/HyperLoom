@@ -16,17 +16,6 @@ mark_as_advanced(LIBUV_INCLUDE_DIR LIBUV_LIBRARY)
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 
-find_library(LPSOLVE_LIBRARY
-        NAMES lpsolve55)
-mark_as_advanced(LPSOLVE_LIBRARY)
-
-find_library(COLAMD_LIBRARY
-        NAMES colamd)
-mark_as_advanced(COLAMD_LIBRARY)
-
-	#PATHS ${LPSOLVE_LIBRARIES} ${LPSOLVE_LIB_TRIALPATH}
-	#PATH_SUFFIXES lp_solve)
-
 add_subdirectory(src)
 add_subdirectory(tests)
 
