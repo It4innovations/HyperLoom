@@ -16,6 +16,10 @@ mark_as_advanced(LIBUV_INCLUDE_DIR LIBUV_LIBRARY)
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 
+# Python
+find_package(PythonLibs 3.4 REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+
 add_subdirectory(src)
 add_subdirectory(tests)
 

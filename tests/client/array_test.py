@@ -18,16 +18,16 @@ def test_make_array(loom_env):
 
     result_d, result_e0, result_e1, result_e2 = \
         loom_env.submit((d, e0, e1, e2))
-    assert result_d == ["ABC", "123456", ""]
-    assert result_e0 == "ABC"
-    assert result_e1 == "123456"
-    assert result_e2 == ""
+    assert result_d == [b"ABC", b"123456", b""]
+    assert result_e0 == b"ABC"
+    assert result_e1 == b"123456"
+    assert result_e2 == b""
 
 
 def test_slice_array(loom_env):
     loom_env.start(1)
 
-    items = [tasks.const(str(i)) for i in xrange(20)]
+    items = [tasks.const(str(i)) for i in range(20)]
     a = tasks.array_make(items)
 
     e0 = tasks.slice(a, 0, 100)
@@ -38,11 +38,11 @@ def test_slice_array(loom_env):
 
     r0, r1, r2, r3, r4 = \
         loom_env.submit((e0, e1, e2, e3, e4))
-    assert r0 == list(map(str, range(20)))
+    assert r0 == [bytes(str(i), "ascii") for i in range(0, 20)]
     assert r1 == []
-    assert r2 == ['2', '3']
+    assert r2 == [b'2', b'3']
     assert r3 == []
-    assert r4 == list(map(str, range(4, 20)))
+    assert r4 == [bytes(str(i), "ascii") for i in range(4, 20)]
 
 
 def test_make_empty_array(loom_env):
@@ -63,13 +63,13 @@ def test_array_of_array(loom_env):
 
     loom_env.start(1)
     result_d, result_e, result_f = loom_env.submit((d, e, f))
-    assert result_d == ["ABC", "123"]
-    assert result_e == [["ABC", "123"], "+++"]
-    assert result_f == ["ABC", "123"]
+    assert result_d == [b"ABC", b"123"]
+    assert result_e == [[b"ABC", b"123"], b"+++"]
+    assert result_f == [b"ABC", b"123"]
 
 
 def test_array_same_value(loom_env):
     a = tasks.const("ABC")
     b = tasks.array_make((a, a, a, a))
     loom_env.start(1)
-    assert ["ABC"] * 4 == loom_env.submit(b)
+    assert [b"ABC"] * 4 == loom_env.submit(b)

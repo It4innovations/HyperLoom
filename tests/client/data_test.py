@@ -4,7 +4,6 @@ import loom.client.tasks as tasks  # noqa
 import struct
 from datetime import datetime
 import os
-from loom import client
 
 FILE1 = os.path.join(LOOM_TEST_DATA_DIR, "file1")
 FILE2 = os.path.join(LOOM_TEST_DATA_DIR, "file2")
@@ -22,11 +21,11 @@ def pytestprog(sleep, op="copy", stamp=False, file_out=None, file_in=None):
         args.append("--out=" + file_out)
     args.append(op)
     args.append(sleep)
-    return map(str, args)
+    return list(str(a) for a in args)
 
 
-def str2datetime(s):
-    parts = s.split('.')
+def str2datetime(data):
+    parts = data.decode().split(".")
     dt = datetime.strptime(parts[0], "%Y-%m-%d %H:%M:%S")
     return dt.replace(microsecond=int(parts[1]))
 
@@ -36,7 +35,7 @@ def test_single_result(loom_env):
     a = tasks.const("ABCDE")
     b = tasks.const("123")
     c = tasks.merge((a, b))
-    assert "ABCDE123" == loom_env.submit(c)
+    assert b"ABCDE123" == loom_env.submit(c)
 
 
 def test_more_results(loom_env):
@@ -44,7 +43,7 @@ def test_more_results(loom_env):
     a = tasks.const("ABCDE")
     b = tasks.const("123")
     c = tasks.merge((a, b))
-    assert ["ABCDE123"] * 2 == loom_env.submit([c, c])
+    assert [b"ABCDE123"] * 2 == loom_env.submit([c, c])
 
 
 def test_merge_w3(loom_env):
@@ -52,21 +51,21 @@ def test_merge_w3(loom_env):
     a = tasks.const("ABCDE")
     b = tasks.const("123")
     c = tasks.merge((a, b))
-    assert "ABCDE123" == loom_env.submit(c)
+    assert b"ABCDE123" == loom_env.submit(c)
 
 
 def test_merge_delimiter(loom_env):
     loom_env.start(1)
-    consts = [tasks.const(str(i)) for i in xrange(10)]
+    consts = [tasks.const(str(i)) for i in range(10)]
     c = tasks.merge(consts, "abc")
-    expected = "abc".join(str(i) for i in xrange(10))
+    expected = bytes("abc".join(str(i) for i in range(10)), "ascii")
     assert expected == loom_env.submit(c)
 
 
 def test_merge_empty_with_delimiter(loom_env):
     loom_env.start(1)
     c = tasks.merge((), "abc")
-    assert "" == loom_env.submit(c)
+    assert b"" == loom_env.submit(c)
 
 
 def test_run_separated_1_cpu(loom_env):
@@ -78,7 +77,7 @@ def test_run_separated_1_cpu(loom_env):
     starts = []
 
     for result in results:
-        line1, line2 = result.strip().split("\n")
+        line1, line2 = result.strip().split(b"\n")
         starts.append(str2datetime(line1))
 
     for i in range(len(starts)):
@@ -100,7 +99,7 @@ def test_run_separated_4_cpu(loom_env):
     starts = []
 
     for result in results:
-        line1, line2 = result.strip().split("\n")
+        line1, line2 = result.strip().split(b"\n")
         starts.append(str2datetime(line1))
 
     for i in range(len(starts)):
@@ -122,7 +121,7 @@ def test_run_separated_4cpu_tasks_4_cpu(loom_env):
     starts = []
 
     for result in results:
-        line1, line2 = result.strip().split("\n")
+        line1, line2 = result.strip().split(b"\n")
         starts.append(str2datetime(line1))
 
     for i in range(len(starts)):
@@ -148,7 +147,7 @@ def test_run_double_lines(loom_env):
 
     result = tasks.merge((c1, c2, a2))
 
-    expect = "chk" * COUNT + "llmmnn" * COUNT + "kkllmm" * COUNT
+    expect = b"chk" * COUNT + b"llmmnn" * COUNT + b"kkllmm" * COUNT
 
     for i in range(1, 4):
         #  print "Runnig for {}".format(i)
@@ -172,7 +171,7 @@ def test_run_files(loom_env):
     loom_env.start(1)
     result = loom_env.submit(c1)
 
-    assert result == "cdef" * 100
+    assert result == b"cdef" * 100
 
 
 def test_run_variable2(loom_env):
@@ -181,7 +180,7 @@ def test_run_variable2(loom_env):
     c = tasks.run("/bin/echo $xyz xyz $ab $c", inputs=[(a, "$xyz"), (b, "$c")])
     loom_env.start(1)
     result = loom_env.submit(c)
-    assert result == "123 xyz $ab 456\n"
+    assert result == b"123 xyz $ab 456\n"
 
 
 def test_open_and_merge(loom_env):
@@ -190,9 +189,9 @@ def test_open_and_merge(loom_env):
     c = tasks.merge((a, b))
     loom_env.start(1)
     result = loom_env.submit(c)
-    expect = ("This is file 1\n" +
-              "\n".join("Line {}".format(i) for i in xrange(1, 13)) +
-              "\n")
+    expect = bytes("This is file 1\n" +
+                   "\n".join("Line {}".format(i) for i in range(1, 13)) +
+                   "\n", "ascii")
     assert result == expect
 
 
@@ -204,14 +203,14 @@ def test_open_and_splitlines(loom_env):
     c2 = tasks.slice(lines, 0, 6)
     c3 = tasks.slice(lines, 3, 60)
     result1, result2, result3 = loom_env.submit([c1, c2, c3])
-    expect1 = "\n".join("Line {}".format(i) for i in xrange(3, 7)) + "\n"
-    assert result1 == expect1
+    expect1 = "\n".join("Line {}".format(i) for i in range(3, 7)) + "\n"
+    assert result1.decode() == expect1
 
-    expect2 = "\n".join("Line {}".format(i) for i in xrange(1, 7)) + "\n"
-    assert result2 == expect2
+    expect2 = "\n".join("Line {}".format(i) for i in range(1, 7)) + "\n"
+    assert result2.decode() == expect2
 
-    expect3 = "\n".join("Line {}".format(i) for i in xrange(4, 13)) + "\n"
-    assert result3 == expect3
+    expect3 = "\n".join("Line {}".format(i) for i in range(4, 13)) + "\n"
+    assert result3.decode() == expect3
 
 
 def test_split(loom_env):
@@ -224,7 +223,7 @@ def test_split(loom_env):
     e = tasks.slice(b, 0, 2)
     f = tasks.slice(b, 10, 20)
 
-    r1, r2, r3, r4 = loom_env.submit((c, d, e, f))
+    r1, r2, r3, r4 = [r.decode() for r in loom_env.submit((c, d, e, f))]
 
     assert r1 == "Line2\n"
     assert r2 == "Line4"

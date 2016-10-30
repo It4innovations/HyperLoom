@@ -8,7 +8,7 @@ class Connection(object):
 
     def __init__(self, socket):
         self.socket = socket
-        self.data = ""
+        self.data = bytes()
 
     def receive_message(self):
         while True:
@@ -26,7 +26,7 @@ class Connection(object):
             self.data += new_data
 
     def read_data(self, data_size):
-        result = ""
+        result = bytes()
         while True:
             change = min(data_size, len(self.data))
             result += self.data[:change]

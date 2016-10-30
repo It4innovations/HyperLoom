@@ -7,7 +7,7 @@ loom_env  # silence flake8
 def test_dslice(loom_env):
     loom_env.start(2)
     consts = []
-    for i in xrange(16):
+    for i in range(16):
         consts.append(tasks.const("data{}".format(i)))
     a = tasks.array_make(consts)
     ds = tasks.dslice(a)
@@ -16,17 +16,19 @@ def test_dslice(loom_env):
     result = loom_env.submit(r)
 
     assert len(result) >= 2
-    assert result == ["data{}".format(i) for i in xrange(0, 16, 2)]
+    assert result == [bytes("data{}".format(i), "ascii")
+                      for i in range(0, 16, 2)]
 
 
 def test_dget(loom_env):
     loom_env.start(2)
     consts = []
-    for i in xrange(16):
+    for i in range(16):
         consts.append(tasks.const("data{}".format(i)))
     a = tasks.array_make(consts)
     ds = tasks.dget(a)
     f = tasks.run("/bin/cat", stdin=ds)
     r = tasks.array_make((f,))
     result = loom_env.submit(r)
-    assert result == ["data{}".format(i) for i in xrange(16)]
+    assert result == [bytes("data{}".format(i), "ascii")
+                      for i in range(16)]

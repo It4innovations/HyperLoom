@@ -43,7 +43,10 @@ class Plan(object):
         # Build tasks
         for task in tasks:
             msg_t = msg.tasks.add()
-            msg_t.config = task.config
+            config = task.config
+            if isinstance(config, str):
+                config = bytes(config, encoding="utf-8")
+            msg_t.config = config
             msg_t.task_type = symbols[task.task_type]
             msg_t.input_ids.extend(self.tasks[t] for t in task.inputs)
             msg_t.policy = task.policy

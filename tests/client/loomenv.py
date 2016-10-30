@@ -72,7 +72,7 @@ class LoomEnv(Env):
         if VALGRIND:
             time.sleep(2)
             worker_args = valgrind_args + worker_args
-        for i in xrange(workers_count):
+        for i in range(workers_count):
             w = self.start_process("worker{}".format(i), worker_args)
             workers.append(w)
         time.sleep(0.1)

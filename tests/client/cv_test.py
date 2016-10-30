@@ -10,7 +10,7 @@ loom_env  # silence flake8
 
 def test_cv_iris(loom_env):
         CHUNKS = 15
-        CHUNK_SIZE = 150 / CHUNKS  # There are 150 irises
+        CHUNK_SIZE = 150 // CHUNKS  # There are 150 irises
 
         loom_env.start(4, 4)
         loom_env.info = False
@@ -20,22 +20,22 @@ def test_cv_iris(loom_env):
         lines = tasks.split(data)
 
         chunks = [tasks.slice(lines, i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
-                  for i in xrange(CHUNKS)]
+                  for i in range(CHUNKS)]
 
         trainsets = [tasks.merge(chunks[:i] + chunks[i + 1:])
-                     for i in xrange(CHUNKS)]
+                     for i in range(CHUNKS)]
 
         models = []
         for i, ts in enumerate(trainsets):
             model = tasks.run("svm-train data",
-                               [(ts, "data")], ["data.model"])
+                              [(ts, "data")], ["data.model"])
             model.label = "svm-train: {}".format(i)
             models.append(model)
 
         predict = []
         for chunk, model in zip(chunks, models):
             task = tasks.run("svm-predict testdata model out",
-                              [(chunk, "testdata"), (model, "model")])
+                             [(chunk, "testdata"), (model, "model")])
             task.label = "svm-predict"
             predict.append(task)
 
@@ -45,4 +45,4 @@ def test_cv_iris(loom_env):
 
         assert len(results) == CHUNKS
         for line in results:
-            assert line.startswith("Accuracy = ")
+            assert line.startswith(b"Accuracy = ")

@@ -1,10 +1,12 @@
+
+from .connection import Connection
+from .task import Task
+from .plan import Plan
+
 from ..pb.loomcomm_pb2 import Register, Data, ClientMessage, ClientSubmit
 from ..pb.loomreport_pb2 import Report
 
 import socket
-from connection import Connection
-from task import Task
-from plan import Plan
 
 LOOM_PROTOCOL_VERSION = 1
 
@@ -133,8 +135,8 @@ class Client(object):
         if type_id == self.rawdata_id:
             return self.connection.read_data(msg_data.size)
         if type_id == self.array_id:
-            return [self._receive_data() for i in xrange(msg_data.length)]
-        print type_id, self.array_id, self.rawdata_id
+            return [self._receive_data() for i in range(msg_data.length)]
+        print(type_id, self.array_id, self.rawdata_id)
         assert 0
 
     def _send_message(self, message):
@@ -165,5 +167,5 @@ def make_dry_report(tasks, report_filename):
 
 
 def write_report(report_data, report_filename):
-    with open(report_filename, "w") as f:
+    with open(report_filename, "wb") as f:
         f.write(report_data.SerializeToString())
