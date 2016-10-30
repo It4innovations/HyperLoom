@@ -37,6 +37,12 @@ void RunTask::start(DataVector &inputs)
    memset(&options, 0, sizeof(options));
    options.exit_cb = _on_exit;
 
+   auto args_size = msg.args_size();
+   if (args_size == 0) {
+      fail("No arguments provided");
+      return;
+   }
+
    /* Streams */
    uv_stdio_container_t stdio[3];
    options.stdio = stdio;
@@ -94,9 +100,7 @@ void RunTask::start(DataVector &inputs)
    }
 
 
-   /* Setup args */
-   auto args_size = msg.args_size();
-   assert(args_size > 0);
+   /* Setup args */   
    options.file = msg.args(0).c_str();
 
    char *args[args_size + 1];
