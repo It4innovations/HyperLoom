@@ -19,7 +19,7 @@ TaskManager::TaskManager(Server &server)
 void TaskManager::add_plan(Plan &&plan, bool report)
 {
     this->report = report;
-    cstate.set_plan(std::move(plan));        
+    cstate.set_plan(std::move(plan));
     distribute_work(Scheduler(cstate).schedule());
 }
 

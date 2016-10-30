@@ -24,7 +24,8 @@ ComputationState::ComputationState(Server &server) : server(server)
 void ComputationState::set_plan(Plan &&plan)
 {
    this->plan = std::move(plan);
-   auto task_ids = plan.get_init_tasks();
+   auto task_ids = this->plan.get_init_tasks();
+   assert(!task_ids.empty());
    add_ready_nodes(task_ids);
 }
 
