@@ -17,11 +17,8 @@ public:
         return size;
     }
 
-    char *get_raw_data(Worker &worker)
+    const char *get_raw_data() const
     {
-        if (data == nullptr) {
-            open();
-        }
         return data;
     }
 

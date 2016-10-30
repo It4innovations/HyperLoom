@@ -19,7 +19,7 @@ std::string ExternFile::get_type_name() const
 ExternFile::ExternFile(const std::string &filename)
     : data(nullptr), filename(filename)
 {
-    size = file_size(filename.c_str());
+    open();
 }
 
 ExternFile::~ExternFile()
@@ -51,6 +51,14 @@ void ExternFile::open()
     if (fd < 0) {
         log_errno_abort("open");
     }
+
+    size = lseek(fd, (size_t)0, SEEK_END);
+    if (size == (size_t) -1) {
+        log_errno_abort("lseek");
+    }
+    lseek(fd, 0, SEEK_SET);
+
+
     map(fd, false);
     ::close(fd);
 }

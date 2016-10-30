@@ -45,8 +45,8 @@ public:
     }
 
 
-    void add(std::shared_ptr<Data> &data, char *data_ptr, size_t size) {
-        bufs.emplace_back(uv_buf_t {data_ptr, size});
+    void add(std::shared_ptr<Data> &data, const char *data_ptr, size_t size) {
+        bufs.emplace_back(uv_buf_t {const_cast<char*>(data_ptr), size});
         data_vector.push_back(data);
     }
 

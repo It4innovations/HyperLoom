@@ -42,7 +42,7 @@ void Data::init_message(Worker &worker, loomcomm::Data &msg) const
 
 }
 
-char *Data::get_raw_data(Worker &worker)
+const char * Data::get_raw_data() const
 {
     return nullptr;
 }

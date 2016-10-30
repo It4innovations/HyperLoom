@@ -50,12 +50,11 @@ std::shared_ptr<Data> MergeTask::run() {
 
     std::shared_ptr<Data> output = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*output);
-    data.init_empty(worker, size);
-    char *dst = output->get_raw_data(worker);
+    char *dst = data.init_empty(worker, size);
 
     if (config.empty()) {
         for (auto& data : inputs) {
-            char *mem = data->get_raw_data(worker);
+            const char *mem = data->get_raw_data();
             size_t size = data->get_size();
             assert(mem || size == 0);
             memcpy(dst, mem, size);
@@ -72,7 +71,7 @@ std::shared_ptr<Data> MergeTask::run() {
                 dst += config.size();
             }
 
-            char *mem = data->get_raw_data(worker);
+            const char *mem = data->get_raw_data();
             size_t size = data->get_size();
             assert(mem || size == 0);
             memcpy(dst, mem, size);
@@ -95,7 +94,7 @@ void SplitTask::start(DataVector &inputs)
 
     std::vector<size_t> indices;
     auto& input = inputs[0];
-    char *ptr = input->get_raw_data(worker);
+    const char *ptr = input->get_raw_data();
     size_t size = input->get_size();
 
     indices.push_back(0);

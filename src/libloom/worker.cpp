@@ -12,6 +12,7 @@
 #include "tasks/rawdatatasks.h"
 #include "tasks/arraytasks.h"
 #include "tasks/runtask.h"
+#include "tasks/python.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -98,6 +99,9 @@ void Worker::register_basic_tasks()
 
     // Run
     add_task_factory<RunTask>("loom/run/run");
+
+    // Python
+    add_task_factory<PyCallTask>("loom/py/call");
 }
 
 

@@ -94,7 +94,7 @@ std::string RawData::get_filename() const
     return filename;
 }
 
-void RawData::open(Worker &worker)
+void RawData::open() const
 {
     if (size == 0) {
         return;
@@ -107,10 +107,11 @@ void RawData::open(Worker &worker)
     }
     map(fd, false);
     ::close(fd);
+    assert(data);
 }
 
 
-void RawData::map(int fd, bool write)
+void RawData::map(int fd, bool write) const
 {
     assert(data == nullptr);
     assert(!filename.empty());
@@ -143,9 +144,15 @@ void RawData::init_from_string(Worker &worker, const std::string &str)
     memcpy(mem, str.c_str(), size);
 }
 
+void RawData::init_from_mem(Worker &worker, const void *ptr, size_t size)
+{
+    char *mem = init_empty(worker, size);
+    memcpy(mem, ptr, size);
+}
+
 void RawData::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
-    buffer.add(data_ptr, get_raw_data(worker), size);
+    buffer.add(data_ptr, get_raw_data(), size);
 }
 
 RawDataUnpacker::~RawDataUnpacker()

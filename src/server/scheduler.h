@@ -15,7 +15,7 @@ class Scheduler
         std::vector<size_t> inputs;
         std::vector<size_t> next_inputs;
         std::vector<loom::Id> nexts;
-        std::vector<loom::Id> ids;        
+        std::vector<loom::Id> ids;
     };
 
     struct Worker {

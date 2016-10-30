@@ -42,7 +42,7 @@ public:
     void serialize(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
     /** Get pointer to raw data, returns nullptr when it is not possible */
-    virtual char *get_raw_data(Worker &worker);
+    virtual const char *get_raw_data() const;
 
     /** Returns a filename if data obeject is mapped from file, empty string otherwise */
     virtual std::string get_filename() const;

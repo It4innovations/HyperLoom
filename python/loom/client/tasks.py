@@ -4,6 +4,7 @@ from .task import POLICY_SCHEDULER, POLICY_SIMPLE
 
 import struct
 from ..pb import loomrun_pb2 as loomrun
+import cloudpickle
 
 
 def cpus(value):
@@ -30,6 +31,9 @@ RUN = "loom/run/run"
 
 SCHEDULER_DSLICE = "loom/scheduler/dslice"
 SCHEDULER_DGET = "loom/scheduler/dget"
+
+PY_CALL = "loom/py/call"
+
 
 u64 = struct.Struct("<Q")
 u64u64 = struct.Struct("<QQ")
@@ -153,4 +157,12 @@ def slice(input, start, end):
     task.inputs = (input,)
     task.config = u64u64.pack(start, end)
     task.policy = POLICY_SIMPLE
+    return task
+
+
+def py_call(obj, inputs=(), request=cpu1):
+    task = Task()
+    task.task_type = PY_CALL
+    task.inputs = inputs
+    task.config = cloudpickle.dumps(obj)
     return task

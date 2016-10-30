@@ -16,6 +16,10 @@ add_library(libloom
             tasks/arraytasks.h
             tasks/runtask.cpp
             tasks/runtask.h
+            tasks/python_wrapper.cpp
+            tasks/python_wrapper.h
+            tasks/python.cpp
+            tasks/python.h
             tasks/loomrun.pb.cc
             tasks/loomrun.pb.h
             connection.cpp

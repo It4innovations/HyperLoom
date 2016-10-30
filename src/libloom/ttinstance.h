@@ -40,7 +40,7 @@ protected:
      *  In case of error, call set_error and return nullptr
      */
     virtual std::shared_ptr<Data> run() = 0;
-    void set_error(std::string &error_message);
+    void set_error(const std::string &error_message);
 
     DataVector inputs;
     uv_work_t work;

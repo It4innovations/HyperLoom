@@ -20,7 +20,7 @@ bool ThreadTaskInstance::run_in_thread(DataVector &input_data)
     return true;
 }
 
-void ThreadTaskInstance::set_error(std::string &error_message)
+void ThreadTaskInstance::set_error(const std::string &error_message)
 {
     this->error_message = error_message;
 }

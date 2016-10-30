@@ -58,7 +58,7 @@ void RunTask::start(DataVector &inputs)
       const std::string &name = msg.map_inputs(i);
 
       if (!name.empty() && name[0] == '$') {
-         const char *raw_data = inputs[i]->get_raw_data(worker);
+         const char *raw_data = inputs[i]->get_raw_data();
          assert(raw_data);
          variables[name] = std::string(raw_data, inputs[i]->get_size());
          continue;

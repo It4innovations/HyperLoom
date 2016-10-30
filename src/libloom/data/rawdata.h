@@ -17,10 +17,10 @@ public:
         return size;
     }
 
-    char *get_raw_data(Worker &worker)
+    const char *get_raw_data() const
     {
         if (data == nullptr) {
-            open(worker);
+            open();
         }
         return data;
     }
@@ -29,6 +29,7 @@ public:
 
     char* init_empty(Worker &worker, size_t size);
     void init_from_string(Worker &worker, const std::string &str);
+    void init_from_mem(Worker &worker, const void *ptr, size_t size);
     void assign_filename(Worker &worker);
     void init_from_file(Worker &worker);
 
@@ -37,15 +38,14 @@ public:
 protected:
 
     void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
-    void open(Worker &worker);
-    void map(int fd, bool write);
+    void open() const;
+    void map(int fd, bool write) const;
 
-    char *data;
+    mutable char *data;
     size_t size;
     std::string filename;
 
     static size_t file_id_counter;
-
 };
 
 

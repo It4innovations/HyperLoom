@@ -31,11 +31,11 @@ class Env():
     def __init__(self):
         self.processes = []
 
-    def start_process(self, name, args):
+    def start_process(self, name, args, env=None):
         fname = os.path.join(LOOM_TEST_BUILD_DIR, name)
         with open(fname + ".out", "w") as out:
             with open(fname + ".err", "w") as err:
-                p = subprocess.Popen(args, stdout=out, stderr=err)
+                p = subprocess.Popen(args, stdout=out, stderr=err, env=env)
         self.processes.append((name, p))
         return p
 
@@ -72,8 +72,13 @@ class LoomEnv(Env):
         if VALGRIND:
             time.sleep(2)
             worker_args = valgrind_args + worker_args
+        env = os.environ.copy()
+        if "PYTHONPATH" in env:
+            env["PYTHONPATH"] = LOOM_PYTHON + ":" + env["PYTHONPATH"]
+        else:
+            env["PYTHONPATH"] = LOOM_PYTHON
         for i in range(workers_count):
-            w = self.start_process("worker{}".format(i), worker_args)
+            w = self.start_process("worker{}".format(i), worker_args, env)
             workers.append(w)
         time.sleep(0.1)
         if VALGRIND:

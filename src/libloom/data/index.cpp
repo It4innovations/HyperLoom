@@ -43,13 +43,12 @@ std::shared_ptr<Data> Index::get_at_index(size_t index)
 {
     assert (index < length);
     size_t addr = indices[index];
-    char *p1 = this->data->get_raw_data(worker);
+    const char *p1 = this->data->get_raw_data();
     p1 += addr;
     size_t size = indices[index + 1] - addr;
 
     auto data = std::make_shared<RawData>();
-    data->init_empty(worker, size);
-    char *p2 = data->get_raw_data(worker);
+    char *p2 = data->init_empty(worker, size);
     memcpy(p2, p1, size);
     return data;
 }
@@ -71,14 +70,13 @@ std::shared_ptr<Data> Index::get_slice(size_t from, size_t to)
     size_t from_addr = indices[from];
     size_t to_addr = indices[to];
 
-    char *p1 = this->data->get_raw_data(worker);
+    const char *p1 = this->data->get_raw_data();
     p1 += from_addr;
 
     size_t size = to_addr - from_addr;
 
     auto data = std::make_shared<RawData>();
-    data->init_empty(worker, size);
-    char *p2 = data->get_raw_data(worker);
+    char *p2 = data->init_empty(worker, size);
     memcpy(p2, p1, size);
     return data;
 }
