@@ -20,9 +20,6 @@ data_wrapper_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject *)self;
 }
 
-
-
-
 static PyObject *
 data_wrapper_size(DataWrapper* self)
 {

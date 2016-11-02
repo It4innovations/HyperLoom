@@ -87,26 +87,37 @@ std::shared_ptr<Data> PyCallTask::run()
       return nullptr;
    }
 
-   if (!PyUnicode_Check(result)) {
-        Py_DECREF(result);
-        set_error("Invalid result from python code");
-        PyGILState_Release(gstate);
-        return nullptr;
+   if (PyUnicode_Check(result)) {
+       // Result is string
+       Py_ssize_t size;
+       char *ptr = PyUnicode_AsUTF8AndSize(result, &size);
+       assert(ptr);
+
+       auto output = std::make_shared<RawData>();
+       output->init_from_mem(worker, ptr, size);
+
+       Py_DECREF(result);
+       PyGILState_Release(gstate);
+       return output;
+   } else if (PyBytes_Check(result)) {
+       // Result is bytes
+       Py_ssize_t size = PyBytes_GET_SIZE(result);
+       char *ptr = PyBytes_AsString(result);
+       assert(ptr);
+
+       auto output = std::make_shared<RawData>();
+       output->init_from_mem(worker, ptr, size);
+
+       Py_DECREF(result);
+       PyGILState_Release(gstate);
+       return output;
+   } else {
+       set_error("Invalid result from python code");
+
+       Py_DECREF(result);
+       PyGILState_Release(gstate);
+       return nullptr;
    }
-
-   Py_ssize_t size;
-   char *str = PyUnicode_AsUTF8AndSize(result, &size);
-   assert(str);
-
-   Py_DECREF(result);
-
-   auto output = std::make_shared<RawData>();
-   output->init_from_mem(worker, str, size);
-
-   // Release GIL
-   PyGILState_Release(gstate);
-   return output;
-
 }
 
 void PyCallTask::set_python_error()
