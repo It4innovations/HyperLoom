@@ -67,6 +67,7 @@ public:
 
     void task_finished(TaskInstance &task_instance, Data &data);
     void task_failed(TaskInstance &task_instance, const std::string &error_msg);
+    void task_redirect(TaskInstance &task, std::unique_ptr<TaskDescription> new_task_desc);
     void publish_data(Id id, const std::shared_ptr<Data> &data);
     void remove_data(Id id);
 
@@ -141,7 +142,7 @@ private:
     void register_worker();
     void start_listen();
 
-    void remove_task(TaskInstance &task);
+    void remove_task(TaskInstance &task, bool free_resources=true);
     void start_task(std::unique_ptr<Task> task);
     //int get_listen_port();
 

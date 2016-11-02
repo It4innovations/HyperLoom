@@ -35,17 +35,20 @@ public:
 protected:    
 
     /** This method is called outside of main thread if run_in_thread has returned true
-     *  IMPORTANT: It can read only member variable "inputs" and calls method "set_error"
+     *  IMPORTANT: It can read only member variable "inputs" and calls methods
+     *  "set_error" or "set_redirect"
      *  All other things are not thread-safe!
      *  In case of error, call set_error and return nullptr
      */
     virtual std::shared_ptr<Data> run() = 0;
     void set_error(const std::string &error_message);
+    void set_redirect(std::unique_ptr<TaskDescription> tredirect);
 
     DataVector inputs;
     uv_work_t work;
     std::shared_ptr<Data> result;
     std::string error_message;
+    std::unique_ptr<TaskDescription> task_redirect;
 
     static void _work_cb(uv_work_t *req);
     static void _after_work_cb(uv_work_t *req, int status);

@@ -3,6 +3,7 @@
 
 #include "data.h"
 #include "task.h"
+#include "taskdesc.h"
 
 #include<uv.h>
 
@@ -14,8 +15,6 @@ namespace loom {
 
 class Worker;
 class Data;
-
-typedef std::vector<std::shared_ptr<Data>> DataVector;
 
 /** Base class for task instance - an actual state of computation of a task */
 class TaskInstance
@@ -30,7 +29,7 @@ public:
     }
 
     virtual ~TaskInstance();
-    
+
     int get_id() const {
         return task->get_id();
     }
@@ -47,6 +46,7 @@ protected:
     void fail(const std::string &error_msg);
     void fail_libuv(const std::string &error_msg, int error_code);
     void finish(const std::shared_ptr<Data> &output);
+    void redirect(std::unique_ptr<TaskDescription> tdesc);
 
 
     Worker &worker;

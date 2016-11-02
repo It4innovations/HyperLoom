@@ -2,6 +2,7 @@
 #include "python.h"
 #include "../data/rawdata.h"
 #include "../log.h"
+#include "../compat.h"
 #include "python_wrapper.h"
 
 #include <Python.h>
@@ -31,7 +32,7 @@ void loom::PyCallTask::start(loom::DataVector &inputs)
    ThreadTaskInstance::start(inputs);
 }
 
-static PyObject* vector_of_data_to_list(const DataVector &data)
+static PyObject* data_vector_to_list(const DataVector &data)
 {
     PyObject *list = PyTuple_New(data.size());
     assert(list);
@@ -41,6 +42,54 @@ static PyObject* vector_of_data_to_list(const DataVector &data)
         i++;
     }
     return list;
+}
+
+static DataVector list_to_data_vector(PyObject *obj)
+{
+    assert(PySequence_Check(obj));
+    size_t size = PySequence_Size(obj);
+    assert(PyErr_Occurred() == nullptr);
+
+    DataVector result;
+    result.reserve(size);
+
+    for (size_t i = 0; i < size; i++) {
+        PyObject *o = PySequence_GetItem(obj, i);
+        assert(o);
+        assert(is_data_wrapper(o));
+        DataWrapper *data = (DataWrapper*) o;
+        result.push_back(data->data);
+        Py_DecRef(o);
+    }
+    return result;
+}
+
+static bool is_task(PyObject *obj)
+{
+    return (PyObject_HasAttrString(obj, "task_type") &&
+            PyObject_HasAttrString(obj, "config") &&
+            PyObject_HasAttrString(obj, "inputs"));
+}
+
+static std::string get_attr_string(PyObject *obj, const char *name)
+{
+    PyObject *value = PyObject_GetAttrString(obj, name);
+    assert(value);
+    Py_ssize_t size;
+    char *ptr;
+    if (PyUnicode_Check(value)) {
+        ptr = PyUnicode_AsUTF8AndSize(value, &size);
+        assert(ptr);
+    } else if (PyBytes_Check(value)) {
+        size = PyBytes_GET_SIZE(value);
+        ptr = PyBytes_AsString(value);
+        assert(ptr);
+    } else {
+        assert(0);
+    }
+    std::string result(ptr, size);
+    Py_DecRef(value);
+    return result;
 }
 
 std::shared_ptr<Data> PyCallTask::run()
@@ -72,7 +121,7 @@ std::shared_ptr<Data> PyCallTask::run()
                task->get_config().size());
    assert(config_data);
 
-   PyObject *py_inputs = vector_of_data_to_list(inputs);
+   PyObject *py_inputs = data_vector_to_list(inputs);
    assert(py_inputs);
 
 
@@ -111,6 +160,21 @@ std::shared_ptr<Data> PyCallTask::run()
        Py_DECREF(result);
        PyGILState_Release(gstate);
        return output;
+   } else if (is_task(result)) {
+       // Result is task
+       auto task_desc = std::make_unique<TaskDescription>();
+       task_desc->task_type = get_attr_string(result, "task_type");
+       task_desc->config = get_attr_string(result, "config");
+
+       PyObject *value = PyObject_GetAttrString(result, "inputs");
+       assert(value);
+       task_desc->inputs = list_to_data_vector(value);
+       Py_DECREF(value);
+
+       set_redirect(std::move(task_desc));
+       Py_DECREF(result);
+       PyGILState_Release(gstate);
+       return nullptr;
    } else {
        set_error("Invalid result from python code");
 

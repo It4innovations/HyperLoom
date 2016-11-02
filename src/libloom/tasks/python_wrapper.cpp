@@ -99,3 +99,8 @@ DataWrapper *data_wrapper_create(const std::shared_ptr<loom::Data> &data)
     self->data = data;
     return self;
 }
+
+bool is_data_wrapper(PyObject *obj)
+{
+    return Py_TYPE(obj) == &data_wrapper_type;
+}

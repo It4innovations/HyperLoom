@@ -41,6 +41,7 @@ add_library(libloom
             interconnect.cpp
             task.cpp
             task.h
+            taskdesc.h
             sendbuffer.h
             sendbuffer.cpp
             loomcomm.pb.h

@@ -27,6 +27,35 @@ def test_py_call(loom_env):
     assert result2 == b"Test"
 
 
+def test_py_redirect1(loom_env):
+
+    def f(a, b):
+        return tasks.merge((a, b))
+
+    loom_env.start(1)
+
+    c = tasks.const("ABC")
+    d = tasks.const("12345")
+    a = tasks.py_call(f, (c, d))
+    result = loom_env.submit(a)
+    assert result == b"ABC12345"
+
+
+def test_py_redirect2(loom_env):
+
+    def f(a, b):
+        return tasks.run("/bin/ls $X", [(b, "$X")])
+
+    loom_env.start(1)
+
+    c = tasks.const("abcdef")
+    d = tasks.const("/")
+    a = tasks.py_call(f, (c, d))
+    result = loom_env.submit(a)
+    assert b"bin\n" in result
+    assert b"usr\n" in result
+
+
 def test_py_fail_too_many_args(loom_env):
 
     def g():

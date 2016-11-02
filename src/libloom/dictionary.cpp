@@ -11,12 +11,22 @@ Dictionary::Dictionary()
 
 }
 
-Id Dictionary::lookup_symbol(const std::string &symbol)
+Id Dictionary::find_symbol_or_fail(const std::string &symbol) const
 {
     auto i = symbol_to_id.find(symbol);
     if(i == symbol_to_id.end()) {
         llog->critical("Unknown symbol '{}'", symbol);
         exit(1);
+    }
+    assert(i->second != -1);
+    return i->second;
+}
+
+Id Dictionary::find_symbol(const std::string &symbol) const
+{
+    auto i = symbol_to_id.find(symbol);
+    if(i == symbol_to_id.end()) {
+        return -1;
     }
     assert(i->second != -1);
     return i->second;

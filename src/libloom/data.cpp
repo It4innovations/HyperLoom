@@ -26,7 +26,7 @@ std::shared_ptr<Data> Data::get_slice(size_t from, size_t to)
 void Data::serialize(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
     loomcomm::Data msg;
-    msg.set_type_id(worker.get_dictionary().lookup_symbol(get_type_name()));
+    msg.set_type_id(worker.get_dictionary().find_symbol_or_fail(get_type_name()));
     msg.set_size(get_size());
     auto length = get_length();
     if (length) {

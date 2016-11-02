@@ -16,6 +16,9 @@ public:
     Task(Id id, int task_type, const std::string &config)
         : id(id), task_type(task_type), config(config) {}
 
+    Task(Id id, int task_type, std::string &&config)
+        : id(id), task_type(task_type), config(std::move(config)) {}
+
     Id get_id() const {
         return id;
     }

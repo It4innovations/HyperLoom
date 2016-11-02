@@ -50,3 +50,8 @@ void TaskInstance::finish(const std::shared_ptr<Data> &output)
    assert(output);
    worker.task_finished(*this, *output);
 }
+
+void TaskInstance::redirect(std::unique_ptr<TaskDescription> tdesc)
+{
+    worker.task_redirect(*this, std::move(tdesc));
+}

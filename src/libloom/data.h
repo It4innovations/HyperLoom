@@ -74,6 +74,8 @@ protected:
     std::shared_ptr<Data> data;
 };
 
+typedef std::vector<std::shared_ptr<Data>> DataVector;
+
 }
 
 #endif // LOOM_DATA_H

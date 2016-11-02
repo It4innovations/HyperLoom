@@ -191,7 +191,8 @@ void Worker::new_task(std::unique_ptr<Task> task)
 
 void Worker::start_task(std::unique_ptr<Task> task)
 {
-    llog->debug("Starting task id={} task_type={}", task->get_id(), task->get_task_type());
+    llog->debug("Starting task id={} task_type={} n_inputs={}",
+                task->get_id(), task->get_task_type(), task->get_inputs().size());
     auto i = task_factories.find(task->get_task_type());
     if (unlikely(i == task_factories.end())) {
         llog->critical("Task with unknown type {} received", task->get_task_type());
@@ -348,14 +349,14 @@ std::unique_ptr<DataUnpacker> Worker::unpack(DataTypeId id)
 void Worker::on_dictionary_updated()
 {
     for (auto &f : unregistered_task_factories) {
-        loom::Id id = dictionary.lookup_symbol(f->get_name());
+        loom::Id id = dictionary.find_symbol_or_fail(f->get_name());
         llog->debug("Registering task_factory: {} = {}", f->get_name(), id);
         task_factories[id] = std::move(f);
     }
     unregistered_task_factories.clear();
 
     for (auto &f : unregistered_unpack_factories) {
-        loom::Id id = dictionary.lookup_symbol(f->get_type_name());
+        loom::Id id = dictionary.find_symbol_or_fail(f->get_type_name());
         llog->debug("Registering unpack_factory: {} = {}", f->get_type_name(), id);
         unpack_factories[id] = std::move(f);
     }
@@ -381,8 +382,11 @@ void Worker::check_waiting_tasks()
     }
 }
 
-void Worker::remove_task(TaskInstance &task)
+void Worker::remove_task(TaskInstance &task, bool free_resources)
 {
+    if (free_resources) {
+        resource_cpus += 1;
+    }
     for (auto i = active_tasks.begin(); i != active_tasks.end(); i++) {
         if ((*i)->get_id() == task.get_id()) {
             active_tasks.erase(i);
@@ -402,8 +406,29 @@ void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
         msg.set_error_msg(error_msg);
         server_conn.send_message(msg);
     }
-    resource_cpus += 1;
     remove_task(task);
+}
+
+void Worker::task_redirect(TaskInstance &task,
+                           std::unique_ptr<TaskDescription> new_task_desc)
+{
+    loom::Id id = task.get_id();
+    llog->debug("Redirecting task id={} task_type={} n_inputs={}",
+                id, new_task_desc->task_type, new_task_desc->inputs.size());
+    remove_task(task, false);
+
+    Id task_type_id = dictionary.find_symbol_or_fail(new_task_desc->task_type);
+    auto new_task = std::make_unique<Task>(id, task_type_id,
+                                           std::move(new_task_desc->config));
+    auto i = task_factories.find(task_type_id);
+    if (unlikely(i == task_factories.end())) {
+        llog->critical("Task with unknown type {} received", new_task->get_task_type());
+        assert(0);
+    }
+    auto task_instance = i->second->make_instance(*this, std::move(new_task));
+    TaskInstance *t = task_instance.get();
+    active_tasks.push_back(std::move(task_instance));
+    t->start(new_task_desc->inputs);
 }
 
 void Worker::task_finished(TaskInstance &task, Data &data)
@@ -416,7 +441,6 @@ void Worker::task_finished(TaskInstance &task, Data &data)
         msg.set_length(data.get_length());
         server_conn.send_message(msg);
     }
-    resource_cpus += 1;
     remove_task(task);
     check_ready_tasks();
 }
