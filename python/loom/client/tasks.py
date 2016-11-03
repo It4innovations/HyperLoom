@@ -166,3 +166,10 @@ def py_call(obj, inputs=(), request=cpu1):
     task.inputs = inputs
     task.config = cloudpickle.dumps(obj)
     return task
+
+
+def py_task():
+    def make_py_call(fn):
+        assert callable(fn)
+        return lambda *args: py_call(fn, args)
+    return make_py_call

@@ -27,6 +27,24 @@ def test_py_call(loom_env):
     assert result2 == b"Test"
 
 
+def test_py_task(loom_env):
+
+    @tasks.py_task()
+    def t1():
+        return "ABC"
+
+    @tasks.py_task()
+    def t2(a, b):
+        return a.read() + b.read()
+
+    loom_env.start(1)
+    a = tasks.const("1234")
+    b = t1()
+    c = t2(a, b)
+    result = loom_env.submit(c)
+    assert result == b"1234ABC"
+
+
 def test_py_redirect1(loom_env):
 
     def f(a, b):
