@@ -245,3 +245,13 @@ def test_size_and_length(loom_env):
     u64 = struct.Struct("<Q")
     [25, 0, 50, 2] == map(lambda x: u64.unpack(x)[0],
                           loom_env.submit((b1, c1, b2, c2)))
+
+def test_hostname(loom_env):
+    loom_env.start(1)
+
+    TASKS_COUNT = 100
+
+    ts = [tasks.run("hostname") for i in range(TASKS_COUNT)]
+    array = tasks.array_make(ts)
+
+    loom_env.submit(array)

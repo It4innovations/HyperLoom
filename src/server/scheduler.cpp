@@ -348,8 +348,8 @@ void Scheduler::create_derived_units()
 
    // Create pairs
    for (size_t i = 0; i < initial_size; i++) {
-      const SUnit &u1 = s_units[i];
       for (size_t j = i + 1; j < initial_size; j++) {
+         const SUnit &u1 = s_units[i];
          const SUnit &u2 = s_units[j];
          if (intersects(u1.inputs.begin(), u1.inputs.end(),
                         u2.inputs.begin(), u2.inputs.end())) {

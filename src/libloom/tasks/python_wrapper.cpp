@@ -3,7 +3,7 @@
 static void
 data_wrapper_dealloc(DataWrapper* self)
 {
-    self->data.~__shared_ptr();
+    self->data.~shared_ptr();
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
