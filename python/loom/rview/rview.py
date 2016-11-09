@@ -1,5 +1,5 @@
 
-from report import Report
+from .report import Report
 import argparse
 import subprocess
 import matplotlib.pyplot as plt
@@ -38,11 +38,11 @@ def run_program(args, stdin=None):
 
 def show_symbols(report):
     for i, symbol in enumerate(report.symbols):
-        print "{}: {}".format(i, symbol)
+        print("{}: {}".format(i, symbol))
 
 
 def show_graph(report):
-    dot = report.create_graph().make_dot("Plan")
+    dot = report.create_graph().make_dot("Plan").encode()
     run_program(("xdot", "-"), dot)
 
 

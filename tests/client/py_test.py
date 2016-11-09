@@ -21,7 +21,7 @@ def test_py_call(loom_env):
     d = tasks.const("12345")
     p = tasks.py_call(f, (c, d))
     q = tasks.py_call(g)
-    result1, result2 = loom_env.submit((p, q))
+    result1, result2 = loom_env.submit((p, q), "report")
 
     assert result1 == b"ABC, 3, 12345, 5"
     assert result2 == b"Test"

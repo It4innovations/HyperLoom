@@ -1,7 +1,7 @@
 
 from ..pb import loomreport_pb2 as loomreport
 from ..pb import loomcomm_pb2 as loomcomm
-import gv
+from .gv import Graph
 import matplotlib.pyplot as plt
 
 
@@ -26,7 +26,7 @@ def dot_color(color):
 class Report:
 
     def __init__(self, filename):
-        with open(filename) as f:
+        with open(filename, "rb") as f:
             raw_data = f.read()
 
         self.report_msg = loomreport.Report()
@@ -65,7 +65,7 @@ class Report:
 
     def create_graph(self):
         TASK_START = loomcomm.Event.TASK_START
-        graph = gv.Graph()
+        graph = Graph()
         symbols = self.symbols
 
         task_workers = {}
@@ -134,7 +134,7 @@ class Report:
             y_labels.append("Worker {}".format(w_index))
             y_labels.extend([""] * len(lst))
             for lst2 in lst:
-                for i in xrange(0, len(lst2), 2):
+                for i in range(0, len(lst2), 2):
                     y.append(index)
                     xmin.append(lst2[i].time)
                     xmax.append(lst2[i + 1].time)
