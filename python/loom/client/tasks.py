@@ -168,8 +168,15 @@ def py_call(obj, inputs=(), request=cpu1):
     return task
 
 
-def py_task():
+def py_task(label=None):
     def make_py_call(fn):
+        def py_task_builder(*args):
+            task = py_call(fn, args)
+            if label is not None:
+                task.label = label
+            else:
+                task.label = fn.__name__
+            return task
         assert callable(fn)
-        return lambda *args: py_call(fn, args)
+        return py_task_builder
     return make_py_call

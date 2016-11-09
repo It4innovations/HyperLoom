@@ -21,7 +21,7 @@ def test_py_call(loom_env):
     d = tasks.const("12345")
     p = tasks.py_call(f, (c, d))
     q = tasks.py_call(g)
-    result1, result2 = loom_env.submit((p, q), "report")
+    result1, result2 = loom_env.submit((p, q))
 
     assert result1 == b"ABC, 3, 12345, 5"
     assert result2 == b"Test"
@@ -33,7 +33,7 @@ def test_py_task(loom_env):
     def t1():
         return "ABC"
 
-    @tasks.py_task()
+    @tasks.py_task(label="Merging task")
     def t2(a, b):
         return a.read() + b.read()
 
@@ -41,7 +41,7 @@ def test_py_task(loom_env):
     a = tasks.const("1234")
     b = t1()
     c = t2(a, b)
-    result = loom_env.submit(c)
+    result = loom_env.submit(c, "report")
     assert result == b"1234ABC"
 
 
