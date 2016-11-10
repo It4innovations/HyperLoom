@@ -67,8 +67,13 @@ void RunTask::start(DataVector &inputs)
       std::string path = get_path(name);
       std::string filename = inputs[i]->get_filename();
       assert(!filename.empty());
-      llog->debug("Creating symlink of '{}' for input id={} filename={}",
-                  msg.map_inputs(i), task->get_inputs()[i], filename);
+      if (!task->get_inputs().empty()) {
+        llog->debug("Creating symlink of '{}' for input id={} filename={}",
+                    msg.map_inputs(i), task->get_inputs()[i], filename);
+      } else {
+          llog->debug("Creating symlink of '{}' for filename={}",
+                      msg.map_inputs(i), filename);
+      }
       if (symlink(filename.c_str(), path.c_str())) {
          log_errno_abort("symlink");
       }

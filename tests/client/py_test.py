@@ -74,6 +74,20 @@ def test_py_redirect2(loom_env):
     assert b"usr\n" in result
 
 
+def test_py_redirect3(loom_env):
+
+    def f(a):
+        return tasks.run("cat X", [(a, "X")])
+
+    loom_env.start(1)
+
+    c = tasks.const("DataData")
+    a = tasks.py_call(f, (c,))
+    result = loom_env.submit(a)
+    assert b"DataData" in result
+
+
+
 def test_py_fail_too_many_args(loom_env):
 
     def g():
