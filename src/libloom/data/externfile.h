@@ -22,6 +22,10 @@ public:
         return data;
     }
 
+    bool has_raw_data() const {
+        return true;
+    }
+
     std::string get_info();
     std::string get_filename() const;
 

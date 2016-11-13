@@ -49,7 +49,12 @@ const char * Data::get_raw_data() const
 
 std::string Data::get_filename() const
 {
-   return "";
+    return "";
+}
+
+bool Data::has_raw_data() const
+{
+    return false;
 }
 
 DataUnpacker::~DataUnpacker()

@@ -25,6 +25,10 @@ public:
         return data;
     }
 
+    bool has_raw_data() const {
+        return true;
+    }
+
     std::string get_info();
 
     char* init_empty(const std::string &work_dir, size_t size);

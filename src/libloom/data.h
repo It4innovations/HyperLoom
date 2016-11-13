@@ -47,6 +47,8 @@ public:
     /** Returns a filename if data obeject is mapped from file, empty string otherwise */
     virtual std::string get_filename() const;
 
+    virtual bool has_raw_data() const;
+
 protected:
     /** Init serialization message */
     virtual void init_message(Worker &worker, loomcomm::Data &msg) const;

@@ -12,10 +12,12 @@ LOOM_PROTOCOL_VERSION = 1
 
 
 class LoomException(Exception):
+    """Base class for Loom exceptions"""
     pass
 
 
 class TaskFailed(LoomException):
+    """Exception when scheduler informs about failure of a task"""
 
     def __init__(self, id, worker, error_msg):
         self.id = id
@@ -26,8 +28,15 @@ class TaskFailed(LoomException):
 
 
 class Client(object):
+    """The class that serves for connection to the server and submitting tasks
 
-    def __init__(self, address, port):
+    Args:
+        address (str): Address of the server
+        port(port): TCP port of the server
+
+    """
+
+    def __init__(self, address, port=9010):
         self.server_address = address
         self.server_port = port
 
@@ -49,6 +58,24 @@ class Client(object):
             self._read_symbols()
 
     def submit(self, tasks, report=None):
+        """Submits task(s) to the server and waits for results
+
+        Args:
+            tasks (Task or [Task]): Task(s) that are submitted
+            report (str or None): If it is not None than reporting is enabled
+                                  report is saved to file defined by this
+                                  argument
+        Raises:
+            loom.client.TaskFailed: When an execution of a task failes
+
+
+        Example:
+            >>> from loom.client import Client, tasks
+            >>> client = Client("server", 9010)
+            >>> task = tasks.const("Hello")
+            >>> client.submit(task)
+
+        """
         if isinstance(tasks, Task):
             single_result = True
             tasks = (tasks,)
@@ -145,6 +172,12 @@ class Client(object):
 
 
 def make_dry_report(tasks, report_filename):
+    """Creates a report without submitting to the server
+
+    Args:
+         tasks (Task or [Task]): Tasks for which the report is composed
+         report_filename (str): Filename of the resulting file
+    """
     if isinstance(tasks, Task):
         tasks = (tasks,)
 
