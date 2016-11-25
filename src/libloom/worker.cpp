@@ -90,7 +90,7 @@ void Worker::register_basic_tasks()
 
     // RawData
     add_task_factory<ConstTask>("loom/data/const");
-    add_task_factory<MergeTask>("loom/data/merge");
+    add_task_factory<ThreadTaskInstance<MergeJob>>("loom/data/merge");
     add_task_factory<OpenTask>("loom/data/open");
     add_task_factory<SplitTask>("loom/data/split");
 
@@ -101,7 +101,7 @@ void Worker::register_basic_tasks()
     add_task_factory<RunTask>("loom/run/run");
 
     // Python
-    add_task_factory<PyCallTask>("loom/py/call");
+    add_task_factory<ThreadTaskInstance<PyCallJob>>("loom/py/call");
 }
 
 

@@ -27,10 +27,10 @@ static void ensure_py_init() {
 }
 
 
-void loom::PyCallTask::start(loom::DataVector &inputs)
+PyCallJob::PyCallJob(Worker &worker, Task &task)
+    : ThreadJob(worker, task)
 {
-   ensure_py_init();
-   ThreadTaskInstance::start(inputs);
+    ensure_py_init();
 }
 
 static PyObject* data_vector_to_list(const DataVector &data)
@@ -93,7 +93,7 @@ static std::string get_attr_string(PyObject *obj, const char *name)
     return result;
 }
 
-std::shared_ptr<Data> PyCallTask::run()
+std::shared_ptr<Data> PyCallJob::run()
 {
    // Obtain GIL
    PyGILState_STATE gstate;
@@ -118,8 +118,8 @@ std::shared_ptr<Data> PyCallTask::run()
    assert(PyCallable_Check(call_fn));
 
    PyObject *config_data = PyBytes_FromStringAndSize(
-               task->get_config().c_str(),
-               task->get_config().size());
+               task.get_config().c_str(),
+               task.get_config().size());
    assert(config_data);
 
    PyObject *py_inputs = data_vector_to_list(inputs);
@@ -144,7 +144,7 @@ std::shared_ptr<Data> PyCallTask::run()
        assert(ptr);
 
        auto output = std::make_shared<RawData>();
-       output->init_from_mem(worker.get_work_dir(), ptr, size);
+       output->init_from_mem(work_dir, ptr, size);
 
        Py_DECREF(result);
        PyGILState_Release(gstate);
@@ -156,7 +156,7 @@ std::shared_ptr<Data> PyCallTask::run()
        assert(ptr);
 
        auto output = std::make_shared<RawData>();
-       output->init_from_mem(worker.get_work_dir(), ptr, size);
+       output->init_from_mem(work_dir, ptr, size);
 
        Py_DECREF(result);
        PyGILState_Release(gstate);
@@ -185,9 +185,9 @@ std::shared_ptr<Data> PyCallTask::run()
    }
 }
 
-void PyCallTask::set_python_error()
+void PyCallJob::set_python_error()
 {
-   loom::llog->error("Python error in task id={}", task->get_id());
+   loom::llog->error("Python error in task id={}", task.get_id());
    PyObject *excType, *excValue, *excTraceback;
    PyErr_Fetch(&excType, &excValue, &excTraceback);
    assert(excType);

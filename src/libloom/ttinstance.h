@@ -3,6 +3,7 @@
 
 #include "data.h"
 #include "taskinstance.h"
+#include "worker.h"
 
 #include<uv.h>
 
@@ -13,45 +14,56 @@
 namespace loom {
 
 /** Base class for task instance with thread support */
-class ThreadTaskInstance : public TaskInstance
+template<typename T> class ThreadTaskInstance : public TaskInstance
 {
 public:
 
     ThreadTaskInstance(Worker &worker, std::unique_ptr<Task> task)
-        : TaskInstance(worker, std::move(task))
+        : TaskInstance(worker, std::move(task)), job(worker, *this->task)
     {
         work.data = this;
     }
 
-    virtual ~ThreadTaskInstance();
-    
-    virtual void start(DataVector &input_data);
+    virtual void start(DataVector &input_data) {
+        job.set_inputs(input_data);
+        if (job.check_run_in_thread()) {
+            UV_CHECK(uv_queue_work(worker.get_loop(), &work, _work_cb, _after_work_cb));
+        } else {
+            _work_cb(&work);
+            _after_work_cb(&work, 0);
+        }
+    }
 
-    /** Method to decide if input is sufficiently big to use thread
-     *  default implementation just returns true
-     */
-    virtual bool run_in_thread(DataVector &input_data);
-
-protected:    
-
-    /** This method is called outside of main thread if run_in_thread has returned true
-     *  IMPORTANT: It can read only member variable "inputs" and calls methods
-     *  "set_error" or "set_redirect"
-     *  All other things are not thread-safe!
-     *  In case of error, call set_error and return nullptr
-     */
-    virtual std::shared_ptr<Data> run() = 0;
-    void set_error(const std::string &error_message);
-    void set_redirect(std::unique_ptr<TaskDescription> tredirect);
-
-    DataVector inputs;
+protected:
     uv_work_t work;
+    T job;
     std::shared_ptr<Data> result;
-    std::string error_message;
-    std::unique_ptr<TaskDescription> task_redirect;
 
-    static void _work_cb(uv_work_t *req);
-    static void _after_work_cb(uv_work_t *req, int status);
+    static void _work_cb(uv_work_t *req)
+    {
+        ThreadTaskInstance *ttinstance = static_cast<ThreadTaskInstance*>(req->data);
+        ttinstance->result = ttinstance->job.run();
+    }
+
+    static void _after_work_cb(uv_work_t *req, int status)
+    {
+        UV_CHECK(status);
+        ThreadTaskInstance *ttinstance = static_cast<ThreadTaskInstance*>(req->data);
+        bool redirect = ttinstance->job.get_task_redirect();
+        const std::string &err = ttinstance->job.get_error_message();
+        if (err.empty()) {
+            if (ttinstance->result && !redirect) {
+                ttinstance->finish(ttinstance->result);
+            } else if (!ttinstance->result && redirect) {
+                ttinstance->redirect(std::move(ttinstance->job.get_task_redirect()));
+            } else {
+                 ttinstance->fail("ThreadTaskInstace::run returned nullptr or incosistent returned values");
+            }
+        } else {
+            ttinstance->fail(err);
+        }
+    }
+
 };
 
 }

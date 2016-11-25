@@ -21,11 +21,11 @@ void ConstTask::start(DataVector &inputs)
 
 /** If there are more then 50 input or size is bigger then 200kB,
  *  then merge task is run in thread */
-bool MergeTask::run_in_thread(DataVector &input_data)
+bool MergeJob::check_run_in_thread()
 {
     const size_t SIZE_LIMIT = 200 * 1024;
 
-    if (input_data.size() > 50) {
+    if (inputs.size() > 50) {
         return true;
     }
     size_t size = 0;
@@ -38,20 +38,21 @@ bool MergeTask::run_in_thread(DataVector &input_data)
     return false;
 }
 
-std::shared_ptr<Data> MergeTask::run() {
+std::shared_ptr<Data> MergeJob::run() {
     size_t size = 0;
     for (auto& data : inputs) {
         size += data->get_size();
     }
 
-    const std::string &config = task->get_config();
+    const std::string &config = task.get_config();
+
     if (inputs.size() > 1) {
         size += (inputs.size() - 1) * config.size();
     }
 
     std::shared_ptr<Data> output = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*output);
-    char *dst = data.init_empty(worker.get_work_dir(), size);
+    char *dst = data.init_empty(work_dir, size);
 
     if (config.empty()) {
         for (auto& data : inputs) {

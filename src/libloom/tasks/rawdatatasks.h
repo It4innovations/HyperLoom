@@ -2,6 +2,7 @@
 #define LIBLOOM_TASKS_RAWDATATASKS_H
 
 #include "libloom/ttinstance.h"
+#include "libloom/threadjob.h"
 
 namespace loom {
 
@@ -13,13 +14,12 @@ public:
 };
 
 
-class MergeTask : public loom::ThreadTaskInstance
+class MergeJob : public loom::ThreadJob
 {
 public:
-    using ThreadTaskInstance::ThreadTaskInstance;
+    using ThreadJob::ThreadJob;
 
-    bool run_in_thread(loom::DataVector &input_data);
-protected:
+    bool check_run_in_thread();
     std::shared_ptr<loom::Data> run();
 };
 

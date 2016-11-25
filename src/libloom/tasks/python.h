@@ -1,14 +1,15 @@
 #ifndef LIBLOOM_TASKS_PYTHON_H
 #define LIBLOOM_TASKS_PYTHON_H
 
-#include "libloom/ttinstance.h"
+#include "libloom/threadjob.h"
 
 namespace loom {
 
-class PyCallTask : public loom::ThreadTaskInstance
+class PyCallJob : public loom::ThreadJob
 {
 public:
-    using ThreadTaskInstance::ThreadTaskInstance;
+    PyCallJob(Worker &worker, Task &task);
+
     void start(loom::DataVector &inputs);
     std::shared_ptr<loom::Data> run();
 private:
