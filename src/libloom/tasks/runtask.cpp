@@ -211,7 +211,7 @@ void RunTask::_on_close(uv_handle_t *handle)
    if (output_size == 1) {
       std::shared_ptr<Data> data_ptr = std::make_shared<RawData>();
       RawData& data = static_cast<RawData&>(*data_ptr);
-      data.assign_filename(task->worker);
+      data.assign_filename(task->worker.get_work_dir());
 
       std::string path = task->get_path(msg.map_outputs(0));
       std::string data_path = data.get_filename();
@@ -222,7 +222,7 @@ void RunTask::_on_close(uv_handle_t *handle)
                         path, data_path);
          log_errno_abort("rename");
       }
-      data.init_from_file(task->worker);
+      data.init_from_file(task->worker.get_work_dir());
       task->finish(data_ptr);
       return;
    }
@@ -234,7 +234,7 @@ void RunTask::_on_close(uv_handle_t *handle)
 
       items[i] = std::make_shared<RawData>();
       RawData& data = static_cast<RawData&>(*items[i]);
-      data.assign_filename(task->worker);
+      data.assign_filename(task->worker.get_work_dir());
       std::string path = task->get_path(msg.map_outputs(i));
       std::string data_path = data.get_filename();
       llog->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
@@ -245,7 +245,7 @@ void RunTask::_on_close(uv_handle_t *handle)
                         path, data_path);
          log_errno_abort("rename");
       }
-      data.init_from_file(task->worker);
+      data.init_from_file(task->worker.get_work_dir());
    }
 
    std::shared_ptr<Data> output = std::make_shared<Array>(output_size, std::move(items));

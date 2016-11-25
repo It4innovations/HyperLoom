@@ -3,6 +3,7 @@
 #include "../data/rawdata.h"
 #include "../log.h"
 #include "../compat.h"
+#include "../worker.h"
 #include "python_wrapper.h"
 
 #include <Python.h>
@@ -143,7 +144,7 @@ std::shared_ptr<Data> PyCallTask::run()
        assert(ptr);
 
        auto output = std::make_shared<RawData>();
-       output->init_from_mem(worker, ptr, size);
+       output->init_from_mem(worker.get_work_dir(), ptr, size);
 
        Py_DECREF(result);
        PyGILState_Release(gstate);
@@ -155,7 +156,7 @@ std::shared_ptr<Data> PyCallTask::run()
        assert(ptr);
 
        auto output = std::make_shared<RawData>();
-       output->init_from_mem(worker, ptr, size);
+       output->init_from_mem(worker.get_work_dir(), ptr, size);
 
        Py_DECREF(result);
        PyGILState_Release(gstate);

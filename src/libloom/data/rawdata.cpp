@@ -42,12 +42,12 @@ std::string RawData::get_type_name() const
     return RawDataUnpacker::get_type_name();
 }
 
-char* RawData::init_empty(Worker &worker, size_t size)
+char* RawData::init_empty(const std::string &work_dir, size_t size)
 {
     assert(data == nullptr);
 
     if (filename.empty()) {
-        assign_filename(worker);
+        assign_filename(work_dir);
     }
 
     this->size = size;
@@ -71,20 +71,20 @@ char* RawData::init_empty(Worker &worker, size_t size)
     return data;
 }
 
-void RawData::assign_filename(Worker &worker)
+void RawData::assign_filename(const std::string &work_dir)
 {
     assert(filename.empty());
     int file_id = file_id_counter++;
     std::stringstream s;
-    s << worker.get_work_dir() << "data/" << file_id;
+    s << work_dir << "data/" << file_id;
     filename = s.str();
 }
 
-void RawData::init_from_file(Worker &worker)
+void RawData::init_from_file(const std::string &work_dir)
 {
     assert(data == nullptr);
     if (filename.empty()) {
-        assign_filename(worker);
+        assign_filename(work_dir);
     }
     size = file_size(filename.c_str());
 }
@@ -137,16 +137,16 @@ std::string RawData::get_info()
     return "RawData file=" + filename;
 }
 
-void RawData::init_from_string(Worker &worker, const std::string &str)
+void RawData::init_from_string(const std::string &work_dir, const std::string &str)
 {
     auto size = str.size();
-    char *mem = init_empty(worker, size);
+    char *mem = init_empty(work_dir, size);
     memcpy(mem, str.c_str(), size);
 }
 
-void RawData::init_from_mem(Worker &worker, const void *ptr, size_t size)
+void RawData::init_from_mem(const std::string &work_dir, const void *ptr, size_t size)
 {
-    char *mem = init_empty(worker, size);
+    char *mem = init_empty(work_dir, size);
     memcpy(mem, ptr, size);
 }
 
@@ -165,7 +165,7 @@ bool RawDataUnpacker::init(Worker &worker, Connection &connection, const loomcom
     this->data = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*this->data);
     size_t size = msg.size();
-    pointer = data.init_empty(worker, size);
+    pointer = data.init_empty(worker.get_work_dir(), size);
     if (size == 0) {
         return true;
     }

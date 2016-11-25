@@ -5,6 +5,7 @@
 #include "libloom/data/index.h"
 #include "libloom/data/externfile.h"
 #include "libloom/log.h"
+#include "libloom/worker.h"
 
 #include <string.h>
 
@@ -14,7 +15,7 @@ using namespace loom;
 void ConstTask::start(DataVector &inputs)
 {
     auto output = std::make_shared<RawData>();
-    output->init_from_string(worker, task->get_config());
+    output->init_from_string(worker.get_work_dir(), task->get_config());
     finish(std::static_pointer_cast<Data>(output));
 }
 
@@ -50,7 +51,7 @@ std::shared_ptr<Data> MergeTask::run() {
 
     std::shared_ptr<Data> output = std::make_shared<RawData>();
     RawData &data = static_cast<RawData&>(*output);
-    char *dst = data.init_empty(worker, size);
+    char *dst = data.init_empty(worker.get_work_dir(), size);
 
     if (config.empty()) {
         for (auto& data : inputs) {

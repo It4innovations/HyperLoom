@@ -48,7 +48,7 @@ std::shared_ptr<Data> Index::get_at_index(size_t index)
     size_t size = indices[index + 1] - addr;
 
     auto data = std::make_shared<RawData>();
-    char *p2 = data->init_empty(worker, size);
+    char *p2 = data->init_empty(worker.get_work_dir(), size);
     memcpy(p2, p1, size);
     return data;
 }
@@ -76,7 +76,7 @@ std::shared_ptr<Data> Index::get_slice(size_t from, size_t to)
     size_t size = to_addr - from_addr;
 
     auto data = std::make_shared<RawData>();
-    char *p2 = data->init_empty(worker, size);
+    char *p2 = data->init_empty(worker.get_work_dir(), size);
     memcpy(p2, p1, size);
     return data;
 }

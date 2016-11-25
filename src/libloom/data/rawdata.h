@@ -27,11 +27,11 @@ public:
 
     std::string get_info();
 
-    char* init_empty(Worker &worker, size_t size);
-    void init_from_string(Worker &worker, const std::string &str);
-    void init_from_mem(Worker &worker, const void *ptr, size_t size);
-    void assign_filename(Worker &worker);
-    void init_from_file(Worker &worker);
+    char* init_empty(const std::string &work_dir, size_t size);
+    void init_from_string(const std::string &work_dir, const std::string &str);
+    void init_from_mem(const std::string &work_dir, const void *ptr, size_t size);
+    void init_from_file(const std::string &work_dir);
+    void assign_filename(const std::string &work_dir);
 
     std::string get_filename() const;
 
