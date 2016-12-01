@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "log.h"
 #include "types.h"
+#include "config.h"
 
 #include "data/rawdata.h"
 #include "data/array.h"
@@ -22,18 +23,25 @@ using namespace loom;
 
 
 Worker::Worker(uv_loop_t *loop,
-               const std::string &server_address,
-               int server_port,
-               const std::string &work_dir_root)
+               const Config &config)
     : loop(loop),
       server_conn(*this),
-      server_port(server_port)
+      server_port(config.get_port())
 {
+    spdlog::set_pattern("%H:%M:%S [%l] %v");
+    if (config.get_debug()) {
+        spdlog::set_level(spdlog::level::debug);
+    } else {
+        spdlog::set_level(spdlog::level::info);
+    }
+    loom::llog->info("New worker; listening on port {}", config.get_port());
+
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     UV_CHECK(uv_tcp_init(loop, &listen_socket));
     listen_socket.data = this;
     start_listen();
 
+    auto &server_address = config.get_server_address();
     if (!server_address.empty()) {
         llog->info("Connecting to server {}:{}", server_address, server_port);
         uv_getaddrinfo_t* handle = new uv_getaddrinfo_t;
@@ -43,9 +51,11 @@ Worker::Worker(uv_loop_t *loop,
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_STREAM;
         UV_CHECK(uv_getaddrinfo(
-            loop, handle, _on_getaddrinfo, server_address.c_str(), "80", &hints));
+            loop, handle, _on_getaddrinfo,
+            server_address.c_str(), "80", &hints));
     }
 
+    auto &work_dir_root = config.get_work_dir();
     if (!work_dir_root.empty()) {
         std::stringstream s;
         s << work_dir_root;
@@ -76,8 +86,7 @@ Worker::Worker(uv_loop_t *loop,
     add_unpacker<RawDataUnpacker>();
     add_unpacker<ArrayUnpacker>();
     add_unpacker<IndexUnpacker>();
-
-    resource_cpus = 1;
+    resource_cpus = config.get_cpus();
 }
 
 void Worker::register_basic_tasks()

@@ -18,6 +18,7 @@ namespace loom {
 
 class Worker;
 class DataUnpacker;
+class Config;
 
 /** Class representing connection to the server */
 class ServerConnection : public SimpleConnectionCallback {
@@ -43,10 +44,7 @@ class Worker {
     friend class ServerConnection;
 
 public:
-    Worker(uv_loop_t* loop,
-           const std::string& server_address,
-           int server_port,
-           const std::string& work_dir_root);
+    Worker(uv_loop_t* loop, const Config &config);
 
     uv_loop_t *get_loop() {
         return loop;

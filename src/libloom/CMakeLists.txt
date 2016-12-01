@@ -53,6 +53,8 @@ add_library(libloom
             log.h
             log.cpp
             types.h
+            config.cpp
+            config.h
             utils.h
             utils.cpp)
 
