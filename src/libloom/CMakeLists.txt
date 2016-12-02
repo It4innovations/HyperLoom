@@ -59,4 +59,9 @@ add_library(libloom
             utils.cpp)
 
 target_include_directories(libloom PUBLIC ${PROJECT_SOURCE_DIR}/src)
-
+install(TARGETS libloom
+        ARCHIVE DESTINATION lib)
+install(
+    DIRECTORY ${CMAKE_SOURCE_DIR}/src/libloom
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h*")
