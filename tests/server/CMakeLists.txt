@@ -8,7 +8,7 @@ add_executable(server-test
                test_scheduler.cpp
                main.cpp)
 
-target_link_libraries(server-test Catch libloom ${LIBUV_LIBRARY} pthread)
+target_link_libraries(server-test Catch libloomnet libloom ${LIBUV_LIBRARY} pthread)
 target_link_libraries(server-test ${LPSOLVE_LIBRARY} ${COLAMD_LIBRARY} dl)
 target_link_libraries(server-test ${PROTOBUF_LIBRARIES})
 

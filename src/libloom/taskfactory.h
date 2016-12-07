@@ -3,7 +3,7 @@
 
 #include "data.h"
 #include "task.h"
-#include "compat.h"
+#include "libloomnet/compat.h"
 
 #include<uv.h>
 

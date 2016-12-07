@@ -5,8 +5,8 @@
   In the current version it provides std::make_unique
 */
 
-#ifndef LIBLOOM_COMPAT_H
-#define LIBLOOM_COMPAT_H
+#ifndef LIBLOOMNET_COMPAT_H
+#define LIBLOOMNET_COMPAT_H
 
 #include <cstddef>
 #include <memory>

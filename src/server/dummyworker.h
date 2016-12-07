@@ -6,7 +6,9 @@
 #include <memory>
 #include <vector>
 
-#include <libloom/connection.h>
+#include <libloomnet/listener.h>
+#include <libloomnet/socket.h>
+#include <libloomnet/sendbuffer.h>
 #include <libloom/types.h>
 
 class Server;
@@ -25,7 +27,11 @@ public:
 
     std::string get_address() const;
     int get_listen_port() const {
-        return listen_port;
+        return listener.get_port();
+    }
+
+    Server& get_server() {
+        return server;
     }
 
 protected:    
@@ -33,36 +39,30 @@ protected:
 
     std::vector<std::unique_ptr<DWConnection>> connections;
 
-    uv_tcp_t listen_socket;
-    int listen_port;
-
-    static void _on_new_connection(uv_stream_t *stream, int status);
+    loom::net::Listener listener;
 };
 
-class DWConnection : public loom::SimpleConnectionCallback
+class DWConnection
 {
 public:
     DWConnection(DummyWorker &worker);
     ~DWConnection();
 
     std::string get_peername() {
-        return connection.get_peername();
+        return socket.get_peername();
     }
 
-    void accept(uv_tcp_t *listen_socket) {
-        connection.accept(listen_socket);
-    }
+    void accept(loom::net::Listener &listener);
+
 
 protected:
 
     void on_message(const char *buffer, size_t size);
-    void on_data_chunk(const char *buffer, size_t size);
-    void on_data_finish();
-    void on_close();
 
     DummyWorker &worker;
-    std::unique_ptr<loom::SendBuffer> send_buffer;
-    char *pointer;
+    loom::net::Socket socket;
+    std::unique_ptr<loom::net::SendBuffer> send_buffer;
+    size_t remaining_messages;
     bool registered;
 };
 

@@ -18,7 +18,7 @@ public:
     }
 
     const std::string& get_work_dir() const {
-        return server_address;
+        return work_dir;
     }
 
     int get_port() const {

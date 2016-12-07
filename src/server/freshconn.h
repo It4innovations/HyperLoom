@@ -1,14 +1,15 @@
 #ifndef LOOM_SERVER_FRESHCONN
 #define LOOM_SERVER_FRESHCONN
 
-#include "libloom/connection.h"
+#include "libloomnet/socket.h"
+#include "libloomnet/listener.h"
 
 class Server;
 
 /**
  * A new connection before registration (it is not determined if it is client or worker)
  */
-class FreshConnection : public loom::ConnectionCallback {
+class FreshConnection {
 
 public:
     FreshConnection(Server &server);
@@ -17,14 +18,13 @@ public:
         return server;
     }
 
-    void accept(uv_tcp_t* listen_socket);
+    void accept(loom::net::Listener &listener);
 
 protected:
     void on_message(const char *buffer, size_t size);
-    void on_close();
 
     Server &server;
-    std::unique_ptr<loom::Connection> connection;
+    std::unique_ptr<loom::net::Socket> socket;
 };
 
 #endif // LOOM_SERVER_FRESHCONN

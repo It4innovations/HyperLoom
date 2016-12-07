@@ -2,7 +2,7 @@
 
 #include "src/server/server.h"
 
-#include "libloom/compat.h"
+#include "libloomnet/compat.h"
 #include "libloom/loomplan.pb.h"
 
 #include <set>

@@ -2,7 +2,7 @@
 #include "scheduler.h"
 #include "workerconn.h"
 
-#include "libloom/compat.h"
+#include "libloomnet/compat.h"
 #include "libloom/log.h"
 
 #include <sstream>

@@ -2,11 +2,13 @@
 #include "dummyworker.h"
 #include "server.h"
 
-#include <libloom/compat.h>
+#include <libloomnet/compat.h>
+#include <libloomnet/pbutils.h>
+
 #include <libloom/utils.h>
 #include <libloom/log.h>
 #include <libloom/loomcomm.pb.h>
-#include <libloom/sendbuffer.h>
+
 
 #include <sstream>
 #include <assert.h>
@@ -14,52 +16,43 @@
 using namespace loom;
 
 DummyWorker::DummyWorker(Server &server)
-    : server(server), listen_port(-1)
+   : server(server)
 {
-    uv_loop_t *loop = server.get_loop();
-    if (loop == nullptr) {
-       return;
-    }
-    UV_CHECK(uv_tcp_init(server.get_loop(), &listen_socket));
-    listen_socket.data = this;
+
 }
 
 void DummyWorker::start_listen()
 {
-    struct sockaddr_in addr;
-    UV_CHECK(uv_ip4_addr("0.0.0.0", 0, &addr));
-
-    UV_CHECK(uv_tcp_bind(&listen_socket, (const struct sockaddr *) &addr, 0));
-    UV_CHECK(uv_listen((uv_stream_t *) &listen_socket, 10, _on_new_connection));
-
-    struct sockaddr_in sockname;
-    int namelen = sizeof(sockname);
-    uv_tcp_getsockname(&listen_socket, (sockaddr*) &sockname, &namelen);
-    listen_port = ntohs(sockname.sin_port);
+   uv_loop_t *loop = server.get_loop();
+   if (loop == nullptr) {
+      return;
+   }
+   listener.start(loop, 0, [this]() {
+      auto connection = std::make_unique<DWConnection>(*this);
+      connection->accept(listener);
+      llog->debug("Worker data connection from {}", connection->get_peername());
+      connections.push_back(std::move(connection));
+   });
 }
 
 std::string DummyWorker::get_address() const
 {
-    std::stringstream s;
-    s << "!:" << get_listen_port();
-    return s.str();
-
-}
-
-void DummyWorker::_on_new_connection(uv_stream_t *stream, int status)
-{
-    UV_CHECK(status);
-    DummyWorker *worker = static_cast<DummyWorker*>(stream->data);
-    auto connection = std::make_unique<DWConnection>(*worker);
-    connection->accept(&worker->listen_socket);
-    llog->debug("Worker data connection from {}", connection->get_peername());
-    worker->connections.push_back(std::move(connection));
+   std::stringstream s;
+   s << "!:" << get_listen_port();
+   return s.str();
 }
 
 DWConnection::DWConnection(DummyWorker &worker)
-    : SimpleConnectionCallback(worker.server.get_loop()), worker(worker), registered(false)
+   : worker(worker), socket(worker.get_server().get_loop()), remaining_messages(0), registered(false)
 {
+   this->socket.set_on_close([this]() {
+      llog->critical("Worker closing data connection from {}", this->socket.get_peername());
+      assert(0);
+   });
 
+   this->socket.set_on_message([this](const char *buffer, size_t size) {
+      on_message(buffer, size);
+   });
 }
 
 DWConnection::~DWConnection()
@@ -67,64 +60,49 @@ DWConnection::~DWConnection()
 
 }
 
+void DWConnection::accept(loom::net::Listener &listener)
+{
+   listener.accept(socket);
+}
+
 void DWConnection::on_message(const char *buffer, size_t size)
 {
-    if (!registered) {
-        // This is first message: Announce, we do not care, so we drop it
-        registered = true;
-        return;
-    }
-    assert(this->send_buffer.get() == nullptr);
+   if (!registered) {
+      // This is first message: Announce, we do not care, so we drop it
+      registered = true;
+      return;
+   }
 
-    send_buffer = std::make_unique<SendBuffer>();
+   if (remaining_messages) {
+      auto item = std::make_unique<net::MemItemWithSz>(size);
+      memcpy(item->get_ptr(), buffer, size);
+      send_buffer->add(std::move(item));
 
-    loomcomm::DataPrologue msg;
-    msg.ParseFromArray(buffer, size);
+      remaining_messages--;
+      if (remaining_messages == 0) {
+         llog->debug("DummyWorker: Resending data to client");
+         auto& server = worker.get_server();
+         assert(server.has_client_connection());
+         server.get_client_connection().send(std::move(send_buffer));
+      }
+      return;
+   }
 
-    auto data_id = msg.id();
-    auto client_id = worker.server.translate_to_client_id(data_id);
-    msg.set_id(client_id);
+   assert(!send_buffer);
+   send_buffer = std::make_unique<loom::net::SendBuffer>();
 
-    loomcomm::ClientMessage cmsg;
-    cmsg.set_type(loomcomm::ClientMessage_Type_DATA);
-    *cmsg.mutable_data() = msg;
+   loomcomm::DataHeader msg;
+   assert(msg.ParseFromArray(buffer, size));
 
-    send_buffer->add(cmsg);
+   remaining_messages = msg.n_messages();
 
-    assert(msg.has_data_size());
-    size_t data_size = msg.data_size();
-    llog->debug("Fetching data id={} data_size={} client_id={}", data_id, data_size, client_id);
+   auto data_id = msg.id();
+   auto client_id = worker.server.translate_to_client_id(data_id);
+   msg.set_id(client_id);
+   llog->debug("DummyWorker: Capturing data for client data_id={} (messages={})", data_id, remaining_messages);
 
-    auto mem = std::make_unique<char[]>(data_size);
-    pointer = mem.get();
-    send_buffer->add(std::move(mem), data_size);
-
-    connection.set_raw_read(data_size);
-}
-
-void DWConnection::on_data_chunk(const char *buffer, size_t size)
-{
-    memcpy(pointer, buffer, size);
-    pointer += size;
-}
-
-void DWConnection::on_data_finish()
-{
-    llog->debug("Resending data to client");
-    worker.server.get_client_connection().send_buffer(std::move(send_buffer));
-    if (worker.server.get_task_manager().is_plan_finished()) {
-        loom::llog->info("Plan is finished");
-    }
-}
-
-void DWConnection::on_close()
-{
-    llog->debug("Worker closing data connection from {}", connection.get_peername());
-    auto& connections = worker.connections;
-    for (auto i = connections.begin(); i != connections.begin(); i++) {
-        if ((*i).get() == this) {
-            connections.erase(i);
-        }
-    }
-    assert(0);
+   loomcomm::ClientMessage cmsg;
+   cmsg.set_type(loomcomm::ClientMessage_Type_DATA);
+   *cmsg.mutable_data() = msg;
+   send_buffer->add(net::message_to_item(cmsg));
 }

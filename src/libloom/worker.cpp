@@ -15,6 +15,9 @@
 #include "tasks/runtask.h"
 #include "tasks/python.h"
 
+#include "libloomnet/sendbuffer.h"
+#include "libloomnet/pbutils.h"
+
 #include <stdlib.h>
 #include <sstream>
 #include <unistd.h>
@@ -25,7 +28,7 @@ using namespace loom;
 Worker::Worker(uv_loop_t *loop,
                const Config &config)
     : loop(loop),
-      server_conn(*this),
+      server_conn(loop),
       server_port(config.get_port())
 {
     spdlog::set_pattern("%H:%M:%S [%l] %v");
@@ -37,9 +40,13 @@ Worker::Worker(uv_loop_t *loop,
     loom::llog->info("New worker; listening on port {}", config.get_port());
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
-    UV_CHECK(uv_tcp_init(loop, &listen_socket));
-    listen_socket.data = this;
-    start_listen();
+
+    listener.start(loop, 0, [this]() {
+        auto connection = std::make_unique<InterConnection>(*this);
+        connection->accept(listener);
+        llog->debug("Worker connection from {}", connection->get_peername());
+        add_connection(std::move(connection));
+    });
 
     auto &server_address = config.get_server_address();
     if (!server_address.empty()) {
@@ -67,7 +74,7 @@ Worker::Worker(uv_loop_t *loop,
             llog->error("Cannot get hostname, using 'nohostname'");
             strcpy(tmp, "nohostname");
         }
-        s << "worker-" << tmp << '-' << listen_port << '/';
+        s << "worker-" << tmp << '-' << listener.get_port() << '/';
         work_dir = s.str();
 
         if (make_path(work_dir.c_str(), S_IRWXU)) {
@@ -82,12 +89,35 @@ Worker::Worker(uv_loop_t *loop,
 
         llog->info("Using '{}' as working directory", work_dir);
     }
-
-    add_unpacker<RawDataUnpacker>();
-    add_unpacker<ArrayUnpacker>();
-    add_unpacker<IndexUnpacker>();
     resource_cpus = config.get_cpus();
+
+    server_conn.set_on_error([this](int error_code) {
+       llog->critical("Server connection error: {}", uv_strerror(error_code));
+       close_all();
+    });
+
+    server_conn.set_on_close([this]() {
+       llog->critical("Connection to server is closed. Terminating ...");
+       close_all();
+    });
+
+    server_conn.set_on_connect([this]() {
+        register_worker();
+    });
+
+    server_conn.set_on_message([this](const char *data, size_t size) {
+        on_message(data, size);
+    });
+
+    add_unpacker("loom/data", [this]() {
+       return std::make_unique<RawDataUnpacker>(*this);
+    });
+    add_unpacker("loom/array", [this]() {
+       return std::make_unique<ArrayUnpacker>(*this);
+    });
+    add_unpacker("loom/index", std::make_unique<IndexUnpacker>);
 }
+
 
 void Worker::register_basic_tasks()
 {
@@ -136,38 +166,6 @@ void Worker::_on_getaddrinfo(uv_getaddrinfo_t* handle, int status,
     worker->server_conn.connect(worker->server_address, worker->server_port);
 }
 
-void Worker::_on_new_connection(uv_stream_t *stream, int status)
-{
-    UV_CHECK(status);
-    Worker *worker = static_cast<Worker*>(stream->data);
-    auto connection = std::make_unique<InterConnection>(*worker);
-    connection->accept(&worker->listen_socket);
-    llog->debug("Worker connection from {}", connection->get_peername());
-    worker->add_connection(std::move(connection));
-}
-
-void Worker::start_listen()
-{
-    struct sockaddr_in addr;
-    UV_CHECK(uv_ip4_addr("0.0.0.0", 0, &addr));
-
-    UV_CHECK(uv_tcp_bind(&listen_socket, (const struct sockaddr *) &addr, 0));
-    UV_CHECK(uv_listen((uv_stream_t *) &listen_socket, 10, _on_new_connection));
-
-    struct sockaddr_in sockname;
-    int namelen = sizeof(sockname);
-    uv_tcp_getsockname(&listen_socket, (sockaddr*) &sockname, &namelen);
-    listen_port = ntohs(sockname.sin_port);
-}
-
-/*int Worker::get_listen_port()
-{
-    struct sockaddr_in sa;
-    int name_len = sizeof(sa);
-    UV_CHECK(uv_tcp_getsockname(&listen_socket, (sockaddr *) &sa, &name_len));
-    return ntohs(sa.sin_port);
-}*/
-
 void Worker::register_worker()
 {
     loomcomm::Register msg;
@@ -181,11 +179,11 @@ void Worker::register_worker()
         msg.add_task_types(factory->get_name());
     }
 
-    for (auto& factory : unregistered_unpack_factories) {
-        msg.add_data_types(factory->get_type_name());
+    for (auto& pair : unregistered_unpack_ffs) {
+        msg.add_data_types(pair.first);
     }
 
-    server_conn.send_message(msg);
+    loom::net::send_message(server_conn, msg);
 }
 
 void Worker::new_task(std::unique_ptr<Task> task)
@@ -219,16 +217,6 @@ void Worker::start_task(std::unique_ptr<Task> task)
     t->start(input_data);
     resource_cpus -= 1;
 }
-
-/*void Worker::new_task(const Task &task)
-{
-    auto task_type = task.get_task_type();
-    assert(task_type >= 0 && task_type < (int) task_factories.size());
-    auto task_instance = task_factories[task_type]->make_instance(*this, task);
-    TaskInstance *t = task_instance.get();
-    active_tasks.push_back(std::move(task_instance));
-    t->start();
-}*/
 
 void Worker::publish_data(Id id, const std::shared_ptr<Data> &data)
 {
@@ -269,7 +257,7 @@ InterConnection& Worker::get_connection(const std::string &address)
 
 void Worker::close_all()
 {
-    uv_close((uv_handle_t*) &listen_socket, NULL);
+    listener.close();
     server_conn.close();
     for (auto& pair : connections) {
         pair.second->close();
@@ -343,16 +331,16 @@ void Worker::set_cpus(int value)
     llog->info("Number of CPUs for worker: {}", value);
 }
 
-void Worker::add_unpacker(std::unique_ptr<UnpackFactory> factory)
+void Worker::add_unpacker(const std::string &symbol, const UnpackFactoryFn &unpacker)
 {
-    unregistered_unpack_factories.push_back(std::move(factory));
+    unregistered_unpack_ffs[symbol] = unpacker;
 }
 
-std::unique_ptr<DataUnpacker> Worker::unpack(DataTypeId id)
+std::unique_ptr<DataUnpacker> Worker::get_unpacker(DataTypeId id)
 {
-    auto i = unpack_factories.find(id);
-    assert(i != unpack_factories.end());
-    return i->second->make_unpacker();
+    auto i = unpack_ffs.find(id);
+    assert(i != unpack_ffs.end());
+    return i->second();
 }
 
 void Worker::on_dictionary_updated()
@@ -364,12 +352,12 @@ void Worker::on_dictionary_updated()
     }
     unregistered_task_factories.clear();
 
-    for (auto &f : unregistered_unpack_factories) {
-        loom::Id id = dictionary.find_symbol_or_fail(f->get_type_name());
-        llog->debug("Registering unpack_factory: {} = {}", f->get_type_name(), id);
-        unpack_factories[id] = std::move(f);
+    for (auto &pair : unregistered_unpack_ffs) {
+        loom::Id id = dictionary.find_symbol_or_fail(pair.first);
+        llog->debug("Registering unpack_factory: {} = {}", pair.first, id);
+        unpack_ffs[id] = pair.second;
     }
-    unregistered_unpack_factories.clear();
+    unregistered_unpack_ffs.clear();
 }
 
 void Worker::check_waiting_tasks()
@@ -413,7 +401,7 @@ void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
         msg.set_type(loomcomm::WorkerResponse_Type_FAILED);
         msg.set_id(task.get_id());
         msg.set_error_msg(error_msg);
-        server_conn.send_message(msg);
+        send_message(server_conn, msg);
     }
     remove_task(task);
 }
@@ -448,44 +436,19 @@ void Worker::task_finished(TaskInstance &task, Data &data)
         msg.set_id(task.get_id());
         msg.set_size(data.get_size());
         msg.set_length(data.get_length());
-        server_conn.send_message(msg);
+        send_message(server_conn, msg);
     }
     remove_task(task);
     check_ready_tasks();
 }
 
-void Worker::send_data(const std::string &address, Id id, std::shared_ptr<Data> &data, bool with_size)
+void Worker::send_data(const std::string &address, Id id, std::shared_ptr<Data> &data)
 {
     auto &connection = get_connection(address);;
-    connection.send(id, data, with_size);
+    connection.send(id, data);
 }
 
-ServerConnection::ServerConnection(Worker &worker)
-    : SimpleConnectionCallback(worker.get_loop()),
-      worker(worker)
-{
-
-}
-
-void ServerConnection::on_connection()
-{
-    connection.start_read();
-    worker.register_worker();
-}
-
-void ServerConnection::on_close()
-{
-    llog->critical("Connection to server is closed. Terminating ...");
-    worker.close_all();
-}
-
-void ServerConnection::on_error(int error_code)
-{
-    llog->critical("Server connection error: {}", uv_strerror(error_code));
-    connection.close();
-}
-
-void ServerConnection::on_message(const char *data, size_t size)
+void Worker::on_message(const char *data, size_t size)
 {
     loomcomm::WorkerCommand msg;
     assert(msg.ParseFromArray(data, size));
@@ -500,33 +463,31 @@ void ServerConnection::on_message(const char *data, size_t size)
         for (int i = 0; i < msg.task_inputs_size(); i++) {
             task->add_input(msg.task_inputs(i));
         }
-        worker.new_task(std::move(task));
+        new_task(std::move(task));
         break;
     }
     case loomcomm::WorkerCommand_Type_REMOVE: {
-        worker.remove_data(msg.id());
+        remove_data(msg.id());
         break;
     }
     case loomcomm::WorkerCommand_Type_SEND: {
         auto& address = msg.address();
         /* "!" means address to server, so we replace the sign to proper address */
         if (address.size() > 2 && address[0] == '!' && address[1] == ':') {
-            msg.set_address(worker.get_server_address() + ":" + address.substr(2, std::string::npos));
+            msg.set_address(get_server_address() + ":" + address.substr(2, std::string::npos));
         }
         llog->debug("Sending data id={} to {}", msg.id(), msg.address());
-        bool with_size = msg.has_with_size() && msg.with_size();
-        assert(worker.send_data(msg.address(), msg.id(), with_size));
+        assert(send_data(msg.address(), msg.id()));
         break;
     }
     case loomcomm::WorkerCommand_Type_DICTIONARY: {
         auto count = msg.symbols_size();
         llog->debug("New dictionary ({} symbols)", count);
-        Dictionary &dictionary = worker.get_dictionary();
+        Dictionary &dictionary = get_dictionary();
         for (int i = 0; i < count; i++) {
             dictionary.find_or_create(msg.symbols(i));
         }
-        worker.on_dictionary_updated();
-
+        on_dictionary_updated();
     } break;
     default:
         llog->critical("Invalid message");

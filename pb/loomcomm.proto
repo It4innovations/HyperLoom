@@ -43,7 +43,6 @@ message WorkerCommand {
 
 	// SEND
 	optional string address = 10;
-	optional bool with_size = 11;
 
 	// DICTIONARY
 	repeated string symbols = 100;
@@ -69,18 +68,10 @@ message Announce {
 	required int32 port = 1;
 }
 
-message DataPrologue {
+message DataHeader {
 	required int32 id = 1;
-	optional uint64 data_size = 3;
-}
-
-message Data
-{
-	required int32 type_id = 1;
-	required uint64 size = 2;
-	optional uint64 length = 3;
-	optional uint64 arg0_u64 = 8;
-	optional uint64 arg1_u64 = 9;
+  required int32 type_id = 3;
+	required int64 n_messages = 2;
 }
 
 message Event {
@@ -110,7 +101,7 @@ message ClientMessage {
 		DICTIONARY = 4;
 	}
 	required Type type = 1;
-	optional DataPrologue data = 2;
+	optional DataHeader data = 2;
 	optional Event event = 3;
 	optional Error error = 4;
 	repeated string symbols = 5;

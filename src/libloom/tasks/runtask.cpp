@@ -6,6 +6,7 @@
 #include "libloom/data/array.h"
 #include "libloom/log.h"
 #include "loomrun.pb.h"
+#include "libloom/utils.h"
 
 #include <sstream>
 #include <fstream>
@@ -83,7 +84,7 @@ void RunTask::start(DataVector &inputs)
          assert(stdio[0].flags == UV_IGNORE);
          int stdin_fd = ::open(path.c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
          if (stdin_fd < 0) {
-            log_errno_abort("open +in:");
+            log_errno_abort("open +in");
          }
          stdio[0].flags = UV_INHERIT_FD;
          stdio[0].data.fd = stdin_fd;

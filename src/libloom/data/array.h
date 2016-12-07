@@ -2,12 +2,14 @@
 #define LIBLOOM_DATA_ARRAY_H
 
 #include "../data.h"
+#include "../unpacking.h"
 
 namespace loom {
 
 class Array : public Data {
 public:    
     Array(size_t length, std::unique_ptr<std::shared_ptr<Data>[]> items);
+    Array(const DataVector &items);
     ~Array();
 
     size_t get_length() {
@@ -22,9 +24,10 @@ public:
     std::shared_ptr<Data>& get_ref_at_index(size_t index);
 
     std::string get_type_name() const;
+    size_t serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
 protected:
-    void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
+
     size_t length;
     std::unique_ptr<std::shared_ptr<Data>[]> items;
 };
@@ -33,30 +36,23 @@ protected:
 class ArrayUnpacker : public DataUnpacker
 {
 public:
-    ~ArrayUnpacker();
+   ArrayUnpacker(Worker &worker);
+   ~ArrayUnpacker();
 
-    bool init(Worker &worker, Connection &connection, const loomcomm::Data &msg);
-    bool on_message(Connection &connection, const char *data, size_t size);
-    void on_data_chunk(const char *data, size_t size);
-    bool on_data_finish(Connection &connection);
+   Result on_message(const char *data, size_t size);
+   Result on_stream_data(const char *data, size_t size, size_t remaining);
+   std::shared_ptr<Data> finish();
 
-    static const char* get_type_name() {
-        return "loom/array";
-    }
+   Result unpack_next();
 
-protected:
-
-    void finish();
-    bool finish_data();
-
-
-    std::unique_ptr<DataUnpacker> unpacker;
-    Worker *worker;
-    size_t index;
-    size_t length;
-    std::unique_ptr<std::shared_ptr<Data>[]> items;
-
+private:
+   std::unique_ptr<DataUnpacker> unpacker;
+   std::vector<Id> types;
+   std::unique_ptr<std::shared_ptr<Data>[]> items;
+   size_t index;
+   Worker &worker;
 };
+
 
 }
 #endif // LIBLOOM_DATA_ARRAY_H

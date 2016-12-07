@@ -2,19 +2,28 @@
 #include "server.h"
 
 
+
 #include "libloom/loomplan.pb.h"
 #include "libloom/loomcomm.pb.h"
-#include "libloom/compat.h"
+#include "libloomnet/compat.h"
+#include "libloomnet/pbutils.h"
 #include "libloom/log.h"
 
 using namespace loom;
 
 ClientConnection::ClientConnection(Server &server,
-                                   std::unique_ptr<loom::Connection> connection)
-    : server(server), connection(std::move(connection))
+                                   std::unique_ptr<loom::net::Socket> socket)
+    : server(server), socket(std::move(socket))
 {
-    this->connection->set_callback(this);
-    llog->info("Client {} connected", this->connection->get_peername());
+    this->socket->set_on_message([this](const char *buffer, size_t size) {
+        on_message(buffer, size);
+    });
+    this->socket->set_on_close([this](){
+        llog->info("Client disconnected");
+        this->server.remove_client_connection(*this);
+    });
+
+    llog->info("Client {} connected", this->socket->get_peername());
 
     // Send dictionary
     loomcomm::ClientMessage cmsg;
@@ -25,15 +34,8 @@ ClientConnection::ClientConnection(Server &server,
         std::string *s = cmsg.add_symbols();
         *s = symbol;
     }
-    auto send_buffer = std::make_unique<SendBuffer>();
-    send_buffer->add(cmsg);
-    this->connection->send_buffer(std::move(send_buffer));
+    loom::net::send_message(*this->socket, cmsg);
     // End of send dictionary
-}
-
-ClientConnection::~ClientConnection()
-{
-
 }
 
 void ClientConnection::on_message(const char *buffer, size_t size)
@@ -47,10 +49,4 @@ void ClientConnection::on_message(const char *buffer, size_t size)
     loom::Id id_base = server.new_id(plan.tasks_size());
     task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()), submit.report());
     llog->info("Plan submitted tasks={} report={}", plan.tasks_size(), submit.report());
-}
-
-void ClientConnection::on_close()
-{
-    llog->info("Client disconnected");
-    server.remove_client_connection(*this);
 }

@@ -3,7 +3,6 @@
 #include "rawdata.h"
 
 #include "../log.h"
-#include "../sendbuffer.h"
 #include "../worker.h"
 
 using namespace loom;
@@ -16,12 +15,12 @@ Index::Index(Worker &worker, std::shared_ptr<Data> &data, size_t length, std::un
 
 Index::~Index()
 {
-    llog->debug("Disposing index");
+   llog->debug("Disposing index");
 }
 
 std::string Index::get_type_name() const
 {
-    return IndexUnpacker::get_type_name();
+   return "loom/index";
 }
 
 size_t Index::get_length()
@@ -81,18 +80,13 @@ std::shared_ptr<Data> Index::get_slice(size_t from, size_t to)
     return data;
 }
 
-void Index::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t Index::serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
-    buffer.add(data_ptr, (char*) &indices[0], sizeof(size_t) * (length + 1));
-    data->serialize(worker, buffer, data);
+    llog->critical("Index::serialize_data");
+    abort();
 }
 
-IndexUnpacker::~IndexUnpacker()
-{
-
-}
-
-bool IndexUnpacker::init(Worker &worker, Connection &connection, const loomcomm::Data &msg)
+/*bool IndexUnpacker::init(Worker &worker, Connection &connection, const loomcomm::Data &msg)
 {
     this->worker = &worker;
     length = msg.length();
@@ -147,4 +141,25 @@ void IndexUnpacker::finish_data()
 {
     std::shared_ptr<Data> &inner_data = unpacker->get_data();
     data = std::make_shared<Index>(*worker, inner_data, length, std::move(indices));
+}
+*/
+
+IndexUnpacker::IndexUnpacker()
+{
+   assert(0);
+}
+
+IndexUnpacker::~IndexUnpacker()
+{
+
+}
+
+DataUnpacker::Result IndexUnpacker::on_message(const char *data, size_t size)
+{
+   assert(0);
+}
+
+std::shared_ptr<Data> IndexUnpacker::finish()
+{
+   assert(0);
 }

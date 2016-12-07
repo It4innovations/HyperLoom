@@ -2,6 +2,7 @@
 #define LIBLOOM_RAWDATA_H
 
 #include "../data.h"
+#include "../unpacking.h"
 
 namespace loom {
 
@@ -38,10 +39,10 @@ public:
     void assign_filename(const std::string &work_dir);
 
     std::string get_filename() const;
+    size_t serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
 protected:
 
-    void serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
     void open() const;
     void map(int fd, bool write) const;
 
@@ -56,21 +57,16 @@ protected:
 class RawDataUnpacker : public DataUnpacker
 {
 public:
-    ~RawDataUnpacker();
-    RawData& get_data() {
-        return *(static_cast<RawData*>(data.get()));
-    }
+   RawDataUnpacker(Worker &worker);
+   ~RawDataUnpacker();
 
-    bool init(Worker &worker, Connection &connection, const loomcomm::Data &msg);
-    void on_data_chunk(const char *data, size_t size);
-    bool on_data_finish(Connection &connection);
-
-    static const char* get_type_name() {
-        return "loom/data";
-    }
-
-protected:
-    char *pointer = nullptr;
+   Result get_initial_mode();
+   Result on_stream_data(const char *data, size_t size, size_t remaining);
+   std::shared_ptr<Data> finish();
+private:
+   std::shared_ptr<Data> result;
+   char* ptr;
+   const std::string& worker_dir;
 };
 
 }

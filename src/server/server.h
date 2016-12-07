@@ -7,7 +7,9 @@
 #include "taskmanager.h"
 #include "dummyworker.h"
 
+
 #include "libloom/dictionary.h"
+#include "libloomnet/listener.h"
 
 #include <vector>
 
@@ -52,7 +54,7 @@ public:
         return *client_connection;
     }
 
-    bool has_client_connection() {
+    bool has_client_connection() const {
         return client_connection.get() != nullptr;
     }
 
@@ -73,31 +75,32 @@ public:
         return id;
     }
 
-    void send_dictionary(loom::Connection &connection);
+    void send_dictionary(loom::net::Socket &socket);
     int get_worker_ncpus();
     void report_event(std::unique_ptr<loomcomm::Event> event);
 
     void need_task_distribution();
 
 private:
-    void start_listen();
+
+
 
     loom::Dictionary dictionary;
     uv_loop_t *loop;
+    loom::net::Listener listener;
+
     std::vector<std::unique_ptr<WorkerConnection>> connections;
 
     std::vector<std::unique_ptr<FreshConnection>> fresh_connections;
 
     std::unique_ptr<ClientConnection> client_connection;
 
-    uv_tcp_t listen_socket;
-    int listen_port;
 
     TaskManager task_manager;
     DummyWorker dummy_worker;
 
     loom::Id id_counter;
-    static void _on_new_connection(uv_stream_t *stream, int status);
+    void on_new_connection();
 
     bool task_distribution_active;
     uv_idle_t distribution_idle;

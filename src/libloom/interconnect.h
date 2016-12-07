@@ -1,8 +1,10 @@
 #ifndef LOOM_INTERCONNECT_H
 #define LOOM_INTERCONNECT_H
 
-#include "connection.h"
+#include "libloomnet/socket.h"
+#include "libloomnet/listener.h"
 #include "data.h"
+#include "unpacking.h"
 
 #include <memory>
 #include <vector>
@@ -14,18 +16,16 @@ class DataBuilder;
 class SendBuffer;
 
 /** Interconnection between workers */
-class InterConnection : public SimpleConnectionCallback
+class InterConnection
 {
 public:
     InterConnection(Worker &worker);
     ~InterConnection();
 
-    void send(Id id, std::shared_ptr<Data> &data, bool with_size);
-    void accept(uv_tcp_t *listen_socket) {
-        connection.accept(listen_socket);
-    }
+    void send(Id id, std::shared_ptr<Data> &data);
+
     std::string get_peername() {
-        return connection.get_peername();
+        return socket.get_peername();
     }
     std::string get_address() const {
         return address;
@@ -33,7 +33,15 @@ public:
 
     void connect(const std::string &address, int port) {
         this->address = make_address(address, port);
-        SimpleConnectionCallback::connect(address, port);
+        socket.connect(address, port);
+    }
+
+    void accept(loom::net::Listener &listener) {
+        listener.accept(socket);
+    }
+
+    void close() {
+        socket.close();
     }
 
 protected:
@@ -41,22 +49,19 @@ protected:
     void _send(SendBuffer &buffer);
 
     void on_message(const char *buffer, size_t size);
-    void on_data_chunk(const char *buffer, size_t size);
-    void on_data_finish();
-    void on_connection();
-    void on_close();
+    void on_stream_data(const char *buffer, size_t size, size_t remaining);
+    void on_connect();
 
-    void finish_data();
-
+    net::Socket socket;
     Worker &worker;
     std::string address;
 
-    std::unique_ptr<DataUnpacker> data_unpacker;
-    Id data_id;
+    std::unique_ptr<DataUnpacker> unpacker;
+    Id unpacking_data_id;
 
     static std::string make_address(const std::string &host, int port);
 
-    std::vector<std::unique_ptr<SendBuffer>> early_sends;
+    std::vector<std::unique_ptr<net::SendBuffer>> early_sends;
 };
 
 }

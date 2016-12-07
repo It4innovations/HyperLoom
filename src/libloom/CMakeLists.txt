@@ -22,8 +22,6 @@ add_library(libloom
             tasks/python.h
             tasks/loomrun.pb.cc
             tasks/loomrun.pb.h
-            connection.cpp
-            connection.h
             worker.cpp
             worker.h
             taskinstance.cpp
@@ -43,13 +41,10 @@ add_library(libloom
             task.cpp
             task.h
             taskdesc.h
-            sendbuffer.h
-            sendbuffer.cpp
             loomcomm.pb.h
             loomcomm.pb.cc
             loomplan.pb.h
             loomplan.pb.cc
-            compat.h
             log.h
             log.cpp
             types.h

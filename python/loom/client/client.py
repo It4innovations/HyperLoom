@@ -3,10 +3,11 @@ from .connection import Connection
 from .task import Task
 from .plan import Plan
 
-from ..pb.loomcomm_pb2 import Register, Data, ClientMessage, ClientSubmit
+from ..pb.loomcomm_pb2 import Register, DataHeader, ClientMessage, ClientSubmit
 from ..pb.loomreport_pb2 import Report
 
 import socket
+import struct
 
 LOOM_PROTOCOL_VERSION = 1
 
@@ -106,8 +107,7 @@ class Client(object):
             cmsg = ClientMessage()
             cmsg.ParseFromString(msg)
             if cmsg.type == ClientMessage.DATA:
-                prologue = cmsg.data
-                data[prologue.id] = self._receive_data()
+                data[cmsg.data.id] = self._receive_data(cmsg.data.type_id)
             elif cmsg.type == ClientMessage.EVENT:
                 self.process_event(cmsg.event, report_data)
             elif cmsg.type == ClientMessage.ERROR:
@@ -155,14 +155,17 @@ class Client(object):
         new_event = report_data.events.add()
         new_event.CopyFrom(event)
 
-    def _receive_data(self):
-        msg_data = Data()
-        msg_data.ParseFromString(self.connection.receive_message())
-        type_id = msg_data.type_id
+    def _receive_data(self, type_id):
         if type_id == self.rawdata_id:
-            return self.connection.read_data(msg_data.size)
+            return self.connection.receive_message()
         if type_id == self.array_id:
-            return [self._receive_data() for i in range(msg_data.length)]
+            types = self.connection.receive_message()
+            assert len(types) % 4 == 0
+            result = []
+            for i in range(0, len(types), 4):
+                type_id = struct.unpack_from("I", types, i)[0]
+                result.append(self._receive_data(type_id))
+            return result
         print(type_id, self.array_id, self.rawdata_id)
         assert 0
 

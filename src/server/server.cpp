@@ -1,6 +1,7 @@
 #include "server.h"
 
-#include "libloom/compat.h"
+#include "libloomnet/pbutils.h"
+#include "libloomnet/compat.h"
 #include "libloom/utils.h"
 #include "libloom/log.h"
 #include "libloom/loomcomm.pb.h"
@@ -10,8 +11,7 @@
 using namespace loom;
 
 Server::Server(uv_loop_t *loop, int port)
-    : loop(loop),
-      listen_port(port),
+    : loop(loop),      
       task_manager(*this),
       dummy_worker(*this),
       id_counter(1),
@@ -22,13 +22,10 @@ Server::Server(uv_loop_t *loop, int port)
     dictionary.find_or_create("loom/resource/cpus");
 
     if (loop != NULL) {
-        UV_CHECK(uv_tcp_init(loop, &listen_socket));
-        listen_socket.data = this;
-        start_listen();
-
         llog->info("Starting server on {}", port);
-
-
+        listener.start(loop, port, [this]() {
+            on_new_connection();
+        });
         dummy_worker.start_listen();
         loom::llog->debug("Dummy worker started at {}", dummy_worker.get_listen_port());
     }
@@ -109,14 +106,12 @@ void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::
     error->set_error_msg(error_msg);
 
     if (client_connection) {
-        auto buffer = std::make_unique<SendBuffer>();
-        buffer->add(msg);
-        client_connection->send_buffer(std::move(buffer));
+        client_connection->send_message(msg);
     }
     exit(1);
 }
 
-void Server::send_dictionary(Connection &connection)
+void Server::send_dictionary(loom::net::Socket &socket)
 {
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_DICTIONARY);
@@ -125,9 +120,7 @@ void Server::send_dictionary(Connection &connection)
         std::string *s = msg.add_symbols();
         *s = symbol;
     }
-    auto send_buffer = std::make_unique<SendBuffer>();
-    send_buffer->add(msg);
-    connection.send_buffer(std::move(send_buffer));
+    loom::net::send_message(socket, msg);
 }
 
 int Server::get_worker_ncpus()
@@ -139,22 +132,11 @@ int Server::get_worker_ncpus()
     return count;
 }
 
-void Server::start_listen()
+void Server::on_new_connection()
 {
-    struct sockaddr_in addr;
-    UV_CHECK(uv_ip4_addr("0.0.0.0", listen_port, &addr));
-
-    UV_CHECK(uv_tcp_bind(&listen_socket, (const struct sockaddr *) &addr, 0));
-    UV_CHECK(uv_listen((uv_stream_t *) &listen_socket, 30, _on_new_connection));
-}
-
-void Server::_on_new_connection(uv_stream_t *stream, int status)
-{
-    UV_CHECK(status);
-    Server *server = static_cast<Server*>(stream->data);
-    auto connection = std::make_unique<FreshConnection>(*server);
-    connection->accept((uv_tcp_t*) stream);
-    server->fresh_connections.push_back(std::move(connection));
+    auto connection = std::make_unique<FreshConnection>(*this);
+    connection->accept(listener);
+    fresh_connections.push_back(std::move(connection));
 }
 
 void Server::report_event(std::unique_ptr<loomcomm::Event> event)
@@ -167,9 +149,7 @@ void Server::report_event(std::unique_ptr<loomcomm::Event> event)
     cmsg.set_type(loomcomm::ClientMessage_Type_EVENT);
     cmsg.set_allocated_event(event.release());
 
-    auto buffer = std::make_unique<SendBuffer>();
-    buffer->add(cmsg);
-    client_connection->send_buffer(std::move(buffer));
+    client_connection->send_message(cmsg);
 }
 
 void Server::need_task_distribution()

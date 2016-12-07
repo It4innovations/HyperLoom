@@ -1,7 +1,7 @@
 #include "taskmanager.h"
 #include "server.h"
 
-#include "libloom/compat.h"
+#include "libloomnet/compat.h"
 #include "libloom/loomplan.pb.h"
 #include "libloom/loomcomm.pb.h"
 #include "libloom/log.h"
@@ -53,7 +53,7 @@ void TaskManager::start_task(WorkerConnection *wc, Id task_id)
         if (st == TaskState::S_NONE) {
             WorkerConnection *owner = state.get_first_owner();
             assert(owner);
-            owner->send_data(id, wc->get_address(), false);
+            owner->send_data(id, wc->get_address());
             state.set_worker_status(wc, TaskState::S_OWNER);
         }
     }
@@ -112,7 +112,7 @@ void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, Work
         TaskState &state = cstate.get_state(id);
         WorkerConnection *owner = state.get_first_owner();
         assert(owner);
-        owner->send_data(id, server.get_dummy_worker().get_address(), true);
+        owner->send_data(id, server.get_dummy_worker().get_address());
 
         if (state.dec_ref_counter()) {
             remove_state(state);

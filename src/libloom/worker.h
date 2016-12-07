@@ -7,6 +7,8 @@
 #include "taskfactory.h"
 #include "dictionary.h"
 
+#include "libloomnet/listener.h"
+
 #include <uv.h>
 
 #include <string>
@@ -19,25 +21,6 @@ namespace loom {
 class Worker;
 class DataUnpacker;
 class Config;
-
-/** Class representing connection to the server */
-class ServerConnection : public SimpleConnectionCallback {
-    
-public:
-    ServerConnection(Worker &worker);
-
-    bool is_connected() {
-        return connection.get_state() == Connection::ConnectionOpen;
-    }
-
-protected:
-    Worker &worker;
-
-    void on_connection();
-    void on_close();
-    void on_message(const char *data, size_t size);
-    void on_error(int error_code);
-};
 
 /** Main class of the libloom that represents whole worker */
 class Worker {    
@@ -53,13 +36,13 @@ public:
     void register_basic_tasks();
     
     void new_task(std::unique_ptr<Task> task);
-    void send_data(const std::string &address, Id id, std::shared_ptr<Data> &data, bool with_size);
-    bool send_data(const std::string &address, Id id, bool with_size) {
+    void send_data(const std::string &address, Id id, std::shared_ptr<Data> &data);
+    bool send_data(const std::string &address, Id id) {
         auto& data = public_data[id];
         if (data.get() == nullptr) {
             return false;
         }
-        send_data(address, id, data, with_size);
+        send_data(address, id, data);
         return true;
     }
 
@@ -97,7 +80,7 @@ public:
 
     int get_listen_port() const
     {
-        return listen_port;
+        return listener.get_port();
     }
 
     void add_connection(std::unique_ptr<InterConnection> connection)
@@ -122,13 +105,10 @@ public:
     void check_ready_tasks();
 
     void set_cpus(int value);
-    void add_unpacker(std::unique_ptr<UnpackFactory> factory);
-    template<typename T> void add_unpacker()
-    {
-        add_unpacker(std::make_unique<SimpleUnpackFactory<T>>());
-    }
+    void add_unpacker(const std::string &symbol, const UnpackFactoryFn &unpacker);
 
-    std::unique_ptr<DataUnpacker> unpack(DataTypeId id);
+
+    std::unique_ptr<DataUnpacker> get_unpacker(DataTypeId id);
 
     Dictionary& get_dictionary() {
         return dictionary;
@@ -138,12 +118,12 @@ public:
 
 private:
     void register_worker();
-    void start_listen();
 
     void remove_task(TaskInstance &task, bool free_resources=true);
     void start_task(std::unique_ptr<Task> task);
     //int get_listen_port();
 
+    void on_message(const char *data, size_t size);
     
     uv_loop_t *loop;
 
@@ -156,9 +136,9 @@ private:
     std::unordered_map<int, std::shared_ptr<Data>> public_data;
     std::string work_dir;
 
-    std::unordered_map<DataTypeId, std::unique_ptr<UnpackFactory>> unpack_factories;
+    std::unordered_map<DataTypeId, UnpackFactoryFn> unpack_ffs;
 
-    ServerConnection server_conn;
+    net::Socket server_conn;
     std::unordered_map<std::string, std::unique_ptr<InterConnection>> connections;
     std::vector<std::unique_ptr<InterConnection>> nonregistered_connections;
 
@@ -167,13 +147,11 @@ private:
     std::string server_address;
     int server_port;
 
-    uv_tcp_t listen_socket;
-    int listen_port;
+    net::Listener listener;
 
     std::vector<std::unique_ptr<TaskFactory>> unregistered_task_factories;
-    std::vector<std::unique_ptr<UnpackFactory>> unregistered_unpack_factories;
+    std::unordered_map<std::string, UnpackFactoryFn> unregistered_unpack_ffs;
 
-    static void _on_new_connection(uv_stream_t *stream, int status);
     static void _on_getaddrinfo(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);
 };
 

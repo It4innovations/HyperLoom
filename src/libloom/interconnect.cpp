@@ -2,16 +2,32 @@
 #include "worker.h"
 #include "loomcomm.pb.h"
 #include "log.h"
-#include "utils.h"
+#include "libloomnet/pbutils.h"
+#include "libloomnet/sendbuffer.h"
 
 #include <sstream>
 
 using namespace loom;
 
 InterConnection::InterConnection(Worker &worker)
-    : SimpleConnectionCallback(worker.get_loop()), worker(worker), data_id(-1)
+    : socket(worker.get_loop()), worker(worker), unpacking_data_id(-1)
 {
+    socket.set_on_close([this]() {
+        llog->debug("Interconnection closed");
+        this->worker.unregister_connection(*this);
+    });
 
+    socket.set_on_connect([this]() {
+        on_connect();
+    });
+
+    socket.set_on_message([this](const char *buffer, size_t size) {
+        on_message(buffer, size);
+    });
+
+    socket.set_on_stream_data([this](const char *buffer, size_t size, size_t remaining) {
+        on_stream_data(buffer, size, remaining);
+    });
 }
 
 InterConnection::~InterConnection()
@@ -19,107 +35,103 @@ InterConnection::~InterConnection()
 
 }
 
-void InterConnection::on_connection()
+void InterConnection::on_connect()
 {
     llog->info("Connected to {}", get_address());
-    connection.start_read();
     loomcomm::Announce msg;
     msg.set_port(worker.get_listen_port());
-    send_message(msg);
+
+    send_message(socket, msg);
 
     for (auto& buffer : early_sends) {
-        connection.send_buffer(std::move(buffer));
+        socket.send(std::move(buffer));
     }
     early_sends.clear();
 }
 
-void InterConnection::on_close()
-{
-    llog->debug("Interconnection closed");
-    worker.unregister_connection(*this);
-}
-
-void InterConnection::finish_data()
-{
-    llog->debug("Data {} sucessfully received", data_id);
-    worker.publish_data(data_id,
-                        data_unpacker->get_data());
-    data_unpacker.reset();
-    data_id = -1;
-}
-
 void InterConnection::on_message(const char *buffer, size_t size)
 {
-    if (data_unpacker.get()) {
-        data_unpacker->on_message(connection, buffer, size);;
-        return;
-    }
-    if (data_id > 0) {
-        assert(data_unpacker.get() == nullptr);
-        loomcomm::Data msg;
-        assert(msg.ParseFromArray(buffer, size));
-        data_unpacker = worker.unpack(msg.type_id());
-        if (data_unpacker->init(worker, connection, msg)) {
-            finish_data();
-        }
-        return;
-    } else if (address.size()) {
-        loomcomm::DataPrologue msg;
-        assert(msg.ParseFromArray(buffer, size));
-        auto id = msg.id();
-        data_id = id;
-        if (msg.has_data_size()) {
-            llog->debug("Receiving data id={} (data_size={})", id, msg.data_size());
+    if (!address.empty()) {
+        if (unpacker) {
+            // Message to unpacker
+            auto result = unpacker->on_message(buffer, size);
+            switch(result) {
+            case DataUnpacker::FINISHED:
+                worker.publish_data(unpacking_data_id, unpacker->finish());
+                unpacking_data_id = -1;
+                unpacker.reset();
+                return;
+            case DataUnpacker::MESSAGE:
+                return;
+            case DataUnpacker::STREAM:
+                socket.set_stream_mode(true);
+                return;
+            }
         } else {
-            llog->debug("Receiving data id={}", id);
+            // First data message
+            loomcomm::DataHeader msg;
+            assert(msg.ParseFromArray(buffer, size));
+            unpacking_data_id = msg.id();
+            llog->debug("Interconnect: Receving data_id={}", unpacking_data_id);
+            unpacker = worker.get_unpacker(msg.type_id());
+            switch(unpacker->get_initial_mode()) {
+                case DataUnpacker::MESSAGE:
+                    // We are already in message mode
+                    return;
+                case DataUnpacker::STREAM:
+                    socket.set_stream_mode(true);
+                    return;
+                default:
+                    assert(0);
+            }
         }
     } else {
         // First message
         loomcomm::Announce msg;
         assert(msg.ParseFromArray(buffer, size));
         std::stringstream s;
-        address = make_address(connection.get_peername(), msg.port());
+        address = make_address(get_peername(), msg.port());
         llog->debug("Interconnection from worker {} accepted", address);
         worker.register_connection(*this);
     }
 }
 
-void InterConnection::on_data_chunk(const char *buffer, size_t size)
+void InterConnection::on_stream_data(const char *buffer, size_t size, size_t remaining)
 {
-    assert(data_unpacker.get());
-    data_unpacker->on_data_chunk(buffer, size);
-}
-
-void InterConnection::on_data_finish()
-{
-    assert(data_unpacker.get());
-    if (data_unpacker->on_data_finish(connection)) {
-        finish_data();
+    assert(unpacker);
+    auto result = unpacker->on_stream_data(buffer, size, remaining);
+    switch(result) {
+    case DataUnpacker::FINISHED:
+        worker.publish_data(unpacking_data_id, unpacker->finish());
+        unpacking_data_id = -1;
+        unpacker.reset();
+        socket.set_stream_mode(false);
+        return;
+    case DataUnpacker::MESSAGE:
+        socket.set_stream_mode(false);
+        return;
+    case DataUnpacker::STREAM:
+        return;
     }
 }
 
-void InterConnection::send(Id id, std::shared_ptr<Data> &data, bool with_size)
+void InterConnection::send(Id id, std::shared_ptr<Data> &data)
 {
-    auto buffer = std::make_unique<SendBuffer>();
-    loomcomm::DataPrologue msg;
+    auto buffer = std::make_unique<loom::net::SendBuffer>();
+
+    size_t n_messages = data->serialize(worker, *buffer, data);
+
+    loomcomm::DataHeader msg;
     msg.set_id(id);
+    msg.set_type_id(data->get_type_id(worker));
+    msg.set_n_messages(n_messages);
+    buffer->insert(0, loom::net::message_to_item(msg));
 
-    if (!with_size) {
-        buffer->add(msg);
-    }
-
-    data->serialize(worker, *buffer, data);
-
-    if (with_size) {
-        msg.set_data_size(buffer->get_size());
-        buffer->insert(0, msg);
-    }
-
-    Connection::State state = connection.get_state();
-    assert(state == Connection::ConnectionOpen ||
-           state == Connection::ConnectionConnecting);
-    if (state == Connection::ConnectionOpen) {
-        connection.send_buffer(std::move(buffer));
+    auto state = socket.get_state();
+    assert(state == loom::net::Socket::State::Open ||
+           state == loom::net::Socket::State::Connecting);
+    if (state == loom::net::Socket::State::Open) {
+        socket.send(std::move(buffer));
     } else {
         early_sends.push_back(std::move(buffer));
     }

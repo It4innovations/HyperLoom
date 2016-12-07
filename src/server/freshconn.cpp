@@ -3,7 +3,7 @@
 #include "clientconn.h"
 #include "server.h"
 
-#include "libloom/compat.h"
+#include "libloomnet/compat.h"
 #include "libloom/log.h"
 #include "libloom/loomcomm.pb.h"
 
@@ -13,30 +13,44 @@ using namespace loom;
 
 FreshConnection::FreshConnection(Server &server) :
     server(server),
-    connection(std::make_unique<Connection>(this, server.get_loop()))
+    socket(std::make_unique<net::Socket>(server.get_loop()))
 {
+    socket->set_on_close([this](){
+        llog->error("Connection closed without registration");
+        this->server.remove_freshconnection(*this);
+    });
+
+    socket->set_on_message([this](const char *buffer, size_t size) {
+        on_message(buffer, size);
+    });
 }
 
-void FreshConnection::accept(uv_tcp_t *listen_socket) {
-    connection->accept(listen_socket);
-    llog->debug("New connection to server ({})", connection->get_peername());
+void FreshConnection::accept(loom::net::Listener &listener) {
+    listener.accept(*socket);
+    llog->debug("New connection to server ({})", socket->get_peername());
 }
 
 void FreshConnection::on_message(const char *buffer, size_t size)
-{    
+{
     loomcomm::Register msg;
-    msg.ParseFromArray(buffer, size);
+    bool r = msg.ParseFromArray(buffer, size);
+    if (!r) {
+        llog->error("Invalid registration message from {}",
+                    socket->get_peername());
+        socket->close_and_discard_remaining_data();
+        return;
+    }
 
     if (msg.protocol_version() != PROTOCOL_VERSION) {
         llog->error("Connection from {} registered with invalid protocol version",
-                    connection->get_peername());
-        connection->close_and_discard_remaining_data();
+                    socket->get_peername());
+        socket->close_and_discard_remaining_data();
         return;
     }
 
     if (msg.type() == loomcomm::Register_Type_REGISTER_WORKER) {
         std::stringstream address;
-        address << this->connection->get_peername() << ":" << msg.port();
+        address << socket->get_peername() << ":" << msg.port();
 
         std::vector<int> task_types, data_types;
         task_types.reserve(msg.task_types_size());
@@ -51,7 +65,7 @@ void FreshConnection::on_message(const char *buffer, size_t size)
         }
 
         auto wconn = std::make_unique<WorkerConnection>(server,
-                                                        std::move(connection),
+                                                        std::move(socket),
                                                         address.str(),
                                                         task_types,
                                                         data_types,
@@ -59,23 +73,16 @@ void FreshConnection::on_message(const char *buffer, size_t size)
                                                         server.new_id());
 
         server.add_worker_connection(std::move(wconn));
-        server.remove_freshconnection(*this);
+        server.remove_freshconnection(*this);        
         return;
     }
     if (msg.type() == loomcomm::Register_Type_REGISTER_CLIENT) {
         auto cconn = std::make_unique<ClientConnection>(server,
-                                                        std::move(connection));
+                                                        std::move(socket));
         server.add_client_connection(std::move(cconn));
-        assert(connection.get() == nullptr);
         server.remove_freshconnection(*this);
         return;
     }
-    llog->error("Invalid registration from {}", connection->get_peername());
-    connection->close_and_discard_remaining_data();
-}
-
-void FreshConnection::on_close()
-{
-    llog->error("Connection from closed without registration");
-    server.remove_freshconnection(*this);
+    llog->error("Invalid registration from {}", socket->get_peername());
+    socket->close_and_discard_remaining_data();
 }

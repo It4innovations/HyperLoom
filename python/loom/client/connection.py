@@ -1,7 +1,7 @@
 
 import struct
 
-u32 = struct.Struct("<I")
+u64 = struct.Struct("<Q")
 
 
 class Connection(object):
@@ -13,11 +13,11 @@ class Connection(object):
     def receive_message(self):
         while True:
             size = len(self.data)
-            if size > 4:
-                msg_size = u32.unpack(self.data[:4])[0]
-                msg_size += 4
+            if size >= 8:
+                msg_size = u64.unpack(self.data[:8])[0]
+                msg_size += 8
                 if size >= msg_size:
-                    message = self.data[4:msg_size]
+                    message = self.data[8:msg_size]
                     self.data = self.data[msg_size:]
                     return message
             new_data = self.socket.recv(65536)
@@ -37,5 +37,5 @@ class Connection(object):
             self.data = self.socket.recv(65536)
 
     def send_message(self, data):
-        data = u32.pack(len(data)) + data
+        data = u64.pack(len(data)) + data
         self.socket.sendall(data)

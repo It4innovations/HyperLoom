@@ -3,6 +3,7 @@
 #include "../log.h"
 #include "../utils.h"
 #include "../worker.h"
+#include "libloomnet/sendbuffer.h"
 
 #include <sstream>
 #include <assert.h>
@@ -39,7 +40,7 @@ RawData::~RawData()
 
 std::string RawData::get_type_name() const
 {
-    return RawDataUnpacker::get_type_name();
+      return "loom/data";
 }
 
 char* RawData::init_empty(const std::string &work_dir, size_t size)
@@ -150,9 +151,16 @@ void RawData::init_from_mem(const std::string &work_dir, const void *ptr, size_t
     memcpy(mem, ptr, size);
 }
 
-void RawData::serialize_data(Worker &worker, SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t RawData::serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
-    buffer.add(data_ptr, get_raw_data(), size);
+    buffer.add(std::make_unique<net::SizeBufferItem>(size));
+    buffer.add(std::make_unique<DataBufferItem>(data_ptr, get_raw_data(), size));
+    return 1;
+}
+
+RawDataUnpacker::RawDataUnpacker(Worker &worker) : ptr(nullptr), worker_dir(worker.get_work_dir())
+{
+
 }
 
 RawDataUnpacker::~RawDataUnpacker()
@@ -160,26 +168,33 @@ RawDataUnpacker::~RawDataUnpacker()
 
 }
 
-bool RawDataUnpacker::init(Worker &worker, Connection &connection, const loomcomm::Data &msg)
+DataUnpacker::Result RawDataUnpacker::get_initial_mode()
 {
-    this->data = std::make_shared<RawData>();
-    RawData &data = static_cast<RawData&>(*this->data);
-    size_t size = msg.size();
-    pointer = data.init_empty(worker.get_work_dir(), size);
-    if (size == 0) {
-        return true;
-    }
-    connection.set_raw_read(size);
-    return false;
+   return STREAM;
 }
 
-void RawDataUnpacker::on_data_chunk(const char *data, size_t size)
+DataUnpacker::Result RawDataUnpacker::on_stream_data(const char *data, size_t size, size_t remaining)
 {
-    memcpy(pointer, data, size);
-    pointer += size;
+   if (ptr == nullptr) {
+        auto obj = std::make_shared<RawData>();
+        size_t total_size = size + remaining;
+        ptr = obj->init_empty(worker_dir, total_size);
+        memcpy(ptr, data, size);
+        ptr += size;
+        result = obj;
+   } else {
+       memcpy(ptr, data, size);
+       ptr += size;
+   }
+
+   if (remaining == 0) {
+       return FINISHED;
+   } else {
+       return STREAM;
+   }
 }
 
-bool RawDataUnpacker::on_data_finish(Connection &connection)
+std::shared_ptr<Data> RawDataUnpacker::finish()
 {
-    return true;
+   return result;
 }
