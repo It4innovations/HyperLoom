@@ -1,19 +1,20 @@
 #include "interconnect.h"
 #include "worker.h"
 #include "loomcomm.pb.h"
-#include "log.h"
+#include "libloom/log.h"
 #include "libloom/pbutils.h"
 #include "libloom/sendbuffer.h"
 
 #include <sstream>
 
 using namespace loom;
+using namespace loom::base;
 
 InterConnection::InterConnection(Worker &worker)
     : socket(worker.get_loop()), worker(worker), unpacking_data_id(-1)
 {
     socket.set_on_close([this]() {
-        llog->debug("Interconnection closed");
+        logger->debug("Interconnection closed");
         this->worker.unregister_connection(*this);
     });
 
@@ -37,7 +38,7 @@ InterConnection::~InterConnection()
 
 void InterConnection::on_connect()
 {
-    llog->info("Connected to {}", get_address());
+    logger->info("Connected to {}", get_address());
     loomcomm::Announce msg;
     msg.set_port(worker.get_listen_port());
 
@@ -72,7 +73,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
             loomcomm::DataHeader msg;
             assert(msg.ParseFromArray(buffer, size));
             unpacking_data_id = msg.id();
-            llog->debug("Interconnect: Receving data_id={}", unpacking_data_id);
+            logger->debug("Interconnect: Receving data_id={}", unpacking_data_id);
             unpacker = worker.get_unpacker(msg.type_id());
             switch(unpacker->get_initial_mode()) {
                 case DataUnpacker::MESSAGE:
@@ -91,7 +92,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
         assert(msg.ParseFromArray(buffer, size));
         std::stringstream s;
         address = make_address(get_peername(), msg.port());
-        llog->debug("Interconnection from worker {} accepted", address);
+        logger->debug("Interconnection from worker {} accepted", address);
         worker.register_connection(*this);
     }
 }

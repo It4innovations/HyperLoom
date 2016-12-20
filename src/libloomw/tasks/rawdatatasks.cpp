@@ -4,7 +4,7 @@
 #include "libloomw/data/rawdata.h"
 #include "libloomw/data/index.h"
 #include "libloomw/data/externfile.h"
-#include "libloomw/log.h"
+#include "libloom/log.h"
 #include "libloomw/worker.h"
 
 #include <string.h>

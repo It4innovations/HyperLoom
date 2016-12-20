@@ -1,14 +1,17 @@
 
 #include "python.h"
-#include "../data/rawdata.h"
-#include "../log.h"
+#include "libloom/log.h"
 #include "libloom/compat.h"
+
 #include "../worker.h"
+#include "../data/rawdata.h"
+
 #include "python_wrapper.h"
 
 #include <Python.h>
 
 using namespace loom;
+using namespace loom::base;
 
 /** Ensures that python is initialized,
  *  if already initialized, then does nothing */
@@ -187,7 +190,7 @@ std::shared_ptr<Data> PyCallJob::run()
 
 void PyCallJob::set_python_error()
 {
-   loom::llog->error("Python error in task id={}", task.get_id());
+   logger->error("Python error in task id={}", task.get_id());
    PyObject *excType, *excValue, *excTraceback;
    PyErr_Fetch(&excType, &excValue, &excTraceback);
    assert(excType);
@@ -210,7 +213,7 @@ void PyCallJob::set_python_error()
    assert(str);
    std::string error_msg(str, size);
 
-   loom::llog->error("Python exception: {}", error_msg);
+   logger->error("Python exception: {}", error_msg);
 
    set_error(std::string("Python exception:\n") + error_msg);
 

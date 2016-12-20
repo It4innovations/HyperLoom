@@ -21,7 +21,7 @@ void report_uv_error(int error_code, int line_number, const char *filename) __at
 void log_errno_abort(const char *tmp)  __attribute__ ((noreturn));
 void log_errno_abort(const char *tmp, const char *tmp2)  __attribute__ ((noreturn));
 
-extern std::shared_ptr<spdlog::logger> log;
+extern std::shared_ptr<spdlog::logger> logger;
 
 }
 }

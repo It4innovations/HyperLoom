@@ -2,13 +2,15 @@
 
 #include "libloom/pbutils.h"
 #include "libloom/compat.h"
+#include "libloom/log.h"
+
 #include "libloomw/utils.h"
-#include "libloomw/log.h"
 #include "libloomw/loomcomm.pb.h"
 
 #include <sstream>
 
 using namespace loom;
+using namespace loom::base;
 
 Server::Server(uv_loop_t *loop, int port)
     : loop(loop),      
@@ -22,12 +24,12 @@ Server::Server(uv_loop_t *loop, int port)
     dictionary.find_or_create("loom/resource/cpus");
 
     if (loop != NULL) {
-        llog->info("Starting server on {}", port);
+        logger->info("Starting server on {}", port);
         listener.start(loop, port, [this]() {
             on_new_connection();
         });
         dummy_worker.start_listen();
-        loom::llog->debug("Dummy worker started at {}", dummy_worker.get_listen_port());
+        logger->debug("Dummy worker started at {}", dummy_worker.get_listen_port());
     }
 
     if (loop) {
@@ -94,7 +96,7 @@ void Server::inform_about_error(std::string &error_msg)
 
 void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::string &error_msg)
 {
-    llog->error("Task id={} failed on worker {}: {}",
+    logger->error("Task id={} failed on worker {}: {}",
                 id, wconn.get_address(), error_msg);
 
     loomcomm::ClientMessage msg;

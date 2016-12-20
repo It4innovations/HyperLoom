@@ -5,12 +5,13 @@
 
 #include "libloomw/loomplan.pb.h"
 #include "libloomw/loomcomm.pb.h"
-#include "libloomw/log.h"
+#include "libloom/log.h"
 #include "libloom/compat.h"
 #include "libloom/pbutils.h"
 
 
 using namespace loom;
+using namespace loom::base;
 
 ClientConnection::ClientConnection(Server &server,
                                    std::unique_ptr<loom::base::Socket> socket)
@@ -20,11 +21,11 @@ ClientConnection::ClientConnection(Server &server,
         on_message(buffer, size);
     });
     this->socket->set_on_close([this](){
-        llog->info("Client disconnected");
+        logger->info("Client disconnected");
         this->server.remove_client_connection(*this);
     });
 
-    llog->info("Client {} connected", this->socket->get_peername());
+    logger->info("Client {} connected", this->socket->get_peername());
 
     // Send dictionary
     loomcomm::ClientMessage cmsg;
@@ -41,7 +42,7 @@ ClientConnection::ClientConnection(Server &server,
 
 void ClientConnection::on_message(const char *buffer, size_t size)
 {
-    llog->debug("Plan received");
+    logger->debug("Plan received");
     loomcomm::ClientSubmit submit;
     submit.ParseFromArray(buffer, size);
     auto& task_manager = server.get_task_manager();
@@ -49,5 +50,5 @@ void ClientConnection::on_message(const char *buffer, size_t size)
     const loomplan::Plan &plan = submit.plan();
     loom::Id id_base = server.new_id(plan.tasks_size());
     task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()), submit.report());
-    llog->info("Plan submitted tasks={} report={}", plan.tasks_size(), submit.report());
+    logger->info("Plan submitted tasks={} report={}", plan.tasks_size(), submit.report());
 }

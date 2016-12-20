@@ -1,6 +1,6 @@
 
 #include "libloomw/worker.h"
-#include "libloomw/log.h"
+#include "libloom/log.h"
 #include "libloomw/config.h"
 
 

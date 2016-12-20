@@ -4,19 +4,20 @@
 #include "server.h"
 
 #include "libloom/compat.h"
-#include "libloomw/log.h"
+#include "libloom/log.h"
 #include "libloomw/loomcomm.pb.h"
 
 #include <sstream>
 
 using namespace loom;
+using namespace loom::base;
 
 FreshConnection::FreshConnection(Server &server) :
     server(server),
     socket(std::make_unique<base::Socket>(server.get_loop()))
 {
     socket->set_on_close([this](){
-        llog->error("Connection closed without registration");
+        logger->error("Connection closed without registration");
         this->server.remove_freshconnection(*this);
     });
 
@@ -27,7 +28,7 @@ FreshConnection::FreshConnection(Server &server) :
 
 void FreshConnection::accept(loom::base::Listener &listener) {
     listener.accept(*socket);
-    llog->debug("New connection to server ({})", socket->get_peername());
+    logger->debug("New connection to server ({})", socket->get_peername());
 }
 
 void FreshConnection::on_message(const char *buffer, size_t size)
@@ -35,14 +36,14 @@ void FreshConnection::on_message(const char *buffer, size_t size)
     loomcomm::Register msg;
     bool r = msg.ParseFromArray(buffer, size);
     if (!r) {
-        llog->error("Invalid registration message from {}",
+        logger->error("Invalid registration message from {}",
                     socket->get_peername());
         socket->close_and_discard_remaining_data();
         return;
     }
 
     if (msg.protocol_version() != PROTOCOL_VERSION) {
-        llog->error("Connection from {} registered with invalid protocol version",
+        logger->error("Connection from {} registered with invalid protocol version",
                     socket->get_peername());
         socket->close_and_discard_remaining_data();
         return;
@@ -83,6 +84,6 @@ void FreshConnection::on_message(const char *buffer, size_t size)
         server.remove_freshconnection(*this);
         return;
     }
-    llog->error("Invalid registration from {}", socket->get_peername());
+    logger->error("Invalid registration from {}", socket->get_peername());
     socket->close_and_discard_remaining_data();
 }

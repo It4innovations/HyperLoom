@@ -1,9 +1,10 @@
 #include "rawdata.h"
 
-#include "../log.h"
+#include "libloom/log.h"
+#include "libloom/sendbuffer.h"
 #include "../utils.h"
 #include "../worker.h"
-#include "libloom/sendbuffer.h"
+
 
 #include <sstream>
 #include <assert.h>
@@ -14,6 +15,7 @@
 #include <unistd.h>
 
 using namespace loom;
+using namespace loom::base;
 
 size_t RawData::file_id_counter = 1;
 
@@ -24,7 +26,7 @@ RawData::RawData()
 
 RawData::~RawData()
 {
-    llog->debug("Disposing raw data filename={} size={}", filename, size);
+    logger->debug("Disposing raw data filename={} size={}", filename, size);
 
     if (filename.empty()) {
         assert(data == nullptr);
@@ -55,7 +57,7 @@ char* RawData::init_empty(const std::string &work_dir, size_t size)
 
     int fd = ::open(filename.c_str(), O_CREAT | O_RDWR,  S_IRUSR | S_IWUSR);
     if (fd < 0) {
-        llog->critical("Cannot open data {} for writing", filename);
+        logger->critical("Cannot open data {} for writing", filename);
         log_errno_abort("open");
     }
 
@@ -103,7 +105,7 @@ void RawData::open() const
     assert(!filename.empty());
     int fd = ::open(filename.c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
     if (fd < 0) {
-        llog->critical("Cannot open data {}", filename);
+        logger->critical("Cannot open data {}", filename);
         log_errno_abort("open");
     }
     map(fd, false);
@@ -128,7 +130,7 @@ void RawData::map(int fd, bool write) const
     }
     data = (char*) mmap(0, size, flags, MAP_SHARED, fd, 0);
     if (data == MAP_FAILED) {
-        llog->critical("Cannot mmap data filename={}", filename);
+        logger->critical("Cannot mmap data filename={}", filename);
         log_errno_abort("mmap");
     }
 }

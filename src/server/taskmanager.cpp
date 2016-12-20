@@ -4,12 +4,13 @@
 #include "libloom/compat.h"
 #include "libloomw/loomplan.pb.h"
 #include "libloomw/loomcomm.pb.h"
-#include "libloomw/log.h"
+#include "libloom/log.h"
 
 #include <algorithm>
 #include <limits.h>
 
 using namespace loom;
+using namespace loom::base;
 
 TaskManager::TaskManager(Server &server)
     : server(server), cstate(server), report(false)
@@ -29,12 +30,12 @@ void TaskManager::distribute_work(const TaskDistribution &distribution)
         return;
     }
 
-    if (llog->level() >= spdlog::level::debug) {
+    if (logger->level() >= spdlog::level::debug) {
         size_t count = 0;
         for (auto &p : distribution) {
             count += p.second.size();
         }
-        llog->debug("Distributing {} task(s)", count);
+        logger->debug("Distributing {} task(s)", count);
     }
 
     for (auto& p : distribution) {
@@ -88,7 +89,7 @@ void TaskManager::report_task_end(WorkerConnection *wc, const PlanNode &node)
 
 void TaskManager::remove_state(TaskState &state)
 {
-    llog->debug("Removing state id={}", state.get_id());
+    logger->debug("Removing state id={}", state.get_id());
     assert(state.get_ref_counter() == 0);
     loom::Id id = state.get_id();
     state.foreach_owner([id](WorkerConnection *wc) {
@@ -108,7 +109,7 @@ void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, Work
     }
 
     if (node.is_result()) {
-        llog->debug("Job id={} [RESULT] finished", id);
+        logger->debug("Job id={} [RESULT] finished", id);
         TaskState &state = cstate.get_state(id);
         WorkerConnection *owner = state.get_first_owner();
         assert(owner);
@@ -118,10 +119,10 @@ void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, Work
             remove_state(state);
         }
         if (cstate.is_finished()) {
-            loom::llog->debug("Plan is finished");
+            logger->debug("Plan is finished");
         }
     } else {
-        llog->debug("Job id={} finished (size={}, length={})", id, size, length);
+        logger->debug("Job id={} finished (size={}, length={})", id, size, length);
     }
 
     // Remove duplicates

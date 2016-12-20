@@ -1,6 +1,5 @@
 #include "data.h"
 #include "worker.h"
-#include "log.h"
 
 using namespace loom;
 

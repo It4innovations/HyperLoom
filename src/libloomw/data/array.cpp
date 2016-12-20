@@ -1,10 +1,11 @@
 
 #include "array.h"
 #include "libloom/compat.h"
+#include "libloom/log.h"
 #include "../worker.h"
-#include "../log.h"
 
 using namespace loom;
+using namespace loom::base;
 
 Array::Array(size_t length, std::unique_ptr<std::shared_ptr<Data>[]> items)
    : length(length), items(std::move(items))
@@ -14,7 +15,7 @@ Array::Array(size_t length, std::unique_ptr<std::shared_ptr<Data>[]> items)
 
 Array::~Array()
 {
-    llog->debug("Disposing array");
+    logger->debug("Disposing array");
 }
 
 size_t Array::get_size()

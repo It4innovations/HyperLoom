@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "libloomw/loomplan.pb.h"
-#include "libloomw/log.h"
+#include "libloom/log.h"
 
 static PlanNode::Policy read_task_policy(loomplan::Task_Policy policy) {
     switch(policy) {
@@ -14,7 +14,7 @@ static PlanNode::Policy read_task_policy(loomplan::Task_Policy policy) {
         case loomplan::Task_Policy_POLICY_SCHEDULER:
             return PlanNode::POLICY_SCHEDULER;
         default:
-            loom::llog->critical("Invalid task policy");
+            loom::base::logger->critical("Invalid task policy");
             exit(1);
     }
 }

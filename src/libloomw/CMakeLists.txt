@@ -45,8 +45,6 @@ add_library(libloomw
             loomcomm.pb.cc
             loomplan.pb.h
             loomplan.pb.cc
-            log.h
-            log.cpp
             types.h
             config.cpp
             config.h

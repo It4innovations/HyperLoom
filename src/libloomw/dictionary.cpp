@@ -1,10 +1,11 @@
 
 #include "dictionary.h"
-#include "log.h"
+#include "libloom/log.h"
 
 #include <assert.h>
 
 using namespace loom;
+using namespace loom::base;
 
 Dictionary::Dictionary()
 {
@@ -15,7 +16,7 @@ Id Dictionary::find_symbol_or_fail(const std::string &symbol) const
 {
     auto i = symbol_to_id.find(symbol);
     if(i == symbol_to_id.end()) {
-        llog->critical("Unknown symbol '{}'", symbol);
+        logger->critical("Unknown symbol '{}'", symbol);
         exit(1);
     }
     assert(i->second != -1);

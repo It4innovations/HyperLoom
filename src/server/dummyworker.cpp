@@ -5,8 +5,7 @@
 #include <libloom/compat.h>
 #include <libloom/pbutils.h>
 
-#include <libloomw/utils.h>
-#include <libloomw/log.h>
+#include <libloom/log.h>
 #include <libloomw/loomcomm.pb.h>
 
 
@@ -14,6 +13,7 @@
 #include <assert.h>
 
 using namespace loom;
+using namespace loom::base;
 
 DummyWorker::DummyWorker(Server &server)
    : server(server)
@@ -30,7 +30,7 @@ void DummyWorker::start_listen()
    listener.start(loop, 0, [this]() {
       auto connection = std::make_unique<DWConnection>(*this);
       connection->accept(listener);
-      llog->debug("Worker data connection from {}", connection->get_peername());
+      logger->debug("Worker data connection from {}", connection->get_peername());
       connections.push_back(std::move(connection));
    });
 }
@@ -46,7 +46,7 @@ DWConnection::DWConnection(DummyWorker &worker)
    : worker(worker), socket(worker.get_server().get_loop()), remaining_messages(0), registered(false)
 {
    this->socket.set_on_close([this]() {
-      llog->critical("Worker closing data connection from {}", this->socket.get_peername());
+      logger->critical("Worker closing data connection from {}", this->socket.get_peername());
       assert(0);
    });
 
@@ -80,7 +80,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
 
       remaining_messages--;
       if (remaining_messages == 0) {
-         llog->debug("DummyWorker: Resending data to client");
+         logger->debug("DummyWorker: Resending data to client");
          auto& server = worker.get_server();
          assert(server.has_client_connection());
          server.get_client_connection().send(std::move(send_buffer));
@@ -99,7 +99,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
    auto data_id = msg.id();
    auto client_id = worker.server.translate_to_client_id(data_id);
    msg.set_id(client_id);
-   llog->debug("DummyWorker: Capturing data for client data_id={} (messages={})", data_id, remaining_messages);
+   logger->debug("DummyWorker: Capturing data for client data_id={} (messages={})", data_id, remaining_messages);
 
    loomcomm::ClientMessage cmsg;
    cmsg.set_type(loomcomm::ClientMessage_Type_DATA);

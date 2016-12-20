@@ -2,10 +2,11 @@
 #include "index.h"
 #include "rawdata.h"
 
-#include "../log.h"
+#include "libloom/log.h"
 #include "../worker.h"
 
 using namespace loom;
+using namespace loom::base;
 
 Index::Index(Worker &worker, std::shared_ptr<Data> &data, size_t length, std::unique_ptr<size_t[]> indices)
     : worker(worker), data(data), length(length), indices(std::move(indices))
@@ -15,7 +16,7 @@ Index::Index(Worker &worker, std::shared_ptr<Data> &data, size_t length, std::un
 
 Index::~Index()
 {
-   llog->debug("Disposing index");
+   logger->debug("Disposing index");
 }
 
 std::string Index::get_type_name() const
@@ -82,7 +83,7 @@ std::shared_ptr<Data> Index::get_slice(size_t from, size_t to)
 
 size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
-    llog->critical("Index::serialize_data");
+    logger->critical("Index::serialize_data");
     abort();
 }
 

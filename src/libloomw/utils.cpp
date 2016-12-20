@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#include "log.h"
+#include "libloom/log.h"
 #include "uv.h"
 
 #include <errno.h>
@@ -8,13 +8,7 @@
 #include <limits.h>
 
 using namespace loom;
-
-void loom::report_uv_error(int error_code, int line_number, const char *filename)
-{
-    llog->critical("libuv fail: {} ({}:{})", uv_strerror(error_code), filename, line_number);
-    exit(1);
-}
-
+using namespace loom::base;
 
 static bool is_directory(const char *path)
 {
@@ -67,16 +61,4 @@ int loom::make_path(const char *path, mode_t mode)
         }
     }
     return 0;
-}
-
-void loom::log_errno_abort(const char *tmp)
-{
-    llog->critical("{}: {}", tmp, strerror(errno));
-    abort();
-}
-
-void loom::log_errno_abort(const char *tmp, const char *tmp2)
-{
-    llog->critical("{}: {} ({})", tmp, strerror(errno), tmp2);
-    abort();
 }

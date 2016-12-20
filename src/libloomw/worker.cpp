@@ -1,7 +1,7 @@
 #include "worker.h"
 #include "loomcomm.pb.h"
 #include "utils.h"
-#include "log.h"
+
 #include "types.h"
 #include "config.h"
 
@@ -15,6 +15,7 @@
 #include "tasks/runtask.h"
 #include "tasks/python.h"
 
+#include "libloom/log.h"
 #include "libloom/sendbuffer.h"
 #include "libloom/pbutils.h"
 
@@ -23,6 +24,7 @@
 #include <unistd.h>
 
 using namespace loom;
+using namespace loom::base;
 
 
 Worker::Worker(uv_loop_t *loop,
@@ -37,20 +39,20 @@ Worker::Worker(uv_loop_t *loop,
     } else {
         spdlog::set_level(spdlog::level::info);
     }
-    loom::llog->info("New worker; listening on port {}", config.get_port());
+    logger->info("New worker; listening on port {}", config.get_port());
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     listener.start(loop, 0, [this]() {
         auto connection = std::make_unique<InterConnection>(*this);
         connection->accept(listener);
-        llog->debug("Worker connection from {}", connection->get_peername());
+        logger->debug("Worker connection from {}", connection->get_peername());
         add_connection(std::move(connection));
     });
 
     auto &server_address = config.get_server_address();
     if (!server_address.empty()) {
-        llog->info("Connecting to server {}:{}", server_address, server_port);
+        logger->info("Connecting to server {}:{}", server_address, server_port);
         uv_getaddrinfo_t* handle = new uv_getaddrinfo_t;
         handle->data = this;
         struct addrinfo hints;
@@ -71,33 +73,33 @@ Worker::Worker(uv_loop_t *loop,
         }
         char tmp[100];
         if (gethostname(tmp, 100)) {
-            llog->error("Cannot get hostname, using 'nohostname'");
+            logger->error("Cannot get hostname, using 'nohostname'");
             strcpy(tmp, "nohostname");
         }
         s << "worker-" << tmp << '-' << listener.get_port() << '/';
         work_dir = s.str();
 
         if (make_path(work_dir.c_str(), S_IRWXU)) {
-            llog->critical("Cannot create working directory '{}'", work_dir);
+            logger->critical("Cannot create working directory '{}'", work_dir);
             exit(1);
         }
 
         if (mkdir((work_dir + "data").c_str(), S_IRWXU)) {
-            llog->critical("Cannot create 'data' in working directory");
+            logger->critical("Cannot create 'data' in working directory");
             exit(1);
         }
 
-        llog->info("Using '{}' as working directory", work_dir);
+        logger->info("Using '{}' as working directory", work_dir);
     }
     resource_cpus = config.get_cpus();
 
     server_conn.set_on_error([this](int error_code) {
-       llog->critical("Server connection error: {}", uv_strerror(error_code));
+       logger->critical("Server connection error: {}", uv_strerror(error_code));
        close_all();
     });
 
     server_conn.set_on_close([this]() {
-       llog->critical("Connection to server is closed. Terminating ...");
+       logger->critical("Connection to server is closed. Terminating ...");
        close_all();
     });
 
@@ -148,7 +150,7 @@ void Worker::_on_getaddrinfo(uv_getaddrinfo_t* handle, int status,
         struct addrinfo* response) {
     Worker *worker = static_cast<Worker*>(handle->data);
     if (status) {
-        llog->critical("Cannot resolve server name");
+        logger->critical("Cannot resolve server name");
         uv_freeaddrinfo(response);
         delete handle;
         worker->close_all();
@@ -162,7 +164,7 @@ void Worker::_on_getaddrinfo(uv_getaddrinfo_t* handle, int status,
     uv_freeaddrinfo(response);
     delete handle;
 
-    llog->debug("Server address resolved to {}", worker->server_address);
+    logger->debug("Server address resolved to {}", worker->server_address);
     worker->server_conn.connect(worker->server_address, worker->server_port);
 }
 
@@ -198,11 +200,11 @@ void Worker::new_task(std::unique_ptr<Task> task)
 
 void Worker::start_task(std::unique_ptr<Task> task)
 {
-    llog->debug("Starting task id={} task_type={} n_inputs={}",
+    logger->debug("Starting task id={} task_type={} n_inputs={}",
                 task->get_id(), task->get_task_type(), task->get_inputs().size());
     auto i = task_factories.find(task->get_task_type());
     if (unlikely(i == task_factories.end())) {
-        llog->critical("Task with unknown type {} received", task->get_task_type());
+        logger->critical("Task with unknown type {} received", task->get_task_type());
         exit(1);
     }
     auto task_instance = i->second->make_instance(*this, std::move(task));
@@ -220,14 +222,14 @@ void Worker::start_task(std::unique_ptr<Task> task)
 
 void Worker::publish_data(Id id, const std::shared_ptr<Data> &data)
 {
-    llog->debug("Publishing data id={} size={} info={}", id, data->get_size(), data->get_info());
+    logger->debug("Publishing data id={} size={} info={}", id, data->get_size(), data->get_info());
     public_data[id] = data;
     check_waiting_tasks();
 }
 
 void Worker::remove_data(Id id)
 {
-    llog->debug("Removing data id={}", id);
+    logger->debug("Removing data id={}", id);
     auto i = public_data.find(id);
     assert(i != public_data.end());
     public_data.erase(i);
@@ -237,7 +239,7 @@ InterConnection& Worker::get_connection(const std::string &address)
 {
     auto &connection = connections[address];
     if (connection.get() == nullptr) {
-        llog->info("Connecting to {}", address);
+        logger->info("Connecting to {}", address);
         connection = std::make_unique<InterConnection>(*this);
 
         std::stringstream ss(address);
@@ -272,7 +274,7 @@ void Worker::register_connection(InterConnection &connection)
     auto &c = connections[connection.get_address()];
     if (unlikely(c.get() != nullptr)) {
         // This can happen when two workers connect each other in the same time
-        llog->debug("Registration collision, leaving unregisted");
+        logger->debug("Registration collision, leaving unregisted");
         // It is ok to leave it as it be, we will just hold the redundant connection
         // in unregistered connections
         return;
@@ -321,14 +323,14 @@ void Worker::set_cpus(int value)
 {
     if (value == 0) {
         value = sysconf(_SC_NPROCESSORS_ONLN);
-        llog->debug("Autodetection of CPUs: {}", value);
+        logger->debug("Autodetection of CPUs: {}", value);
     }
     if (value <= 0) {
         value = 1;
     }
 
     resource_cpus = value;
-    llog->info("Number of CPUs for worker: {}", value);
+    logger->info("Number of CPUs for worker: {}", value);
 }
 
 void Worker::add_unpacker(const std::string &symbol, const UnpackFactoryFn &unpacker)
@@ -347,14 +349,14 @@ void Worker::on_dictionary_updated()
 {
     for (auto &f : unregistered_task_factories) {
         loom::Id id = dictionary.find_symbol_or_fail(f->get_name());
-        llog->debug("Registering task_factory: {} = {}", f->get_name(), id);
+        logger->debug("Registering task_factory: {} = {}", f->get_name(), id);
         task_factories[id] = std::move(f);
     }
     unregistered_task_factories.clear();
 
     for (auto &pair : unregistered_unpack_ffs) {
         loom::Id id = dictionary.find_symbol_or_fail(pair.first);
-        llog->debug("Registering unpack_factory: {} = {}", pair.first, id);
+        logger->debug("Registering unpack_factory: {} = {}", pair.first, id);
         unpack_ffs[id] = pair.second;
     }
     unregistered_unpack_ffs.clear();
@@ -395,7 +397,7 @@ void Worker::remove_task(TaskInstance &task, bool free_resources)
 
 void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
 {
-    llog->error("Task id={} failed: {}", task.get_id(), error_msg);
+    logger->error("Task id={} failed: {}", task.get_id(), error_msg);
     if (server_conn.is_connected()) {
         loomcomm::WorkerResponse msg;
         msg.set_type(loomcomm::WorkerResponse_Type_FAILED);
@@ -410,7 +412,7 @@ void Worker::task_redirect(TaskInstance &task,
                            std::unique_ptr<TaskDescription> new_task_desc)
 {
     loom::Id id = task.get_id();
-    llog->debug("Redirecting task id={} task_type={} n_inputs={}",
+    logger->debug("Redirecting task id={} task_type={} n_inputs={}",
                 id, new_task_desc->task_type, new_task_desc->inputs.size());
     remove_task(task, false);
 
@@ -419,7 +421,7 @@ void Worker::task_redirect(TaskInstance &task,
                                            std::move(new_task_desc->config));
     auto i = task_factories.find(task_type_id);
     if (unlikely(i == task_factories.end())) {
-        llog->critical("Task with unknown type {} received", new_task->get_task_type());
+        logger->critical("Task with unknown type {} received", new_task->get_task_type());
         assert(0);
     }
     auto task_instance = i->second->make_instance(*this, std::move(new_task));
@@ -456,7 +458,7 @@ void Worker::on_message(const char *data, size_t size)
 
     switch (type) {
     case loomcomm::WorkerCommand_Type_TASK: {
-        llog->debug("Task id={} received", msg.id());
+        logger->debug("Task id={} received", msg.id());
         auto task = std::make_unique<Task>(msg.id(),
                                            msg.task_type(),
                                            msg.task_config());
@@ -476,13 +478,13 @@ void Worker::on_message(const char *data, size_t size)
         if (address.size() > 2 && address[0] == '!' && address[1] == ':') {
             msg.set_address(get_server_address() + ":" + address.substr(2, std::string::npos));
         }
-        llog->debug("Sending data id={} to {}", msg.id(), msg.address());
+        logger->debug("Sending data id={} to {}", msg.id(), msg.address());
         assert(send_data(msg.address(), msg.id()));
         break;
     }
     case loomcomm::WorkerCommand_Type_DICTIONARY: {
         auto count = msg.symbols_size();
-        llog->debug("New dictionary ({} symbols)", count);
+        logger->debug("New dictionary ({} symbols)", count);
         Dictionary &dictionary = get_dictionary();
         for (int i = 0; i < count; i++) {
             dictionary.find_or_create(msg.symbols(i));
@@ -490,7 +492,7 @@ void Worker::on_message(const char *data, size_t size)
         on_dictionary_updated();
     } break;
     default:
-        llog->critical("Invalid message");
+        logger->critical("Invalid message");
         exit(1);
     }
 }

@@ -3,7 +3,7 @@
 #include "workerconn.h"
 
 #include "libloom/compat.h"
-#include "libloomw/log.h"
+#include "libloom/log.h"
 
 #include <sstream>
 
@@ -193,7 +193,7 @@ TaskDistribution Scheduler::schedule()
       for (auto id : unit.ids) {
          s << " " << id;
       }
-      loom::llog->alert("PLANNED UNIT = {} / {}", s.str(), uw.worker_index);
+      loom::logger->alert("PLANNED UNIT = {} / {}", s.str(), uw.worker_index);
       */
 
       auto ids = unit.ids; // we need a copy
@@ -280,7 +280,7 @@ bool Scheduler::find_best(UW &uw)
          for (auto id : unit.ids) {
             s << " " << id;
          }
-         loom::llog->alert("SCORE {} / {} : {} [size={}, size_sum={}, {}]", s.str(), worker_i, score, sizes[worker_i], size_sum, n_workers);
+         loom::logger->alert("SCORE {} / {} : {} [size={}, size_sum={}, {}]", s.str(), worker_i, score, sizes[worker_i], size_sum, n_workers);
          */
 
          if (best_score < score) {

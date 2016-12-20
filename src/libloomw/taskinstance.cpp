@@ -1,12 +1,13 @@
 #include "taskinstance.h"
 #include "worker.h"
-
 #include "utils.h"
-#include "log.h"
+
+#include "libloom/log.h"
 
 #include <sstream>
 
 using namespace loom;
+using namespace loom::base;
 
 TaskInstance::~TaskInstance()
 {
@@ -23,7 +24,7 @@ const std::string TaskInstance::get_task_dir()
     }
 
     if (mkdir(name.c_str(), S_IRWXU)) {
-        llog->critical("Cannot create directory {}", name);
+        logger->critical("Cannot create directory {}", name);
         log_errno_abort("mkdir");
     }
 

@@ -1,12 +1,13 @@
 #include "workerconn.h"
 #include "server.h"
 
-#include "libloomw/log.h"
+#include "libloom/log.h"
 #include "libloomw/loomcomm.pb.h"
 #include "taskmanager.h"
 
 
 using namespace loom;
+using namespace loom::base;
 
 WorkerConnection::WorkerConnection(Server &server,
                                    std::unique_ptr<loom::base::Socket> socket,
@@ -22,20 +23,20 @@ WorkerConnection::WorkerConnection(Server &server,
       data_types(data_types),
       worker_id(worker_id)
 {
-    llog->info("Worker {} connected (cpus={})", address, resource_cpus);
+    logger->info("Worker {} connected (cpus={})", address, resource_cpus);
     if (this->socket) {
         this->socket->set_on_message([this](const char *buffer, size_t size) {
             on_message(buffer, size);
         });
         this->socket->set_on_close([this](){
-            llog->info("Worker {} disconnected.", this->address);
+            logger->info("Worker {} disconnected.", this->address);
             this->server.remove_worker_connection(*this);
         });
         server.send_dictionary(*this->socket);
     }
 
     if (task_types.size() == 0) {
-        llog->warn("No task_type has been registered by worker");
+        logger->warn("No task_type has been registered by worker");
     }
 }
 
@@ -58,7 +59,7 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
 void WorkerConnection::send_task(const PlanNode &task)
 {
     auto id = task.get_id();
-    llog->debug("Assigning task id={} to address={} cpus={}", id, address, task.get_n_cpus());
+    logger->debug("Assigning task id={} to address={} cpus={}", id, address, task.get_n_cpus());
 
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_TASK);
@@ -74,7 +75,7 @@ void WorkerConnection::send_task(const PlanNode &task)
 
 void WorkerConnection::send_data(Id id, const std::string &address)
 {
-    llog->debug("Command for {}: SEND id={} address={}", this->address, id, address);
+    logger->debug("Command for {}: SEND id={} address={}", this->address, id, address);
 
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_SEND);
@@ -85,7 +86,7 @@ void WorkerConnection::send_data(Id id, const std::string &address)
 
 void WorkerConnection::remove_data(Id id)
 {
-    llog->debug("Command for {}: REMOVE id={}", this->address, id);
+    logger->debug("Command for {}: REMOVE id={}", this->address, id);
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_REMOVE);
     msg.set_id(id);

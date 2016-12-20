@@ -1,7 +1,7 @@
 #include "externfile.h"
 
 #include "../utils.h"
-#include "../log.h"
+#include "libloom/log.h"
 
 #include <assert.h>
 #include <sys/types.h>
@@ -10,6 +10,7 @@
 
 
 using namespace loom;
+using namespace loom::base;
 
 std::string ExternFile::get_type_name() const
 {
@@ -46,7 +47,7 @@ std::string ExternFile::get_filename() const
 
 void ExternFile::open()
 {
-    llog->debug("Opening extern file {}", filename);
+    logger->debug("Opening extern file {}", filename);
     int fd = ::open(filename.c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
     if (fd < 0) {
         base::log_errno_abort("open");
@@ -74,7 +75,7 @@ void ExternFile::map(int fd, bool write)
     }
     data = (char*) mmap(0, size, flags, MAP_SHARED, fd, 0);
     if (data == MAP_FAILED) {
-        llog->critical("Cannot mmap '{}' size={}", filename, size);
+        logger->critical("Cannot mmap '{}' size={}", filename, size);
         base::log_errno_abort("mmap");
     }
 }

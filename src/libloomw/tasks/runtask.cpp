@@ -4,7 +4,7 @@
 #include "libloomw/worker.h"
 #include "libloomw/data/rawdata.h"
 #include "libloomw/data/array.h"
-#include "libloomw/log.h"
+#include "libloom/log.h"
 #include "loomrun.pb.h"
 #include "libloomw/utils.h"
 
@@ -12,6 +12,7 @@
 #include <fstream>
 
 using namespace loom;
+using namespace loom::base;
 
 RunTask::RunTask(Worker &worker, std::unique_ptr<Task> task)
    : TaskInstance(worker, std::move(task)), exit_status(0)
@@ -26,7 +27,7 @@ void RunTask::start(DataVector &inputs)
 {
    std::string run_dir = worker.get_run_dir(get_id());
    if (make_path(run_dir.c_str(), S_IRWXU)) {
-      llog->critical("Cannot make {}", run_dir);
+      logger->critical("Cannot make {}", run_dir);
       log_errno_abort("make_path");
    }
 
@@ -69,10 +70,10 @@ void RunTask::start(DataVector &inputs)
       std::string filename = inputs[i]->get_filename();
       assert(!filename.empty());
       if (!task->get_inputs().empty()) {
-        llog->debug("Creating symlink of '{}' for input id={} filename={}",
+        logger->debug("Creating symlink of '{}' for input id={} filename={}",
                     msg.map_inputs(i), task->get_inputs()[i], filename);
       } else {
-          llog->debug("Creating symlink of '{}' for filename={}",
+          logger->debug("Creating symlink of '{}' for filename={}",
                       msg.map_inputs(i), filename);
       }
       if (symlink(filename.c_str(), path.c_str())) {
@@ -126,13 +127,13 @@ void RunTask::start(DataVector &inputs)
    std::string work_dir = worker.get_run_dir(get_id());
    options.cwd = work_dir.c_str();
 
-   if (llog->level() == spdlog::level::debug) {
+   if (logger->level() == spdlog::level::debug) {
       std::stringstream s;
       s << msg.args(0);
       for (int i = 1; i < args_size; i++) {
          s << ' ' << msg.args(i);
       }
-      llog->debug("Running command {}", s.str());
+      logger->debug("Running command {}", s.str());
    }
 
 
@@ -179,7 +180,7 @@ void RunTask::_on_exit(uv_process_t *process, int64_t exit_status, int term_sign
 void RunTask::_on_close(uv_handle_t *handle)
 {
    RunTask *task = static_cast<RunTask*>(handle->data);
-   llog->debug("Process id={} finished (exit_status={})", task->get_id(), task->exit_status);
+   logger->debug("Process id={} finished (exit_status={})", task->get_id(), task->exit_status);
 
    if (task->exit_status) {
        std::stringstream s;
@@ -216,10 +217,10 @@ void RunTask::_on_close(uv_handle_t *handle)
 
       std::string path = task->get_path(msg.map_outputs(0));
       std::string data_path = data.get_filename();
-      llog->debug("Returning file '{}'' as result", msg.map_outputs(0));
+      logger->debug("Returning file '{}'' as result", msg.map_outputs(0));
       if (unlikely(rename(path.c_str(),
                           data_path.c_str()))) {
-         llog->critical("Cannot move {} to {}",
+         logger->critical("Cannot move {} to {}",
                         path, data_path);
          log_errno_abort("rename");
       }
@@ -238,11 +239,11 @@ void RunTask::_on_close(uv_handle_t *handle)
       data.assign_filename(task->worker.get_work_dir());
       std::string path = task->get_path(msg.map_outputs(i));
       std::string data_path = data.get_filename();
-      llog->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
+      logger->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
       //data->create(task->worker, 10);
       if (unlikely(rename(path.c_str(),
                           data_path.c_str()))) {
-         llog->critical("Cannot move {} to {}",
+         logger->critical("Cannot move {} to {}",
                         path, data_path);
          log_errno_abort("rename");
       }
@@ -265,7 +266,7 @@ void RunTask::_on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
         return;
     }
     if (nread < 0) {
-        llog->critical("Invalid read in task id={}", task->get_id());
+        logger->critical("Invalid read in task id={}", task->get_id());
         exit(1);
     }
 
