@@ -3,7 +3,7 @@
 #include "workerconn.h"
 
 #include "libloomnet/compat.h"
-#include "libloom/log.h"
+#include "libloomw/log.h"
 
 #include <sstream>
 

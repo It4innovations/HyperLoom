@@ -1,7 +1,7 @@
 #ifndef LIBLOOM_TASKS_PYTHON_H
 #define LIBLOOM_TASKS_PYTHON_H
 
-#include "libloom/threadjob.h"
+#include "libloomw/threadjob.h"
 
 namespace loom {
 

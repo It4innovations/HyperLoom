@@ -1,7 +1,7 @@
 #ifndef LOOM_SERVER_TASKNODE_H
 #define LOOM_SERVER_TASKNODE_H
 
-#include <libloom/types.h>
+#include <libloomw/types.h>
 
 #include <vector>
 #include <string>

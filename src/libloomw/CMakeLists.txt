@@ -1,5 +1,5 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -Wall")
-add_library(libloom
+add_library(libloomw
             data/externfile.cpp
             data/externfile.h
             data/rawdata.h
@@ -53,10 +53,10 @@ add_library(libloom
             utils.h
             utils.cpp)
 
-target_include_directories(libloom PUBLIC ${PROJECT_SOURCE_DIR}/src)
-install(TARGETS libloom
+target_include_directories(libloomw PUBLIC ${PROJECT_SOURCE_DIR}/src)
+install(TARGETS libloomw
         ARCHIVE DESTINATION lib)
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/src/libloom
+    DIRECTORY ${CMAKE_SOURCE_DIR}/src/libloomw
     DESTINATION include
     FILES_MATCHING PATTERN "*.h*")

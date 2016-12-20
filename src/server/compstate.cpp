@@ -3,7 +3,7 @@
 #include "workerconn.h"
 #include "server.h"
 
-#include "libloom/log.h"
+#include "libloomw/log.h"
 
 constexpr static double TRANSFER_COST_COEF = 1.0 / (1024 * 1024); // 1MB = 1cost
 

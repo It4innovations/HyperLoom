@@ -2,9 +2,9 @@
 
 #include "libloomnet/pbutils.h"
 #include "libloomnet/compat.h"
-#include "libloom/utils.h"
-#include "libloom/log.h"
-#include "libloom/loomcomm.pb.h"
+#include "libloomw/utils.h"
+#include "libloomw/log.h"
+#include "libloomw/loomcomm.pb.h"
 
 #include <sstream>
 

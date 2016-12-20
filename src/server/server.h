@@ -8,7 +8,7 @@
 #include "dummyworker.h"
 
 
-#include "libloom/dictionary.h"
+#include "libloomw/dictionary.h"
 #include "libloomnet/listener.h"
 
 #include <vector>

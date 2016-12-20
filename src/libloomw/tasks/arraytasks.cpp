@@ -1,6 +1,6 @@
 #include "arraytasks.h"
 #include "libloomnet/compat.h"
-#include "libloom/data/array.h"
+#include "libloomw/data/array.h"
 
 using namespace loom;
 

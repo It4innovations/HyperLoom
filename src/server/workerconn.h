@@ -2,7 +2,7 @@
 #define LOOM_SERVER_WORKERCONN
 
 #include "libloomnet/socket.h"
-#include "libloom/types.h"
+#include "libloomw/types.h"
 
 class Server;
 class PlanNode;

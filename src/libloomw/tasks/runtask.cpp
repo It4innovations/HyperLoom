@@ -1,12 +1,12 @@
 
 #include "runtask.h"
 
-#include "libloom/worker.h"
-#include "libloom/data/rawdata.h"
-#include "libloom/data/array.h"
-#include "libloom/log.h"
+#include "libloomw/worker.h"
+#include "libloomw/data/rawdata.h"
+#include "libloomw/data/array.h"
+#include "libloomw/log.h"
 #include "loomrun.pb.h"
-#include "libloom/utils.h"
+#include "libloomw/utils.h"
 
 #include <sstream>
 #include <fstream>

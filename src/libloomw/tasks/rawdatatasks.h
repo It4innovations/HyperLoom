@@ -1,8 +1,8 @@
 #ifndef LIBLOOM_TASKS_RAWDATATASKS_H
 #define LIBLOOM_TASKS_RAWDATATASKS_H
 
-#include "libloom/ttinstance.h"
-#include "libloom/threadjob.h"
+#include "libloomw/ttinstance.h"
+#include "libloomw/threadjob.h"
 
 namespace loom {
 

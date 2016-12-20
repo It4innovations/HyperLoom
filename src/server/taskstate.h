@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-#include "libloom/types.h"
+#include "libloomw/types.h"
 
 class WorkerConnection;
 template<typename T> using WorkerMap = std::unordered_map<WorkerConnection*, T>;

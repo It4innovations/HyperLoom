@@ -3,7 +3,7 @@
 
 #include "plannode.h"
 
-#include <libloom/dictionary.h>
+#include <libloomw/dictionary.h>
 
 #include <unordered_map>
 #include <unordered_set>

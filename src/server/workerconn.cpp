@@ -1,8 +1,8 @@
 #include "workerconn.h"
 #include "server.h"
 
-#include "libloom/log.h"
-#include "libloom/loomcomm.pb.h"
+#include "libloomw/log.h"
+#include "libloomw/loomcomm.pb.h"
 #include "taskmanager.h"
 
 

@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-#include "libloom/loomplan.pb.h"
-#include "libloom/log.h"
+#include "libloomw/loomplan.pb.h"
+#include "libloomw/log.h"
 
 static PlanNode::Policy read_task_policy(loomplan::Task_Policy policy) {
     switch(policy) {

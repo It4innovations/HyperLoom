@@ -1,7 +1,7 @@
 
-#include "libloom/worker.h"
-#include "libloom/log.h"
-#include "libloom/config.h"
+#include "libloomw/worker.h"
+#include "libloomw/log.h"
+#include "libloomw/config.h"
 
 
 #include <memory>

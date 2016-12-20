@@ -3,11 +3,12 @@
 
 
 
-#include "libloom/loomplan.pb.h"
-#include "libloom/loomcomm.pb.h"
+#include "libloomw/loomplan.pb.h"
+#include "libloomw/loomcomm.pb.h"
+#include "libloomw/log.h"
 #include "libloomnet/compat.h"
 #include "libloomnet/pbutils.h"
-#include "libloom/log.h"
+
 
 using namespace loom;
 

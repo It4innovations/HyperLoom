@@ -1,11 +1,11 @@
 #include "rawdatatasks.h"
 
 #include "libloomnet/compat.h"
-#include "libloom/data/rawdata.h"
-#include "libloom/data/index.h"
-#include "libloom/data/externfile.h"
-#include "libloom/log.h"
-#include "libloom/worker.h"
+#include "libloomw/data/rawdata.h"
+#include "libloomw/data/index.h"
+#include "libloomw/data/externfile.h"
+#include "libloomw/log.h"
+#include "libloomw/worker.h"
 
 #include <string.h>
 
