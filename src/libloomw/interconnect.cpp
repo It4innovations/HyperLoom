@@ -2,8 +2,8 @@
 #include "worker.h"
 #include "loomcomm.pb.h"
 #include "log.h"
-#include "libloomnet/pbutils.h"
-#include "libloomnet/sendbuffer.h"
+#include "libloom/pbutils.h"
+#include "libloom/sendbuffer.h"
 
 #include <sstream>
 
@@ -117,7 +117,7 @@ void InterConnection::on_stream_data(const char *buffer, size_t size, size_t rem
 
 void InterConnection::send(Id id, std::shared_ptr<Data> &data)
 {
-    auto buffer = std::make_unique<loom::net::SendBuffer>();
+    auto buffer = std::make_unique<loom::base::SendBuffer>();
 
     size_t n_messages = data->serialize(worker, *buffer, data);
 
@@ -125,12 +125,12 @@ void InterConnection::send(Id id, std::shared_ptr<Data> &data)
     msg.set_id(id);
     msg.set_type_id(data->get_type_id(worker));
     msg.set_n_messages(n_messages);
-    buffer->insert(0, loom::net::message_to_item(msg));
+    buffer->insert(0, loom::base::message_to_item(msg));
 
     auto state = socket.get_state();
-    assert(state == loom::net::Socket::State::Open ||
-           state == loom::net::Socket::State::Connecting);
-    if (state == loom::net::Socket::State::Open) {
+    assert(state == loom::base::Socket::State::Open ||
+           state == loom::base::Socket::State::Connecting);
+    if (state == loom::base::Socket::State::Open) {
         socket.send(std::move(buffer));
     } else {
         early_sends.push_back(std::move(buffer));

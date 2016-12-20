@@ -6,7 +6,7 @@
 #include <uv.h>
 
 namespace loom {
-namespace net {
+namespace base {
 
 class Listener
 {

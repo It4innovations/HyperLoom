@@ -1,6 +1,6 @@
 
 #include "array.h"
-#include "libloomnet/compat.h"
+#include "libloom/compat.h"
 #include "../worker.h"
 #include "../log.h"
 
@@ -74,9 +74,9 @@ std::shared_ptr<Data> Array::get_at_index(size_t index)
    return items[index];
 }
 
-size_t Array::serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t Array::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
-    auto types = std::make_unique<net::MemItemWithSz>(sizeof(loom::Id) * length);
+    auto types = std::make_unique<base::MemItemWithSz>(sizeof(loom::Id) * length);
     loom::Id *ts = reinterpret_cast<loom::Id*>(types->get_ptr());
     for (size_t i = 0; i < length; i++) {
         ts[i] = items[i]->get_type_id(worker);

@@ -9,7 +9,7 @@
 
 
 #include "libloomw/dictionary.h"
-#include "libloomnet/listener.h"
+#include "libloom/listener.h"
 
 #include <vector>
 
@@ -75,7 +75,7 @@ public:
         return id;
     }
 
-    void send_dictionary(loom::net::Socket &socket);
+    void send_dictionary(loom::base::Socket &socket);
     int get_worker_ncpus();
     void report_event(std::unique_ptr<loomcomm::Event> event);
 
@@ -87,7 +87,7 @@ private:
 
     loom::Dictionary dictionary;
     uv_loop_t *loop;
-    loom::net::Listener listener;
+    loom::base::Listener listener;
 
     std::vector<std::unique_ptr<WorkerConnection>> connections;
 

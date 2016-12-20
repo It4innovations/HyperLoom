@@ -34,7 +34,7 @@ std::string loom::ExternFile::get_info()
     return "<ExternFile '" + filename + "'>";
 }
 
-size_t ExternFile::serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t ExternFile::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
     assert(0); // TODO
 }
@@ -49,12 +49,12 @@ void ExternFile::open()
     llog->debug("Opening extern file {}", filename);
     int fd = ::open(filename.c_str(), O_RDONLY,  S_IRUSR | S_IWUSR);
     if (fd < 0) {
-        net::log_errno_abort("open");
+        base::log_errno_abort("open");
     }
 
     size = lseek(fd, (size_t)0, SEEK_END);
     if (size == (size_t) -1) {
-        net::log_errno_abort("lseek");
+        base::log_errno_abort("lseek");
     }
     lseek(fd, 0, SEEK_SET);
 
@@ -75,6 +75,6 @@ void ExternFile::map(int fd, bool write)
     data = (char*) mmap(0, size, flags, MAP_SHARED, fd, 0);
     if (data == MAP_FAILED) {
         llog->critical("Cannot mmap '{}' size={}", filename, size);
-        net::log_errno_abort("mmap");
+        base::log_errno_abort("mmap");
     }
 }

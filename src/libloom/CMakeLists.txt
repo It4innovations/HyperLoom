@@ -1,5 +1,5 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -Wall")
-add_library(libloomnet
+add_library(libloom
     compat.h
     socket.cpp
     socket.h
@@ -13,8 +13,8 @@ add_library(libloomnet
     pbutils.cpp
 )
 
-target_include_directories(libloomnet PUBLIC ${PROJECT_SOURCE_DIR}/src)
-install(TARGETS libloomnet
+target_include_directories(libloom PUBLIC ${PROJECT_SOURCE_DIR}/src)
+install(TARGETS libloom
         ARCHIVE DESTINATION lib)
 install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/src/libloomnet

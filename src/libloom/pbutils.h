@@ -11,12 +11,12 @@ namespace google {
 }
 
 namespace loom {
-namespace net {
+namespace base {
 
-std::unique_ptr<loom::net::SendBufferItem>
+std::unique_ptr<loom::base::SendBufferItem>
 message_to_item(::google::protobuf::MessageLite &msg);
 
-void send_message(loom::net::Socket &socket, ::google::protobuf::MessageLite &msg);
+void send_message(loom::base::Socket &socket, ::google::protobuf::MessageLite &msg);
 
 }}
 

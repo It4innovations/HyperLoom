@@ -1,8 +1,8 @@
 #ifndef LOOM_SERVER_CLIENTCONN_H
 #define LOOM_SERVER_CLIENTCONN_H
 
-#include "libloomnet/pbutils.h"
-#include "libloomnet/socket.h"
+#include "libloom/pbutils.h"
+#include "libloom/socket.h"
 
 
 namespace loom {
@@ -15,21 +15,21 @@ class Server;
 class ClientConnection {
 public:
     ClientConnection(Server &server,
-                     std::unique_ptr<loom::net::Socket> socket);
+                     std::unique_ptr<loom::base::Socket> socket);
 
     void on_message(const char *buffer, size_t size);
 
-    void send(std::unique_ptr<loom::net::SendBuffer> buffer) {
+    void send(std::unique_ptr<loom::base::SendBuffer> buffer) {
         socket->send(std::move(buffer));
     }
 
     void send_message(google::protobuf::MessageLite &msg) {
-       loom::net::send_message(*socket, msg);
+       loom::base::send_message(*socket, msg);
     }
 
 protected:
     Server &server;
-    std::unique_ptr<loom::net::Socket> socket;
+    std::unique_ptr<loom::base::Socket> socket;
 };
 
 

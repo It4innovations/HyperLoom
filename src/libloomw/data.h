@@ -5,7 +5,7 @@
 
 #include "loomcomm.pb.h"
 
-#include "libloomnet/sendbuffer.h"
+#include "libloom/sendbuffer.h"
 
 #include <uv.h>
 #include <string>
@@ -41,7 +41,7 @@ public:
     virtual std::shared_ptr<Data> get_slice(size_t from, size_t to);
 
     /** Serialize object into send buffer */
-    virtual size_t serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) = 0;
+    virtual size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) = 0;
 
     /** Get pointer to raw data, returns nullptr when it is not possible */
     virtual const char *get_raw_data() const;
@@ -57,7 +57,7 @@ protected:
 };
 
 
-class DataBufferItem : public loom::net::SendBufferItem {
+class DataBufferItem : public loom::base::SendBufferItem {
 public:
    DataBufferItem(std::shared_ptr<Data> &data, const char *mem, size_t size);
    uv_buf_t get_buf();

@@ -1,7 +1,7 @@
 #ifndef LOOM_SERVER_WORKERCONN
 #define LOOM_SERVER_WORKERCONN
 
-#include "libloomnet/socket.h"
+#include "libloom/socket.h"
 #include "libloomw/types.h"
 
 class Server;
@@ -13,7 +13,7 @@ class WorkerConnection {
 
 public:
     WorkerConnection(Server &server,
-                     std::unique_ptr<loom::net::Socket> socket,
+                     std::unique_ptr<loom::base::Socket> socket,
                      const std::string& address,
                      const std::vector<loom::Id> &task_types,
                      const std::vector<loom::Id> &data_types,
@@ -39,7 +39,7 @@ public:
 
 private:
     Server &server;
-    std::unique_ptr<loom::net::Socket> socket;
+    std::unique_ptr<loom::base::Socket> socket;
     int resource_cpus;
     std::string address;
 

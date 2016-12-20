@@ -4,7 +4,7 @@
 #include "data.h"
 #include "taskinstance.h"
 #include "worker.h"
-#include "libloomnet/log.h"
+#include "libloom/log.h"
 
 #include<uv.h>
 

@@ -1,7 +1,7 @@
 #include "server.h"
 
-#include "libloomnet/pbutils.h"
-#include "libloomnet/compat.h"
+#include "libloom/pbutils.h"
+#include "libloom/compat.h"
 #include "libloomw/utils.h"
 #include "libloomw/log.h"
 #include "libloomw/loomcomm.pb.h"
@@ -111,7 +111,7 @@ void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::
     exit(1);
 }
 
-void Server::send_dictionary(loom::net::Socket &socket)
+void Server::send_dictionary(loom::base::Socket &socket)
 {
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_DICTIONARY);
@@ -120,7 +120,7 @@ void Server::send_dictionary(loom::net::Socket &socket)
         std::string *s = msg.add_symbols();
         *s = symbol;
     }
-    loom::net::send_message(socket, msg);
+    loom::base::send_message(socket, msg);
 }
 
 int Server::get_worker_ncpus()

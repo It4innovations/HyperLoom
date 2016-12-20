@@ -2,8 +2,8 @@
 #include "dummyworker.h"
 #include "server.h"
 
-#include <libloomnet/compat.h>
-#include <libloomnet/pbutils.h>
+#include <libloom/compat.h>
+#include <libloom/pbutils.h>
 
 #include <libloomw/utils.h>
 #include <libloomw/log.h>
@@ -60,7 +60,7 @@ DWConnection::~DWConnection()
 
 }
 
-void DWConnection::accept(loom::net::Listener &listener)
+void DWConnection::accept(loom::base::Listener &listener)
 {
    listener.accept(socket);
 }
@@ -74,7 +74,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
    }
 
    if (remaining_messages) {
-      auto item = std::make_unique<net::MemItemWithSz>(size);
+      auto item = std::make_unique<base::MemItemWithSz>(size);
       memcpy(item->get_ptr(), buffer, size);
       send_buffer->add(std::move(item));
 
@@ -89,7 +89,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
    }
 
    assert(!send_buffer);
-   send_buffer = std::make_unique<loom::net::SendBuffer>();
+   send_buffer = std::make_unique<loom::base::SendBuffer>();
 
    loomcomm::DataHeader msg;
    assert(msg.ParseFromArray(buffer, size));
@@ -104,5 +104,5 @@ void DWConnection::on_message(const char *buffer, size_t size)
    loomcomm::ClientMessage cmsg;
    cmsg.set_type(loomcomm::ClientMessage_Type_DATA);
    *cmsg.mutable_data() = msg;
-   send_buffer->add(net::message_to_item(cmsg));
+   send_buffer->add(base::message_to_item(cmsg));
 }

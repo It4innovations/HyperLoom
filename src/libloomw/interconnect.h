@@ -1,8 +1,8 @@
 #ifndef LOOM_INTERCONNECT_H
 #define LOOM_INTERCONNECT_H
 
-#include "libloomnet/socket.h"
-#include "libloomnet/listener.h"
+#include "libloom/socket.h"
+#include "libloom/listener.h"
 #include "data.h"
 #include "unpacking.h"
 
@@ -36,7 +36,7 @@ public:
         socket.connect(address, port);
     }
 
-    void accept(loom::net::Listener &listener) {
+    void accept(loom::base::Listener &listener) {
         listener.accept(socket);
     }
 
@@ -52,7 +52,7 @@ protected:
     void on_stream_data(const char *buffer, size_t size, size_t remaining);
     void on_connect();
 
-    net::Socket socket;
+    base::Socket socket;
     Worker &worker;
     std::string address;
 
@@ -61,7 +61,7 @@ protected:
 
     static std::string make_address(const std::string &host, int port);
 
-    std::vector<std::unique_ptr<net::SendBuffer>> early_sends;
+    std::vector<std::unique_ptr<base::SendBuffer>> early_sends;
 };
 
 }

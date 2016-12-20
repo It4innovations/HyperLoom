@@ -2,9 +2,9 @@
 
 #include "compat.h"
 
-using namespace loom::net;
+using namespace loom::base;
 
-std::vector<uv_buf_t> loom::net::SendBuffer::get_bufs()
+std::vector<uv_buf_t> loom::base::SendBuffer::get_bufs()
 {
    std::vector<uv_buf_t> bufs;
    bufs.reserve(items.size());
@@ -14,12 +14,12 @@ std::vector<uv_buf_t> loom::net::SendBuffer::get_bufs()
    return bufs;
 }
 
-loom::net::MemItem::MemItem(size_t size) : size(size)
+loom::base::MemItem::MemItem(size_t size) : size(size)
 {
    mem = std::make_unique<char[]>(size);
 }
 
-loom::net::MemItem::~MemItem()
+loom::base::MemItem::~MemItem()
 {
 
 }

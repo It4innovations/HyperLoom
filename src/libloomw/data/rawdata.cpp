@@ -3,7 +3,7 @@
 #include "../log.h"
 #include "../utils.h"
 #include "../worker.h"
-#include "libloomnet/sendbuffer.h"
+#include "libloom/sendbuffer.h"
 
 #include <sstream>
 #include <assert.h>
@@ -151,9 +151,9 @@ void RawData::init_from_mem(const std::string &work_dir, const void *ptr, size_t
     memcpy(mem, ptr, size);
 }
 
-size_t RawData::serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t RawData::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
-    buffer.add(std::make_unique<net::SizeBufferItem>(size));
+    buffer.add(std::make_unique<base::SizeBufferItem>(size));
     buffer.add(std::make_unique<DataBufferItem>(data_ptr, get_raw_data(), size));
     return 1;
 }

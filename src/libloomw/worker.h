@@ -7,7 +7,7 @@
 #include "taskfactory.h"
 #include "dictionary.h"
 
-#include "libloomnet/listener.h"
+#include "libloom/listener.h"
 
 #include <uv.h>
 
@@ -138,7 +138,7 @@ private:
 
     std::unordered_map<DataTypeId, UnpackFactoryFn> unpack_ffs;
 
-    net::Socket server_conn;
+    base::Socket server_conn;
     std::unordered_map<std::string, std::unique_ptr<InterConnection>> connections;
     std::vector<std::unique_ptr<InterConnection>> nonregistered_connections;
 
@@ -147,7 +147,7 @@ private:
     std::string server_address;
     int server_port;
 
-    net::Listener listener;
+    base::Listener listener;
 
     std::vector<std::unique_ptr<TaskFactory>> unregistered_task_factories;
     std::unordered_map<std::string, UnpackFactoryFn> unregistered_unpack_ffs;

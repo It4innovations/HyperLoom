@@ -2,7 +2,7 @@
 #include "python.h"
 #include "../data/rawdata.h"
 #include "../log.h"
-#include "libloomnet/compat.h"
+#include "libloom/compat.h"
 #include "../worker.h"
 #include "python_wrapper.h"
 

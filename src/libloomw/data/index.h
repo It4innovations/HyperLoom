@@ -27,7 +27,7 @@ public:
     std::string get_info();
     std::shared_ptr<Data> get_at_index(size_t index);
     std::shared_ptr<Data> get_slice(size_t from, size_t to);
-    size_t serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
 protected:
 

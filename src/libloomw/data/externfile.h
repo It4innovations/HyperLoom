@@ -28,7 +28,7 @@ public:
 
     std::string get_info();
     std::string get_filename() const;
-    size_t serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
 protected:
 

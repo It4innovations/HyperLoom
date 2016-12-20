@@ -3,7 +3,7 @@
 #include "clientconn.h"
 #include "server.h"
 
-#include "libloomnet/compat.h"
+#include "libloom/compat.h"
 #include "libloomw/log.h"
 #include "libloomw/loomcomm.pb.h"
 
@@ -13,7 +13,7 @@ using namespace loom;
 
 FreshConnection::FreshConnection(Server &server) :
     server(server),
-    socket(std::make_unique<net::Socket>(server.get_loop()))
+    socket(std::make_unique<base::Socket>(server.get_loop()))
 {
     socket->set_on_close([this](){
         llog->error("Connection closed without registration");
@@ -25,7 +25,7 @@ FreshConnection::FreshConnection(Server &server) :
     });
 }
 
-void FreshConnection::accept(loom::net::Listener &listener) {
+void FreshConnection::accept(loom::base::Listener &listener) {
     listener.accept(*socket);
     llog->debug("New connection to server ({})", socket->get_peername());
 }

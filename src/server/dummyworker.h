@@ -6,9 +6,9 @@
 #include <memory>
 #include <vector>
 
-#include <libloomnet/listener.h>
-#include <libloomnet/socket.h>
-#include <libloomnet/sendbuffer.h>
+#include <libloom/listener.h>
+#include <libloom/socket.h>
+#include <libloom/sendbuffer.h>
 #include <libloomw/types.h>
 
 class Server;
@@ -39,7 +39,7 @@ protected:
 
     std::vector<std::unique_ptr<DWConnection>> connections;
 
-    loom::net::Listener listener;
+    loom::base::Listener listener;
 };
 
 class DWConnection
@@ -52,7 +52,7 @@ public:
         return socket.get_peername();
     }
 
-    void accept(loom::net::Listener &listener);
+    void accept(loom::base::Listener &listener);
 
 
 protected:
@@ -60,8 +60,8 @@ protected:
     void on_message(const char *buffer, size_t size);
 
     DummyWorker &worker;
-    loom::net::Socket socket;
-    std::unique_ptr<loom::net::SendBuffer> send_buffer;
+    loom::base::Socket socket;
+    std::unique_ptr<loom::base::SendBuffer> send_buffer;
     size_t remaining_messages;
     bool registered;
 };

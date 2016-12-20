@@ -15,8 +15,8 @@
 #include "tasks/runtask.h"
 #include "tasks/python.h"
 
-#include "libloomnet/sendbuffer.h"
-#include "libloomnet/pbutils.h"
+#include "libloom/sendbuffer.h"
+#include "libloom/pbutils.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -183,7 +183,7 @@ void Worker::register_worker()
         msg.add_data_types(pair.first);
     }
 
-    loom::net::send_message(server_conn, msg);
+    loom::base::send_message(server_conn, msg);
 }
 
 void Worker::new_task(std::unique_ptr<Task> task)

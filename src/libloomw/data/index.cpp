@@ -80,7 +80,7 @@ std::shared_ptr<Data> Index::get_slice(size_t from, size_t to)
     return data;
 }
 
-size_t Index::serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
     llog->critical("Index::serialize_data");
     abort();

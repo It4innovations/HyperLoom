@@ -5,7 +5,7 @@
 #include "spdlog/spdlog.h"
 
 namespace loom {
-namespace net {
+namespace base {
 
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
@@ -13,7 +13,7 @@ namespace net {
 #define UV_CHECK(call) \
     { int _uv_r = (call); \
       if (unlikely(_uv_r)) { \
-        loom::net::report_uv_error(_uv_r, __LINE__, __FILE__); \
+        loom::base::report_uv_error(_uv_r, __LINE__, __FILE__); \
       } \
     }
 

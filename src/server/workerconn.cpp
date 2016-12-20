@@ -9,7 +9,7 @@
 using namespace loom;
 
 WorkerConnection::WorkerConnection(Server &server,
-                                   std::unique_ptr<loom::net::Socket> socket,
+                                   std::unique_ptr<loom::base::Socket> socket,
                                    const std::string& address,
                                    const std::vector<loom::Id> &task_types,
                                    const std::vector<loom::Id> &data_types,

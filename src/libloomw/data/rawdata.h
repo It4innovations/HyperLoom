@@ -39,7 +39,7 @@ public:
     void assign_filename(const std::string &work_dir);
 
     std::string get_filename() const;
-    size_t serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
 protected:
 

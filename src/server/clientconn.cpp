@@ -6,14 +6,14 @@
 #include "libloomw/loomplan.pb.h"
 #include "libloomw/loomcomm.pb.h"
 #include "libloomw/log.h"
-#include "libloomnet/compat.h"
-#include "libloomnet/pbutils.h"
+#include "libloom/compat.h"
+#include "libloom/pbutils.h"
 
 
 using namespace loom;
 
 ClientConnection::ClientConnection(Server &server,
-                                   std::unique_ptr<loom::net::Socket> socket)
+                                   std::unique_ptr<loom::base::Socket> socket)
     : server(server), socket(std::move(socket))
 {
     this->socket->set_on_message([this](const char *buffer, size_t size) {
@@ -35,7 +35,7 @@ ClientConnection::ClientConnection(Server &server,
         std::string *s = cmsg.add_symbols();
         *s = symbol;
     }
-    loom::net::send_message(*this->socket, cmsg);
+    loom::base::send_message(*this->socket, cmsg);
     // End of send dictionary
 }
 

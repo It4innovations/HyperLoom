@@ -1,8 +1,8 @@
 #ifndef LOOM_SERVER_FRESHCONN
 #define LOOM_SERVER_FRESHCONN
 
-#include "libloomnet/socket.h"
-#include "libloomnet/listener.h"
+#include "libloom/socket.h"
+#include "libloom/listener.h"
 
 class Server;
 
@@ -18,13 +18,13 @@ public:
         return server;
     }
 
-    void accept(loom::net::Listener &listener);
+    void accept(loom::base::Listener &listener);
 
 protected:
     void on_message(const char *buffer, size_t size);
 
     Server &server;
-    std::unique_ptr<loom::net::Socket> socket;
+    std::unique_ptr<loom::base::Socket> socket;
 };
 
 #endif // LOOM_SERVER_FRESHCONN

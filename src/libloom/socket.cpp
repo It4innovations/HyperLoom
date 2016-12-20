@@ -1,11 +1,11 @@
 
 #include "socket.h"
 #include "log.h"
-#include "libloomnet/compat.h"
+#include "libloom/compat.h"
 
 #include <assert.h>
 
-using namespace loom::net;
+using namespace loom::base;
 
 Socket::Socket(uv_loop_t *loop)
    : state(State::New), stream_mode(false), stream_remaining(0)

@@ -2,10 +2,10 @@
 #define LOOM_UTILS_H
 
 #include <sys/types.h>
-#include <libloomnet/log.h>
+#include <libloom/log.h>
 
-#include "libloomnet/socket.h"
-#include "libloomnet/sendbuffer.h"
+#include "libloom/socket.h"
+#include "libloom/sendbuffer.h"
 
 namespace loom {
 

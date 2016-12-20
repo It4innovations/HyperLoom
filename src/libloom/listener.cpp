@@ -3,7 +3,7 @@
 #include "log.h"
 
 
-using namespace loom::net;
+using namespace loom::base;
 
 void Listener::start(uv_loop_t *loop, int port, const std::function<void()> &callback)
 {

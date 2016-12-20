@@ -24,7 +24,7 @@ public:
     std::shared_ptr<Data>& get_ref_at_index(size_t index);
 
     std::string get_type_name() const;
-    size_t serialize(Worker &worker, loom::net::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
 protected:
 

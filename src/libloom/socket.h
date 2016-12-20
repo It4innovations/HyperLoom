@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace loom {
-namespace net {
+namespace base {
 
 class Socket {
 
