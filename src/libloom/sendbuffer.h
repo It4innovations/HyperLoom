@@ -1,5 +1,5 @@
-#ifndef LIBLOOMNET_SENDBUFFER_H
-#define LIBLOOMNET_SENDBUFFER_H
+#ifndef LIBLOOM_SENDBUFFER_H
+#define LIBLOOM_SENDBUFFER_H
 
 #include <uv.h>
 #include <memory>
@@ -97,4 +97,4 @@ protected:
 
 }}
 
-#endif // LIBLOOMNET_SENDBUFFER_H
+#endif // LIBLOOM_SENDBUFFER_H

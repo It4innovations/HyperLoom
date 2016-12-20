@@ -37,7 +37,7 @@ bool Data::has_raw_data() const
    return false;
 }
 
-Id Data::get_type_id(Worker &worker) const
+base::Id Data::get_type_id(Worker &worker) const
 {
    return worker.get_dictionary().find_symbol(get_type_name());
 }

@@ -11,6 +11,13 @@ add_library(libloom
     log.h
     pbutils.h
     pbutils.cpp
+    dictionary.cpp
+    dictionary.h
+    types.h
+    loomcomm.pb.h
+    loomcomm.pb.cc
+    loomplan.pb.h
+    loomplan.pb.cc
 )
 
 target_include_directories(libloom PUBLIC ${PROJECT_SOURCE_DIR}/src)

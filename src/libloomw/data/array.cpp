@@ -77,8 +77,8 @@ std::shared_ptr<Data> Array::get_at_index(size_t index)
 
 size_t Array::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
 {
-    auto types = std::make_unique<base::MemItemWithSz>(sizeof(loom::Id) * length);
-    loom::Id *ts = reinterpret_cast<loom::Id*>(types->get_ptr());
+    auto types = std::make_unique<base::MemItemWithSz>(sizeof(loom::base::Id) * length);
+    loom::base::Id *ts = reinterpret_cast<loom::base::Id*>(types->get_ptr());
     for (size_t i = 0; i < length; i++) {
         ts[i] = items[i]->get_type_id(worker);
     }

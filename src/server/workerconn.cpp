@@ -2,7 +2,7 @@
 #include "server.h"
 
 #include "libloom/log.h"
-#include "libloomw/loomcomm.pb.h"
+#include "libloom/loomcomm.pb.h"
 #include "taskmanager.h"
 
 
@@ -12,8 +12,8 @@ using namespace loom::base;
 WorkerConnection::WorkerConnection(Server &server,
                                    std::unique_ptr<loom::base::Socket> socket,
                                    const std::string& address,
-                                   const std::vector<loom::Id> &task_types,
-                                   const std::vector<loom::Id> &data_types,
+                                   const std::vector<loom::base::Id> &task_types,
+                                   const std::vector<loom::base::Id> &data_types,
                                    int resource_cpus, int worker_id)
     : server(server),
       socket(std::move(socket)),
@@ -67,7 +67,7 @@ void WorkerConnection::send_task(const PlanNode &task)
     msg.set_task_type(task.get_task_type());
     msg.set_task_config(task.get_config());
 
-    for (loom::Id id : task.get_inputs()) {
+    for (loom::base::Id id : task.get_inputs()) {
         msg.add_task_inputs(id);
     }
     send_message(*socket, msg);

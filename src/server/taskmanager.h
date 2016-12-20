@@ -36,7 +36,7 @@ public:
         return cstate.get_plan();
     }
 
-    void on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc);
+    void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
     void register_worker(WorkerConnection *wc);
 
     bool is_plan_finished() const {
@@ -50,7 +50,7 @@ private:
     ComputationState cstate;
 
     void distribute_work(const TaskDistribution &distribution);
-    void start_task(WorkerConnection *wc, loom::Id task_id);
+    void start_task(WorkerConnection *wc, loom::base::Id task_id);
     void remove_state(TaskState &state);
 
     bool report;

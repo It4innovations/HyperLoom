@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "libloomw/loomplan.pb.h"
+#include "libloom/loomplan.pb.h"
 #include "libloom/log.h"
 
 static PlanNode::Policy read_task_policy(loomplan::Task_Policy policy) {
@@ -24,11 +24,11 @@ Plan::Plan()
 
 }
 
-Plan::Plan(const loomplan::Plan &plan, loom::Id id_base, loom::Dictionary &dictionary)
+Plan::Plan(const loomplan::Plan &plan, loom::base::Id id_base, loom::base::Dictionary &dictionary)
 {
     std::vector<int> resources;
 
-    loom::Id resource_ncpus = dictionary.find_or_create("loom/resource/cpus");
+    loom::base::Id resource_ncpus = dictionary.find_or_create("loom/resource/cpus");
     auto rr_size = plan.resource_requests_size();
     for (int i = 0; i < rr_size; i++) {
         auto &rr = plan.resource_requests(i);
@@ -62,11 +62,11 @@ Plan::Plan(const loomplan::Plan &plan, loom::Id id_base, loom::Dictionary &dicti
 
     for (auto& pair : tasks) {
         auto& task = pair.second;
-        loom::Id my_id = task.id;
-        std::vector<loom::Id> inps(task.get_inputs());
+        loom::base::Id my_id = task.id;
+        std::vector<loom::base::Id> inps(task.get_inputs());
         std::sort(inps.begin(), inps.end());
-        loom::Id prev = -1;
-        for (loom::Id id : inps) {
+        loom::base::Id prev = -1;
+        for (loom::base::Id id : inps) {
             if (prev != id) {
                 auto it = tasks.find(id);
                 assert(it != tasks.end());
@@ -84,9 +84,9 @@ Plan::Plan(const loomplan::Plan &plan, loom::Id id_base, loom::Dictionary &dicti
     }
 }
 
-std::vector<loom::Id> Plan::get_init_tasks() const
+std::vector<loom::base::Id> Plan::get_init_tasks() const
 {
-    std::vector<loom::Id> result;
+    std::vector<loom::base::Id> result;
     foreach_task([&result](const PlanNode &node){
           if (node.get_inputs().empty()) {
             result.push_back(node.id);

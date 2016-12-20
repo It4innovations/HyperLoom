@@ -1,5 +1,5 @@
-#ifndef LIBLOOM_RAWDATA_H
-#define LIBLOOM_RAWDATA_H
+#ifndef LIBLOOMW_RAWDATA_H
+#define LIBLOOMW_RAWDATA_H
 
 #include "../data.h"
 #include "../unpacking.h"
@@ -71,4 +71,4 @@ private:
 
 }
 
-#endif // LIBLOOM_RAWDATA_H
+#endif // LIBLOOMW_RAWDATA_H

@@ -1,5 +1,5 @@
-#ifndef LOOM_TTINSTANCE_H
-#define LOOM_TTINSTANCE_H
+#ifndef LIBLOOMW_TTINSTANCE_H
+#define LIBLOOMW_TTINSTANCE_H
 
 #include "data.h"
 #include "taskinstance.h"
@@ -69,4 +69,4 @@ protected:
 
 }
 
-#endif // LOOM_TASKINSTANCE_H
+#endif // LIBLOOMW_TASKINSTANCE_H

@@ -1,5 +1,5 @@
-#ifndef LIBLOOM_EXTERNFILE_H
-#define LIBLOOM_EXTERNFILE_H
+#ifndef LIBLOOMW_EXTERNFILE_H
+#define LIBLOOMW_EXTERNFILE_H
 
 
 #include "../data.h"
@@ -46,4 +46,4 @@ protected:
 
 }
 
-#endif // LIBLOOM_EXTERNFILE_H
+#endif // LIBLOOMW_EXTERNFILE_H

@@ -5,7 +5,7 @@ using namespace loom;
 
 bool loom::Task::is_ready(const Worker &worker) const
 {
-    for (Id id : inputs) {
+    for (auto id : inputs) {
         if (!worker.has_data(id)) {
             return false;
         }

@@ -2,7 +2,7 @@
 #define LOOM_SERVER_WORKERCONN
 
 #include "libloom/socket.h"
-#include "libloomw/types.h"
+#include "libloom/types.h"
 
 class Server;
 class PlanNode;
@@ -15,15 +15,15 @@ public:
     WorkerConnection(Server &server,
                      std::unique_ptr<loom::base::Socket> socket,
                      const std::string& address,
-                     const std::vector<loom::Id> &task_types,
-                     const std::vector<loom::Id> &data_types,
+                     const std::vector<loom::base::Id> &task_types,
+                     const std::vector<loom::base::Id> &data_types,
                      int resource_cpus,
                      int worker_id);
     void on_message(const char *buffer, size_t size);
 
     void send_task(const PlanNode &task);
-    void send_data(loom::Id id, const std::string &address);
-    void remove_data(loom::Id id);
+    void send_data(loom::base::Id id, const std::string &address);
+    void remove_data(loom::base::Id id);
 
     const std::string &get_address() {
         return address;

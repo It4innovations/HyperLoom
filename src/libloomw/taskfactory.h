@@ -1,5 +1,5 @@
-#ifndef LOOM_TASK_FACTORY_H
-#define LOOM_TASK_FACTORY_H
+#ifndef LIBLOOMW_TASK_FACTORY_H
+#define LIBLOOMW_TASK_FACTORY_H
 
 #include "data.h"
 #include "task.h"
@@ -45,4 +45,4 @@ public:
 
 }
 
-#endif // LOOM_TASK_FACTORY_H
+#endif // LIBLOOMW_TASK_FACTORY_H

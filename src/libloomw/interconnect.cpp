@@ -1,6 +1,6 @@
 #include "interconnect.h"
 #include "worker.h"
-#include "loomcomm.pb.h"
+#include "libloom/loomcomm.pb.h"
 #include "libloom/log.h"
 #include "libloom/pbutils.h"
 #include "libloom/sendbuffer.h"

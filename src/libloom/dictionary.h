@@ -8,6 +8,7 @@
 #include <vector>
 
 namespace loom {
+namespace base {
 
 /** Container for symbols */
 class Dictionary {
@@ -15,17 +16,18 @@ class Dictionary {
 public:
     Dictionary();
 
-    loom::Id find_symbol_or_fail(const std::string &symbol) const;
-    loom::Id find_symbol(const std::string &symbol) const;
-    loom::Id find_or_create(const std::string &symbol);
-    const std::string& translate(loom::Id id);
+    loom::base::Id find_symbol_or_fail(const std::string &symbol) const;
+    loom::base::Id find_symbol(const std::string &symbol) const;
+    loom::base::Id find_or_create(const std::string &symbol);
+    const std::string& translate(loom::base::Id id);
 
     std::vector<std::string> get_all_symbols() const;
 
 private:
-    std::unordered_map<std::string, loom::Id> symbol_to_id;
+    std::unordered_map<std::string, loom::base::Id> symbol_to_id;
 };
 
+}
 }
 
 #endif // LIBLOOM_DICTIONARY_H

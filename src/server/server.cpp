@@ -3,9 +3,7 @@
 #include "libloom/pbutils.h"
 #include "libloom/compat.h"
 #include "libloom/log.h"
-
-#include "libloomw/utils.h"
-#include "libloomw/loomcomm.pb.h"
+#include "libloom/loomcomm.pb.h"
 
 #include <sstream>
 
@@ -69,7 +67,7 @@ void Server::remove_client_connection(ClientConnection &conn)
     client_connection.reset();
 }
 
-loom::Id Server::translate_to_client_id(loom::Id id) const
+loom::base::Id Server::translate_to_client_id(loom::base::Id id) const
 {
     return task_manager.get_plan().get_node(id).get_client_id();
 }
@@ -84,7 +82,7 @@ void Server::remove_freshconnection(FreshConnection &conn)
     fresh_connections.erase(i);
 }
 
-void Server::on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc)
+void Server::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
     task_manager.on_task_finished(id, size, length, wc);
 }

@@ -1,5 +1,5 @@
-#ifndef LIBLOOMNET_SOCKET_H
-#define LIBLOOMNET_SOCKET_H
+#ifndef LIBLOOM_SOCKET_H
+#define LIBLOOM_SOCKET_H
 
 #include "sendbuffer.h"
 
@@ -90,4 +90,4 @@ private:
 
 }}
 
-#endif // LIBLOOMNET_CONNECTION_H
+#endif // LIBLOOM_CONNECTION_H

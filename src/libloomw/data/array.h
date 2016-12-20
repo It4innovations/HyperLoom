@@ -1,5 +1,5 @@
-#ifndef LIBLOOM_DATA_ARRAY_H
-#define LIBLOOM_DATA_ARRAY_H
+#ifndef LIBLOOMW_DATA_ARRAY_H
+#define LIBLOOMW_DATA_ARRAY_H
 
 #include "../data.h"
 #include "../unpacking.h"
@@ -47,7 +47,7 @@ public:
 
 private:
    std::unique_ptr<DataUnpacker> unpacker;
-   std::vector<Id> types;
+   std::vector<loom::base::Id> types;
    std::unique_ptr<std::shared_ptr<Data>[]> items;
    size_t index;
    Worker &worker;
@@ -55,4 +55,4 @@ private:
 
 
 }
-#endif // LIBLOOM_DATA_ARRAY_H
+#endif // LIBLOOMW_DATA_ARRAY_H

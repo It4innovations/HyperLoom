@@ -5,7 +5,7 @@
 
 #include "libloom/compat.h"
 #include "libloom/log.h"
-#include "libloomw/loomcomm.pb.h"
+#include "libloom/loomcomm.pb.h"
 
 #include <sstream>
 

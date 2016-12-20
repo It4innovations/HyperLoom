@@ -3,12 +3,13 @@
 BASE_DIR=`dirname $0`/..
 
 LIBLOOM_DIR=${BASE_DIR}/src/libloom
+LIBLOOMW_DIR=${BASE_DIR}/src/libloomw
 PYTHON_DIR=${BASE_DIR}/python/loom/pb
 
 # LIBLOOM
 protoc loomcomm.proto --cpp_out=${LIBLOOM_DIR}
 protoc loomplan.proto --cpp_out=${LIBLOOM_DIR}
-protoc loomrun.proto --cpp_out=${LIBLOOM_DIR}/tasks
+protoc loomrun.proto --cpp_out=${LIBLOOMW_DIR}/tasks
 
 # CLIENT (Python)
 protoc loomcomm.proto --python_out=${PYTHON_DIR}

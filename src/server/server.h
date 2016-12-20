@@ -8,7 +8,7 @@
 #include "dummyworker.h"
 
 
-#include "libloomw/dictionary.h"
+#include "libloom/dictionary.h"
 #include "libloom/listener.h"
 
 #include <vector>
@@ -33,7 +33,7 @@ public:
     void add_client_connection(std::unique_ptr<ClientConnection> conn);
     void remove_client_connection(ClientConnection &conn);
 
-    loom::Id translate_to_client_id(loom::Id id) const;
+    loom::base::Id translate_to_client_id(loom::base::Id id) const;
 
     DummyWorker& get_dummy_worker() {
         return dummy_worker;
@@ -58,18 +58,18 @@ public:
         return client_connection.get() != nullptr;
     }
 
-    void add_resend_task(loom::Id id);
+    void add_resend_task(loom::base::Id id);
 
-    void on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc);
+    void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
 
-    loom::Dictionary& get_dictionary() {
+    loom::base::Dictionary& get_dictionary() {
         return dictionary;
     }
 
     void inform_about_error(std::string &error_msg);
-    void inform_about_task_error(loom::Id id, WorkerConnection &wconn, const std::string &error_msg);
+    void inform_about_task_error(loom::base::Id id, WorkerConnection &wconn, const std::string &error_msg);
 
-    loom::Id new_id(int count = 1) {
+    loom::base::Id new_id(int count = 1) {
         auto id = id_counter;
         id_counter += count;
         return id;
@@ -85,7 +85,7 @@ private:
 
 
 
-    loom::Dictionary dictionary;
+    loom::base::Dictionary dictionary;
     uv_loop_t *loop;
     loom::base::Listener listener;
 
@@ -99,7 +99,7 @@ private:
     TaskManager task_manager;
     DummyWorker dummy_worker;
 
-    loom::Id id_counter;
+    loom::base::Id id_counter;
     void on_new_connection();
 
     bool task_distribution_active;

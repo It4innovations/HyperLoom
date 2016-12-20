@@ -23,9 +23,9 @@ public:
     /*TaskDistribution compute_initial_distribution();
     TaskDistribution compute_distribution();*/
 
-    TaskState& get_state(loom::Id id);
+    TaskState& get_state(loom::base::Id id);
 
-    TaskState* get_state_ptr(loom::Id id) {
+    TaskState* get_state_ptr(loom::base::Id id) {
         auto it = states.find(id);
         if (it != states.end()) {
             return &it->second;
@@ -34,20 +34,20 @@ public:
         }
     }
 
-    //TaskState& get_state_or_create(loom::Id id);
+    //TaskState& get_state_or_create(loom::base::Id id);
 
-    const PlanNode& get_node(loom::Id id) {
+    const PlanNode& get_node(loom::base::Id id) {
         return plan.get_node(id);
     }
 
-    void add_ready_nodes(const std::vector<loom::Id> &ids);
+    void add_ready_nodes(const std::vector<loom::base::Id> &ids);
     void set_task_finished(const PlanNode& node, size_t size, size_t length, WorkerConnection *wc);
 
     bool has_pending_tasks() const {
         return !pending_tasks.empty();
     }
 
-    const std::unordered_set<loom::Id>& get_pending_tasks() const {
+    const std::unordered_set<loom::base::Id>& get_pending_tasks() const {
         return pending_tasks;
     }
 
@@ -55,7 +55,7 @@ public:
         return plan;
     }
 
-    void remove_state(loom::Id id);
+    void remove_state(loom::base::Id id);
 
     bool is_ready(const PlanNode &node);
     void add_ready_nexts(const PlanNode &node);
@@ -71,19 +71,19 @@ public:
     }
 
 private:
-    std::unordered_map<loom::Id, TaskState> states;
+    std::unordered_map<loom::base::Id, TaskState> states;
     std::unordered_map<WorkerConnection*, WorkerInfo> workers;
-    std::unordered_set<loom::Id> pending_tasks;
+    std::unordered_set<loom::base::Id> pending_tasks;
     Plan plan;
     Server &server;
 
     uint64_t base_time;
 
-    loom::Id dslice_task_id;
-    loom::Id dget_task_id;
+    loom::base::Id dslice_task_id;
+    loom::base::Id dget_task_id;
 
-    loom::Id slice_task_id;
-    loom::Id get_task_id;
+    loom::base::Id slice_task_id;
+    loom::base::Id get_task_id;
 
 
     WorkerConnection *get_best_holder_of_deps(PlanNode *task);
@@ -93,12 +93,12 @@ private:
     void expand_dslice(const PlanNode &node);
     void expand_dget(const PlanNode &node);
     void make_expansion(std::vector<std::string> &configs, const PlanNode &node1,
-                        const PlanNode &node2, loom::Id id_base1, loom::Id id_base2);
+                        const PlanNode &node2, loom::base::Id id_base1, loom::base::Id id_base2);
     void collect_requirements_for_node(WorkerConnection *wc,
                                        const PlanNode &node,
-                                       std::unordered_set<loom::Id> &nonlocals);
+                                       std::unordered_set<loom::base::Id> &nonlocals);
     size_t task_transfer_cost(const PlanNode &node);
-    void add_pending_task(loom::Id id);
+    void add_pending_task(loom::base::Id id);
     int get_max_cpus();
 };
 

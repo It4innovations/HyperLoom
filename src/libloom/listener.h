@@ -1,5 +1,5 @@
-#ifndef LIBLOOMNET_LISTENER_H
-#define LIBLOOMNET_LISTENER_H
+#ifndef LIBLOOM_LISTENER_H
+#define LIBLOOM_LISTENER_H
 
 #include "socket.h"
 
@@ -31,4 +31,4 @@ protected:
 }
 }
 
-#endif // LIBLOOMNET_LISTENER_H
+#endif // LIBLOOM_LISTENER_H

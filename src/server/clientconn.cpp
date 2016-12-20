@@ -3,8 +3,8 @@
 
 
 
-#include "libloomw/loomplan.pb.h"
-#include "libloomw/loomcomm.pb.h"
+#include "libloom/loomplan.pb.h"
+#include "libloom/loomcomm.pb.h"
 #include "libloom/log.h"
 #include "libloom/compat.h"
 #include "libloom/pbutils.h"
@@ -48,7 +48,7 @@ void ClientConnection::on_message(const char *buffer, size_t size)
     auto& task_manager = server.get_task_manager();
 
     const loomplan::Plan &plan = submit.plan();
-    loom::Id id_base = server.new_id(plan.tasks_size());
+    loom::base::Id id_base = server.new_id(plan.tasks_size());
     task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()), submit.report());
     logger->info("Plan submitted tasks={} report={}", plan.tasks_size(), submit.report());
 }

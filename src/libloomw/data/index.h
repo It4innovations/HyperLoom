@@ -1,5 +1,5 @@
-#ifndef LIBLOOM_INDEX_H
-#define LIBLOOM_INDEX_H
+#ifndef LIBLOOMW_INDEX_H
+#define LIBLOOMW_INDEX_H
 
 #include "../data.h"
 #include "../unpacking.h"
@@ -50,4 +50,4 @@ public:
 };
 }
 
-#endif // LIBLOOM_INDEX_H
+#endif // LIBLOOMW_INDEX_H

@@ -1,5 +1,5 @@
-#ifndef LIBLOOM_TASKREDIRECT_H
-#define LIBLOOM_TASKREDIRECT_H
+#ifndef LIBLOOMW_TASKREDIRECT_H
+#define LIBLOOMW_TASKREDIRECT_H
 
 
 #include "data.h"
@@ -16,4 +16,4 @@ struct TaskDescription
 
 }
 
-#endif // LIBLOOM_TASKREDIRECT_H
+#endif // LIBLOOMW_TASKREDIRECT_H

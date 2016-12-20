@@ -1,5 +1,5 @@
-#ifndef LIBLOOM_THREADJOB_H
-#define LIBLOOM_THREADJOB_H
+#ifndef LIBLOOMW_THREADJOB_H
+#define LIBLOOMW_THREADJOB_H
 
 #include "data.h"
 #include "task.h"
@@ -55,4 +55,4 @@ protected:
 
 }
 
-#endif // LIBLOOM_THREADJOB_H
+#endif // LIBLOOMW_THREADJOB_H

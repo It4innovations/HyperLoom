@@ -1,5 +1,5 @@
-#ifndef LOOM_SERVER_UTILS_H
-#define LOOM_SERVER_UTILS_H
+#ifndef LIBLOOM_UTILS_H
+#define LIBLOOM_UTILS_H
 
 #include "sendbuffer.h"
 #include "socket.h"
@@ -21,4 +21,4 @@ void send_message(loom::base::Socket &socket, ::google::protobuf::MessageLite &m
 }}
 
 
-#endif // LOOM_SERVER_UTILS_H
+#endif // LIBLOOM_UTILS_H

@@ -9,7 +9,7 @@
 #include <libloom/listener.h>
 #include <libloom/socket.h>
 #include <libloom/sendbuffer.h>
-#include <libloomw/types.h>
+#include <libloom/types.h>
 
 class Server;
 class DWConnection;

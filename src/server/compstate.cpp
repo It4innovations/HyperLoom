@@ -11,7 +11,7 @@ using namespace loom::base;
 
 ComputationState::ComputationState(Server &server) : server(server)
 {
-   loom::Dictionary &dictionary = server.get_dictionary();
+   Dictionary &dictionary = server.get_dictionary();
    slice_task_id = dictionary.find_or_create("loom/base/slice");
    get_task_id = dictionary.find_or_create("loom/base/get");
    dslice_task_id = dictionary.find_or_create("loom/scheduler/dslice");
@@ -58,7 +58,7 @@ void ComputationState::set_task_finished(const PlanNode&node, size_t size, size_
    workers[wc].free_cpus += node.get_n_cpus();
 }
 
-void ComputationState::remove_state(loom::Id id)
+void ComputationState::remove_state(loom::base::Id id)
 {
    auto it = states.find(id);
    assert(it != states.end());
@@ -67,7 +67,7 @@ void ComputationState::remove_state(loom::Id id)
 
 void ComputationState::add_ready_nexts(const PlanNode &node)
 {
-   for (loom::Id id : node.get_nexts()) {
+   for (loom::base::Id id : node.get_nexts()) {
       const PlanNode &node = get_node(id);
       if (is_ready(node)) {
          if (node.get_policy() == PlanNode::POLICY_SCHEDULER) {
@@ -84,7 +84,7 @@ bool ComputationState::is_finished() const
     return states.empty();
 }
 
-void ComputationState::add_pending_task(loom::Id id)
+void ComputationState::add_pending_task(loom::base::Id id)
 {
    logger->debug("Add pending task and creating state id={}", id);
    auto pair = states.emplace(std::make_pair(id, TaskState(get_node(id))));
@@ -94,7 +94,7 @@ void ComputationState::add_pending_task(loom::Id id)
 
 void ComputationState::expand_node(const PlanNode &node)
 {
-   loom::Id id = node.get_task_type();
+   loom::base::Id id = node.get_task_type();
 
    if (id == dslice_task_id) {
       expand_dslice(node);
@@ -119,7 +119,7 @@ void ComputationState::expand_dslice(const PlanNode &node)
    // Do a copy again
    const PlanNode &node2 = get_node(node.get_nexts()[0]);
 
-   std::vector<loom::Id> inputs = node.get_inputs();
+   std::vector<loom::base::Id> inputs = node.get_inputs();
    assert(inputs.size() == 1);
    TaskState &input = get_state(inputs[0]);
    size_t length = input.get_length();
@@ -143,8 +143,8 @@ void ComputationState::expand_dslice(const PlanNode &node)
       configs.push_back(std::string(reinterpret_cast<char*>(&indices), sizeof(size_t) * 2));
    }
 
-   loom::Id id_base1 = server.new_id(configs.size());
-   loom::Id id_base2 = server.new_id(configs.size());
+   loom::base::Id id_base1 = server.new_id(configs.size());
+   loom::base::Id id_base2 = server.new_id(configs.size());
 
    logger->debug("Expanding 'dslice' id={} length={} pieces={} new_id_base={}",
                  node1.get_id(), length, configs.size(), id_base1);
@@ -161,7 +161,7 @@ void ComputationState::expand_dget(const PlanNode &node)
    // Do a copy again
    const PlanNode &node2 = get_node(node.get_nexts()[0]);
 
-   std::vector<loom::Id> inputs = node.get_inputs();
+   std::vector<loom::base::Id> inputs = node.get_inputs();
    assert(inputs.size() == 1);
    TaskState &input = get_state(inputs[0]);
    size_t length = input.get_length();
@@ -171,8 +171,8 @@ void ComputationState::expand_dget(const PlanNode &node)
       configs.push_back(std::string(reinterpret_cast<char*>(&i), sizeof(size_t)));
    }
 
-   loom::Id id_base1 = server.new_id(configs.size());
-   loom::Id id_base2 = server.new_id(configs.size());
+   loom::base::Id id_base1 = server.new_id(configs.size());
+   loom::base::Id id_base2 = server.new_id(configs.size());
 
    logger->debug("Expanding 'dget' id={} length={} new_id_base={}",
                  node1.get_id(), length, id_base1);
@@ -185,8 +185,8 @@ void ComputationState::expand_dget(const PlanNode &node)
 void ComputationState::make_expansion(std::vector<std::string> &configs,
                                       const PlanNode &n1,
                                       const PlanNode &n2,
-                                      loom::Id id_base1,
-                                      loom::Id id_base2)
+                                      loom::base::Id id_base1,
+                                      loom::base::Id id_base2)
 
 {
    PlanNode node1 = n1; // Make copy
@@ -205,7 +205,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
       PlanNode t1(id_base1, -1,
                   node1.get_policy(), node1.get_n_cpus(), false,
                   node1.get_task_type(), config1, node1.get_inputs());
-      t1.set_nexts(std::vector<loom::Id>{id_base2});
+      t1.set_nexts(std::vector<loom::base::Id>{id_base2});
       plan.add_node(std::move(t1));
 
       add_pending_task(id_base1);
@@ -223,12 +223,12 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
       id_base2++;
    }
 
-   for (loom::Id id : node1.get_inputs()) {
+   for (loom::base::Id id : node1.get_inputs()) {
       plan.get_node(id).replace_next(node1.get_id(), ids1);
       get_state(id).inc_ref_counter(size - 1);
    }
 
-   for (loom::Id id : node2.get_nexts()) {
+   for (loom::base::Id id : node2.get_nexts()) {
       plan.get_node(id).replace_input(node2.get_id(), ids2);
    }
 }
@@ -236,7 +236,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
 
 bool ComputationState::is_ready(const PlanNode &node)
 {
-   for (loom::Id id : node.get_inputs()) {
+   for (loom::base::Id id : node.get_inputs()) {
       if (states.find(id) == states.end()) {
          return false;
       }
@@ -258,7 +258,7 @@ int ComputationState::get_max_cpus()
     return max_cpus;
 }
 
-TaskState &ComputationState::get_state(loom::Id id)
+TaskState &ComputationState::get_state(loom::base::Id id)
 {
    auto it = states.find(id);
    if (it == states.end()) {
@@ -269,7 +269,7 @@ TaskState &ComputationState::get_state(loom::Id id)
 
 }
 
-/*TaskState &ComputationState::get_state_or_create(loom::Id id)
+/*TaskState &ComputationState::get_state_or_create(loom::base::Id id)
 {
    auto it = states.find(id);
    if (it == states.end()) {
@@ -280,18 +280,18 @@ TaskState &ComputationState::get_state(loom::Id id)
    return it->second;
 }*/
 
-void ComputationState::add_ready_nodes(const std::vector<loom::Id> &ids)
+void ComputationState::add_ready_nodes(const std::vector<loom::base::Id> &ids)
 {
-   for (loom::Id id : ids) {
+   for (loom::base::Id id : ids) {
       add_pending_task(id);
    }
 }
 
 void ComputationState::collect_requirements_for_node(WorkerConnection *wc,
                                                      const PlanNode &node,
-                                                     std::unordered_set<loom::Id> &nonlocals)
+                                                     std::unordered_set<loom::base::Id> &nonlocals)
 {
-   for (loom::Id id : node.get_inputs()) {
+   for (loom::base::Id id : node.get_inputs()) {
       TaskState &state = get_state(id);
       if (state.get_worker_status(wc) == TaskState::S_OWNER) {
          // nothing

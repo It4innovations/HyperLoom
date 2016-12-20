@@ -1,10 +1,10 @@
-#ifndef LOOM_DATA_H
-#define LOOM_DATA_H
+#ifndef LIBLOOMW_DATA_H
+#define LIBLOOMW_DATA_H
 
-#include "types.h"
 
-#include "loomcomm.pb.h"
 
+#include "libloom/loomcomm.pb.h"
+#include "libloom/types.h"
 #include "libloom/sendbuffer.h"
 
 #include <uv.h>
@@ -51,7 +51,7 @@ public:
 
     virtual bool has_raw_data() const;
 
-    loom::Id get_type_id(Worker &worker) const;
+    loom::base::Id get_type_id(Worker &worker) const;
 
 protected:
 };
@@ -72,4 +72,4 @@ typedef std::vector<std::shared_ptr<Data>> DataVector;
 
 }
 
-#endif // LOOM_DATA_H
+#endif // LIBLOOMW_DATA_H

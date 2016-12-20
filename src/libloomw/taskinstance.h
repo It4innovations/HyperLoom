@@ -1,5 +1,5 @@
-#ifndef LOOM_TASKINSTANCE_H
-#define LOOM_TASKINSTANCE_H
+#ifndef LIBLOOMW_TASKINSTANCE_H
+#define LIBLOOMW_TASKINSTANCE_H
 
 #include "data.h"
 #include "task.h"
@@ -30,11 +30,11 @@ public:
 
     virtual ~TaskInstance();
 
-    int get_id() const {
+    base::Id get_id() const {
         return task->get_id();
     }
 
-    const std::vector<Id>& get_inputs() {
+    const std::vector<base::Id>& get_inputs() {
         return task->get_inputs();
     }
 
@@ -56,4 +56,4 @@ protected:
 
 }
 
-#endif // LOOM_TASKINSTANCE_H
+#endif // LIBLOOMW_TASKINSTANCE_H

@@ -1,5 +1,5 @@
-#ifndef LIBLOOMNET_LOG_H
-#define LIBLOOMNET_LOG_H
+#ifndef LIBLOOM_LOG_H
+#define LIBLOOM_LOG_H
 
 #include <sys/types.h>
 #include "spdlog/spdlog.h"

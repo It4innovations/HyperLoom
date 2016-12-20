@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-#include "libloomw/types.h"
+#include "libloom/types.h"
 
 class WorkerConnection;
 template<typename T> using WorkerMap = std::unordered_map<WorkerConnection*, T>;
@@ -22,7 +22,7 @@ public:
 
     TaskState(const PlanNode &node);
 
-    loom::Id get_id() const {
+    loom::base::Id get_id() const {
         return id;
     }
 
@@ -108,7 +108,7 @@ public:
     std::string get_info() const;
 
 private:
-    loom::Id id;
+    loom::base::Id id;
     WorkerMap<WStatus> workers;
     int ref_count;
     size_t size;

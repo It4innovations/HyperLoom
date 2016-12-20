@@ -1,5 +1,5 @@
 #include "pbutils.h"
-#include "libloomw/loomcomm.pb.h"
+#include "loomcomm.pb.h"
 
 #include "compat.h"
 

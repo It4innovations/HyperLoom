@@ -3,7 +3,7 @@
 
 #include "compstate.h"
 
-using TaskDistribution = std::unordered_map<WorkerConnection*, std::vector<loom::Id>>;
+using TaskDistribution = std::unordered_map<WorkerConnection*, std::vector<loom::base::Id>>;
 
 class Scheduler
 {
@@ -14,8 +14,8 @@ class Scheduler
         int64_t expected_size;
         std::vector<size_t> inputs;
         std::vector<size_t> next_inputs;
-        std::vector<loom::Id> nexts;
-        std::vector<loom::Id> ids;
+        std::vector<loom::base::Id> nexts;
+        std::vector<loom::base::Id> ids;
     };
 
     struct Worker {

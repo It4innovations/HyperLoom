@@ -1,5 +1,5 @@
-#ifndef LOOM_INTERCONNECT_H
-#define LOOM_INTERCONNECT_H
+#ifndef LIBLOOMW_INTERCONNECT_H
+#define LIBLOOMW_INTERCONNECT_H
 
 #include "libloom/socket.h"
 #include "libloom/listener.h"
@@ -22,7 +22,7 @@ public:
     InterConnection(Worker &worker);
     ~InterConnection();
 
-    void send(Id id, std::shared_ptr<Data> &data);
+    void send(base::Id id, std::shared_ptr<Data> &data);
 
     std::string get_peername() {
         return socket.get_peername();
@@ -57,7 +57,7 @@ protected:
     std::string address;
 
     std::unique_ptr<DataUnpacker> unpacker;
-    Id unpacking_data_id;
+    base::Id unpacking_data_id;
 
     static std::string make_address(const std::string &host, int port);
 
@@ -66,4 +66,4 @@ protected:
 
 }
 
-#endif // LOOM_INTERCONNECT_H
+#endif // LIBLOOMW_INTERCONNECT_H

@@ -5,7 +5,7 @@
 #include <iomanip>
 
 
-void PlanNode::replace_input(loom::Id old_input, const std::vector<loom::Id> &new_inputs)
+void PlanNode::replace_input(loom::base::Id old_input, const std::vector<loom::base::Id> &new_inputs)
 {
     auto i = std::find(inputs.begin(), inputs.end(), old_input);
     assert (i != inputs.end());
@@ -13,7 +13,7 @@ void PlanNode::replace_input(loom::Id old_input, const std::vector<loom::Id> &ne
     inputs.insert(i2, new_inputs.begin(), new_inputs.end());
 }
 
-void PlanNode::replace_next(loom::Id old_next, const std::vector<loom::Id> &new_nexts)
+void PlanNode::replace_next(loom::base::Id old_next, const std::vector<loom::base::Id> &new_nexts)
 {
     auto i = std::find(nexts.begin(), nexts.end(), old_next);
     assert (i != nexts.end());

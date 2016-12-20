@@ -30,8 +30,6 @@ add_library(libloomw
             threadjob.h
             ttinstance.h
             taskfactory.h
-            dictionary.cpp
-            dictionary.h
             data.cpp
             data.h
             unpacking.cpp
@@ -41,11 +39,6 @@ add_library(libloomw
             task.cpp
             task.h
             taskdesc.h
-            loomcomm.pb.h
-            loomcomm.pb.cc
-            loomplan.pb.h
-            loomplan.pb.cc
-            types.h
             config.cpp
             config.h
             utils.h

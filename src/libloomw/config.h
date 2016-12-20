@@ -1,5 +1,5 @@
-#ifndef LIBLOOM_INIT_H
-#define LIBLOOM_INIT_H
+#ifndef LIBLOOMW_INIT_H
+#define LIBLOOMW_INIT_H
 
 #include <string>
 #include <argp.h>
@@ -48,6 +48,3 @@ private:
 
 
 #endif
-
-
-

@@ -1,8 +1,6 @@
 #include "worker.h"
-#include "loomcomm.pb.h"
 #include "utils.h"
 
-#include "types.h"
 #include "config.h"
 
 #include "data/rawdata.h"
@@ -15,6 +13,8 @@
 #include "tasks/runtask.h"
 #include "tasks/python.h"
 
+#include "libloom/loomcomm.pb.h"
+#include "libloom/types.h"
 #include "libloom/log.h"
 #include "libloom/sendbuffer.h"
 #include "libloom/pbutils.h"
@@ -338,7 +338,7 @@ void Worker::add_unpacker(const std::string &symbol, const UnpackFactoryFn &unpa
     unregistered_unpack_ffs[symbol] = unpacker;
 }
 
-std::unique_ptr<DataUnpacker> Worker::get_unpacker(DataTypeId id)
+std::unique_ptr<DataUnpacker> Worker::get_unpacker(base::Id id)
 {
     auto i = unpack_ffs.find(id);
     assert(i != unpack_ffs.end());
@@ -348,14 +348,14 @@ std::unique_ptr<DataUnpacker> Worker::get_unpacker(DataTypeId id)
 void Worker::on_dictionary_updated()
 {
     for (auto &f : unregistered_task_factories) {
-        loom::Id id = dictionary.find_symbol_or_fail(f->get_name());
+        loom::base::Id id = dictionary.find_symbol_or_fail(f->get_name());
         logger->debug("Registering task_factory: {} = {}", f->get_name(), id);
         task_factories[id] = std::move(f);
     }
     unregistered_task_factories.clear();
 
     for (auto &pair : unregistered_unpack_ffs) {
-        loom::Id id = dictionary.find_symbol_or_fail(pair.first);
+        loom::base::Id id = dictionary.find_symbol_or_fail(pair.first);
         logger->debug("Registering unpack_factory: {} = {}", pair.first, id);
         unpack_ffs[id] = pair.second;
     }
@@ -411,7 +411,7 @@ void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
 void Worker::task_redirect(TaskInstance &task,
                            std::unique_ptr<TaskDescription> new_task_desc)
 {
-    loom::Id id = task.get_id();
+    loom::base::Id id = task.get_id();
     logger->debug("Redirecting task id={} task_type={} n_inputs={}",
                 id, new_task_desc->task_type, new_task_desc->inputs.size());
     remove_task(task, false);

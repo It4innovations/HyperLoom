@@ -77,14 +77,14 @@ Scheduler::Scheduler(ComputationState &cstate)
    }
 
    // Gather info about pending tasks
-   std::unordered_map<loom::Id, size_t> inputs;
-   std::unordered_map<loom::Id, size_t> nexts;
+   std::unordered_map<loom::base::Id, size_t> inputs;
+   std::unordered_map<loom::base::Id, size_t> nexts;
    size_t input_i = 0;
 
    // * 2 because units is expanded in solve()
    s_units.reserve(cstate.get_pending_tasks().size() * 2);
 
-   for (loom::Id id : cstate.get_pending_tasks()) {
+   for (loom::base::Id id : cstate.get_pending_tasks()) {
       const PlanNode &node = cstate.get_node(id);
 
       SUnit s_unit;
@@ -98,7 +98,7 @@ Scheduler::Scheduler(ComputationState &cstate)
 
       s_unit.ids.push_back(id);
 
-      for (loom::Id id2 : node.get_inputs()) {
+      for (loom::base::Id id2 : node.get_inputs()) {
          auto it = inputs.find(id2);
          if (it == inputs.end()) {
             s_unit.inputs.push_back(input_i);
@@ -108,9 +108,9 @@ Scheduler::Scheduler(ComputationState &cstate)
          }
       }
 
-      for (loom::Id id2 : node.get_nexts()) {
+      for (loom::base::Id id2 : node.get_nexts()) {
          const PlanNode &node2 = cstate.get_node(id2);
-         for (loom::Id id3 : node2.get_inputs()) {
+         for (loom::base::Id id3 : node2.get_inputs()) {
             const TaskState *state = cstate.get_state_ptr(id3);
             if (state) {
                   s_unit.nexts.push_back(id2);
@@ -138,7 +138,7 @@ Scheduler::Scheduler(ComputationState &cstate)
       const PlanNode &node = cstate.get_node(pair.first);
       NUnit n_unit;
       n_unit.n_cpus = node.get_n_cpus();
-      for (loom::Id id : node.get_inputs()) {
+      for (loom::base::Id id : node.get_inputs()) {
          const TaskState *state = cstate.get_state_ptr(id);
          if (state) {
             state->foreach_source([&input_i, id, &n_unit, &inputs](WorkerConnection *wc) {
@@ -374,7 +374,7 @@ void Scheduler::create_derived_units()
     });
 
     Worker w = workers[0];
-    std::vector<loom::Id> result;
+    std::vector<loom::base::Id> result;
 
     for (auto &unit : units) {
         if (unit.n_cpus <= w.free_cpus) {

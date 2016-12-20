@@ -2,8 +2,8 @@
 #include "server.h"
 
 #include "libloom/compat.h"
-#include "libloomw/loomplan.pb.h"
-#include "libloomw/loomcomm.pb.h"
+#include "libloom/loomplan.pb.h"
+#include "libloom/loomcomm.pb.h"
 #include "libloom/log.h"
 
 #include <algorithm>
@@ -39,7 +39,7 @@ void TaskManager::distribute_work(const TaskDistribution &distribution)
     }
 
     for (auto& p : distribution) {
-        for (loom::Id id : p.second) {
+        for (loom::base::Id id : p.second) {
             start_task(p.first, id);
         }
     }
@@ -48,7 +48,7 @@ void TaskManager::distribute_work(const TaskDistribution &distribution)
 void TaskManager::start_task(WorkerConnection *wc, Id task_id)
 {
     const PlanNode &node = cstate.get_node(task_id);
-    for (loom::Id id : node.get_inputs()) {
+    for (loom::base::Id id : node.get_inputs()) {
         TaskState &state = cstate.get_state(id);
         TaskState::WStatus st = state.get_worker_status(wc);
         if (st == TaskState::S_NONE) {
@@ -91,14 +91,14 @@ void TaskManager::remove_state(TaskState &state)
 {
     logger->debug("Removing state id={}", state.get_id());
     assert(state.get_ref_counter() == 0);
-    loom::Id id = state.get_id();
+    loom::base::Id id = state.get_id();
     state.foreach_owner([id](WorkerConnection *wc) {
         wc->remove_data(id);
     });
     cstate.remove_state(id);
 }
 
-void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, WorkerConnection *wc)
+void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
     const PlanNode &node = cstate.get_node(id);
 
@@ -126,11 +126,11 @@ void TaskManager::on_task_finished(loom::Id id, size_t size, size_t length, Work
     }
 
     // Remove duplicates
-    std::vector<loom::Id> inputs = node.get_inputs();
+    std::vector<loom::base::Id> inputs = node.get_inputs();
     std::sort(inputs.begin(), inputs.end());
     inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
 
-    for (loom::Id id : inputs) {
+    for (loom::base::Id id : inputs) {
         TaskState &state = cstate.get_state(id);
         if (state.dec_ref_counter()) {
             remove_state(state);

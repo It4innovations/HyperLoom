@@ -1,6 +1,6 @@
 
-#ifndef LIBLOOM_UNPACKING_H
-#define LIBLOOM_UNPACKING_H
+#ifndef LIBLOOMW_UNPACKING_H
+#define LIBLOOMW_UNPACKING_H
 
 #include "data.h"
 
@@ -29,4 +29,4 @@ using UnpackFactoryFn = std::function<std::unique_ptr<DataUnpacker>()>;
 
 }
 
-#endif // LIBLOOM_UNPACKING_H
+#endif // LIBLOOMW_UNPACKING_H

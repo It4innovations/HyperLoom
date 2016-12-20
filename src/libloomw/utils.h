@@ -1,5 +1,5 @@
-#ifndef LOOM_UTILS_H
-#define LOOM_UTILS_H
+#ifndef LIBLOOMW_UTILS_H
+#define LIBLOOMW_UTILS_H
 
 #include <sys/types.h>
 #include <libloom/log.h>
@@ -14,4 +14,4 @@ size_t file_size(const char *path);
 
 }
 
-#endif // LOOM_UTILS_H
+#endif // LIBLOOMW_UTILS_H

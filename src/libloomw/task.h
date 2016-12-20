@@ -1,7 +1,7 @@
-#ifndef LIBLOOM_TASK_H
-#define LIBLOOM_TASK_H
+#ifndef LIBLOOMW_TASK_H
+#define LIBLOOMW_TASK_H
 
-#include "types.h"
+#include "libloom/types.h"
 #include <vector>
 #include <string>
 
@@ -13,17 +13,17 @@ class Worker;
 class Task {
 
 public:
-    Task(Id id, int task_type, const std::string &config)
+    Task(base::Id id, int task_type, const std::string &config)
         : id(id), task_type(task_type), config(config) {}
 
-    Task(Id id, int task_type, std::string &&config)
+    Task(base::Id id, int task_type, std::string &&config)
         : id(id), task_type(task_type), config(std::move(config)) {}
 
-    Id get_id() const {
+    base::Id get_id() const {
         return id;
     }
 
-    Id get_task_type() const {
+    base::Id get_task_type() const {
         return task_type;
     }
 
@@ -33,21 +33,21 @@ public:
 
     bool is_ready(const Worker &worker) const;
 
-    void add_input(Id id) {
+    void add_input(base::Id id) {
         inputs.push_back(id);
     }
 
-    const std::vector<Id>& get_inputs() const {
+    const std::vector<base::Id>& get_inputs() const {
         return inputs;
     }
 
 protected:
-    Id id;
-    Id task_type;
-    std::vector<Id> inputs;
+    base::Id id;
+    base::Id task_type;
+    std::vector<base::Id> inputs;
     std::string config;
 };
 
 }
 
-#endif // LIBLOOM_TASK_H
+#endif // LIBLOOMW_TASK_H

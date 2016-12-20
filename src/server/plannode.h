@@ -1,7 +1,7 @@
 #ifndef LOOM_SERVER_TASKNODE_H
 #define LOOM_SERVER_TASKNODE_H
 
-#include <libloomw/types.h>
+#include <libloom/types.h>
 
 #include <vector>
 #include <string>
@@ -24,27 +24,27 @@ public:
         POLICY_SCHEDULER
     };
 
-    PlanNode(loom::Id id,
-             loom::Id client_id,
+    PlanNode(loom::base::Id id,
+             loom::base::Id client_id,
              Policy policy,
              int n_cpus,
              bool result_flag,
              int task_type,
              const std::string &config,
-             std::vector<loom::Id> &&inputs)
+             std::vector<loom::base::Id> &&inputs)
         : id(id), policy(policy), n_cpus(n_cpus), result_flag(result_flag), task_type(task_type),
           inputs(std::move(inputs)), config(config),
           client_id(client_id)
     {}
 
-    PlanNode(loom::Id id,
-             loom::Id client_id,
+    PlanNode(loom::base::Id id,
+             loom::base::Id client_id,
              Policy policy,
              int n_cpus,
              bool result_flag,
-             int task_type,
+             loom::base::Id task_type,
              const std::string &config,
-             const std::vector<loom::Id> &inputs)
+             const std::vector<loom::base::Id> &inputs)
         : id(id), policy(policy), n_cpus(n_cpus), result_flag(result_flag), task_type(task_type),
           inputs(inputs), config(config),
           client_id(client_id)
@@ -54,15 +54,15 @@ public:
         return policy;
     }
 
-    loom::Id get_id() const {
+    loom::base::Id get_id() const {
         return id;
     }
 
-    loom::Id get_client_id() const {
+    loom::base::Id get_client_id() const {
         return client_id;
     }
 
-    loom::TaskId get_task_type() const {
+    loom::base::Id get_task_type() const {
         return task_type;
     }
 
@@ -78,16 +78,16 @@ public:
         this->nexts = nexts;
     }
 
-    const std::vector<loom::Id>& get_inputs() const {
+    const std::vector<loom::base::Id>& get_inputs() const {
         return inputs;
     }
 
-    const std::vector<loom::Id>& get_nexts() const {
+    const std::vector<loom::base::Id>& get_nexts() const {
         return nexts;
     }
 
-    void replace_input(loom::Id old_input, const std::vector<loom::Id> &new_inputs);
-    void replace_next(loom::Id old_next, const std::vector<loom::Id> &new_nexts);
+    void replace_input(loom::base::Id old_input, const std::vector<loom::base::Id> &new_inputs);
+    void replace_next(loom::base::Id old_next, const std::vector<loom::base::Id> &new_nexts);
 
     std::string get_type_name(Server &server);
     std::string get_info(Server &server);
@@ -105,15 +105,15 @@ public:
     }
 
 private:
-    loom::Id id;
+    loom::base::Id id;
     Policy policy;
     int n_cpus; // TODO: Replace by resource index
     bool result_flag;
-    loom::TaskId task_type;
-    std::vector<loom::Id> inputs;
-    std::vector<loom::Id> nexts;
+    loom::base::Id task_type;
+    std::vector<loom::base::Id> inputs;
+    std::vector<loom::base::Id> nexts;
     std::string config;
-    loom::Id client_id;
+    loom::base::Id client_id;
 };
 
 

@@ -1,12 +1,12 @@
-#ifndef LOOM_WORKER_H
-#define LOOM_WORKER_H
+#ifndef LIBLOOMW_WORKER_H
+#define LIBLOOMW_WORKER_H
 
 #include "interconnect.h"
 #include "taskinstance.h"
 #include "unpacking.h"
 #include "taskfactory.h"
-#include "dictionary.h"
 
+#include "libloom/dictionary.h"
 #include "libloom/listener.h"
 
 #include <uv.h>
@@ -36,8 +36,8 @@ public:
     void register_basic_tasks();
     
     void new_task(std::unique_ptr<Task> task);
-    void send_data(const std::string &address, Id id, std::shared_ptr<Data> &data);
-    bool send_data(const std::string &address, Id id) {
+    void send_data(const std::string &address, base::Id id, std::shared_ptr<Data> &data);
+    bool send_data(const std::string &address, base::Id id) {
         auto& data = public_data[id];
         if (data.get() == nullptr) {
             return false;
@@ -49,15 +49,15 @@ public:
     void task_finished(TaskInstance &task_instance, Data &data);
     void task_failed(TaskInstance &task_instance, const std::string &error_msg);
     void task_redirect(TaskInstance &task, std::unique_ptr<TaskDescription> new_task_desc);
-    void publish_data(Id id, const std::shared_ptr<Data> &data);
-    void remove_data(Id id);
+    void publish_data(base::Id id, const std::shared_ptr<Data> &data);
+    void remove_data(base::Id id);
 
-    bool has_data(Id id) const
+    bool has_data(base::Id id) const
     {
         return public_data.find(id) != public_data.end();
     }
 
-    std::shared_ptr<Data>& get_data(Id id)
+    std::shared_ptr<Data>& get_data(base::Id id)
     {
         auto it = public_data.find(id);
         assert(it != public_data.end());
@@ -99,7 +99,7 @@ public:
         return work_dir;
     }
 
-    std::string get_run_dir(Id id);
+    std::string get_run_dir(base::Id id);
 
     void check_waiting_tasks();
     void check_ready_tasks();
@@ -108,9 +108,9 @@ public:
     void add_unpacker(const std::string &symbol, const UnpackFactoryFn &unpacker);
 
 
-    std::unique_ptr<DataUnpacker> get_unpacker(DataTypeId id);
+    std::unique_ptr<DataUnpacker> get_unpacker(base::Id id);
 
-    Dictionary& get_dictionary() {
+    base::Dictionary& get_dictionary() {
         return dictionary;
     }
 
@@ -131,18 +131,18 @@ private:
     std::vector<std::unique_ptr<TaskInstance>> active_tasks;
     std::vector<std::unique_ptr<Task>> ready_tasks;
     std::vector<std::unique_ptr<Task>> waiting_tasks;
-    std::unordered_map<Id, std::unique_ptr<TaskFactory>> task_factories;
+    std::unordered_map<base::Id, std::unique_ptr<TaskFactory>> task_factories;
 
     std::unordered_map<int, std::shared_ptr<Data>> public_data;
     std::string work_dir;
 
-    std::unordered_map<DataTypeId, UnpackFactoryFn> unpack_ffs;
+    std::unordered_map<base::Id, UnpackFactoryFn> unpack_ffs;
 
     base::Socket server_conn;
     std::unordered_map<std::string, std::unique_ptr<InterConnection>> connections;
     std::vector<std::unique_ptr<InterConnection>> nonregistered_connections;
 
-    Dictionary dictionary;
+    base::Dictionary dictionary;
 
     std::string server_address;
     int server_port;
@@ -157,4 +157,4 @@ private:
 
 }
 
-#endif // LOOM_WORKER_H
+#endif // LIBLOOMW_WORKER_H
