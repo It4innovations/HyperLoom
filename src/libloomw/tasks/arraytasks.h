@@ -9,7 +9,7 @@ class ArrayMakeTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 };
 
 }

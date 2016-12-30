@@ -10,7 +10,7 @@ class ConstTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 };
 
 
@@ -20,7 +20,7 @@ public:
     using ThreadJob::ThreadJob;
 
     bool check_run_in_thread();
-    std::shared_ptr<loom::Data> run();
+    std::shared_ptr<loom::Data> run() override;
 };
 
 
@@ -28,7 +28,7 @@ class OpenTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 };
 
 
@@ -36,7 +36,7 @@ class SplitTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 };
 
 }

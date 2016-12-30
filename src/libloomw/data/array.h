@@ -12,19 +12,18 @@ public:
     Array(const DataVector &items);
     ~Array();
 
-    size_t get_length() {
+    size_t get_length() override {
         return length;
     }
 
-    size_t get_size();
-    std::string get_info();
-    std::shared_ptr<Data> get_at_index(size_t index);
-    std::shared_ptr<Data> get_slice(size_t from, size_t to);
+    size_t get_size() override;
+    std::string get_info() override;
+    std::shared_ptr<Data> get_at_index(size_t index) override;
+    std::shared_ptr<Data> get_slice(size_t from, size_t to) override;
+    std::string get_type_name() const override;
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) override;
 
     std::shared_ptr<Data>& get_ref_at_index(size_t index);
-
-    std::string get_type_name() const;
-    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
 
 protected:
 
@@ -39,9 +38,9 @@ public:
    ArrayUnpacker(Worker &worker);
    ~ArrayUnpacker();
 
-   Result on_message(const char *data, size_t size);
-   Result on_stream_data(const char *data, size_t size, size_t remaining);
-   std::shared_ptr<Data> finish();
+   Result on_message(const char *data, size_t size) override;
+   Result on_stream_data(const char *data, size_t size, size_t remaining) override;
+   std::shared_ptr<Data> finish() override;
 
    Result unpack_next();
 

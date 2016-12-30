@@ -25,7 +25,7 @@ public:
         work.data = this;
     }
 
-    virtual void start(DataVector &input_data) {
+    virtual void start(DataVector &input_data) override {
         job.set_inputs(input_data);
         if (job.check_run_in_thread()) {
             UV_CHECK(uv_queue_work(worker.get_loop(), &work, _work_cb, _after_work_cb));

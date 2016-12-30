@@ -10,7 +10,7 @@ class RunTask : public loom::TaskInstance
 public:
     RunTask(loom::Worker &worker, std::unique_ptr<loom::Task> task);
     ~RunTask();
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 
 
 private:

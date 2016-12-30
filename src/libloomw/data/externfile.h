@@ -13,22 +13,22 @@ public:
     ExternFile(const std::string &filename);
     ~ExternFile();
 
-    size_t get_size() {
+    size_t get_size() override {
         return size;
     }
 
-    const char *get_raw_data() const
+    const char *get_raw_data() const override
     {
         return data;
     }
 
-    bool has_raw_data() const {
+    bool has_raw_data() const override {
         return true;
     }
 
-    std::string get_info();
-    std::string get_filename() const;
-    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr);
+    std::string get_info() override;
+    std::string get_filename() const override;
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) override;
 
 protected:
 

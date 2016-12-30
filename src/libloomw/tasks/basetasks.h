@@ -9,7 +9,7 @@ class GetTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 };
 
 
@@ -17,7 +17,7 @@ class SliceTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 };
 
 
@@ -25,14 +25,14 @@ class SizeTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 };
 
 class LengthTask : public loom::TaskInstance
 {
 public:
     using TaskInstance::TaskInstance;
-    void start(loom::DataVector &inputs);
+    void start(loom::DataVector &inputs) override;
 };
 
 }
