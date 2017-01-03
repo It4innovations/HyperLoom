@@ -51,6 +51,7 @@ size_t RawData::get_size() const {
 
 const char *RawData::get_raw_data() const
 {
+    std::lock_guard<std::mutex> lock(mutex);
     if (data == nullptr) {
         open();
     }

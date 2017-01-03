@@ -4,6 +4,8 @@
 #include "../data.h"
 #include "../unpacking.h"
 
+#include <mutex>
+
 namespace loom {
 
 class RawData : public Data {
@@ -36,6 +38,7 @@ protected:
     void map(int fd, bool write) const;
 
     mutable char *data;
+    mutable std::mutex mutex;
     size_t size;
     std::string filename;
 
