@@ -16,6 +16,10 @@ namespace loom {
 class Worker;
 
 class Connection;
+class Data;
+
+using DataPtr = std::shared_ptr<const Data>;
+using DataVector = std::vector<DataPtr>;
 
 /** Base class for data objects */
 class Data
@@ -35,13 +39,13 @@ public:
     virtual std::string get_info() const = 0;
 
     /** Get subobject at given index (0 ... get_length()) */
-    virtual std::shared_ptr<Data> get_at_index(size_t index) const;
+    virtual DataPtr get_at_index(size_t index) const;
 
     /** Get subobject slice at given indices (0 ... get_length()) */
-    virtual std::shared_ptr<Data> get_slice(size_t from, size_t to) const;
+    virtual DataPtr get_slice(size_t from, size_t to) const;
 
     /** Serialize object into send buffer */
-    virtual size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const = 0;
+    virtual size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const = 0;
 
     /** Get pointer to raw data, returns nullptr when it is not possible */
     virtual const char *get_raw_data() const;
@@ -59,16 +63,14 @@ protected:
 
 class DataBufferItem : public loom::base::SendBufferItem {
 public:
-   DataBufferItem(std::shared_ptr<Data> &data, const char *mem, size_t size);
+   DataBufferItem(DataPtr &data, const char *mem, size_t size);
    uv_buf_t get_buf();
 
 protected:
    const char *mem;
    size_t size;
-   std::shared_ptr<Data> data;
+   DataPtr data;
 };
-
-typedef std::vector<std::shared_ptr<Data>> DataVector;
 
 }
 

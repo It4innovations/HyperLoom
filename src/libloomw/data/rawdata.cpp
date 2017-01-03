@@ -170,7 +170,7 @@ void RawData::init_from_mem(const std::string &work_dir, const void *ptr, size_t
     memcpy(mem, ptr, size);
 }
 
-size_t RawData::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const
+size_t RawData::serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const
 {
     buffer.add(std::make_unique<base::SizeBufferItem>(size));
     buffer.add(std::make_unique<DataBufferItem>(data_ptr, get_raw_data(), size));
@@ -213,7 +213,7 @@ DataUnpacker::Result RawDataUnpacker::on_stream_data(const char *data, size_t si
    }
 }
 
-std::shared_ptr<Data> RawDataUnpacker::finish()
+DataPtr RawDataUnpacker::finish()
 {
    return result;
 }

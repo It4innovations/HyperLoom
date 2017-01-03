@@ -96,7 +96,7 @@ static std::string get_attr_string(PyObject *obj, const char *name)
     return result;
 }
 
-std::shared_ptr<Data> PyCallJob::run()
+DataPtr PyCallJob::run()
 {
    // Obtain GIL
    PyGILState_STATE gstate;

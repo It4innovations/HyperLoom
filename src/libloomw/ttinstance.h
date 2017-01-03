@@ -38,7 +38,7 @@ public:
 protected:
     uv_work_t work;
     T job;
-    std::shared_ptr<Data> result;
+    DataPtr result;
 
     static void _work_cb(uv_work_t *req)
     {

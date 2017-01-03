@@ -22,7 +22,7 @@ public:
         return true;
     }
 
-    virtual std::shared_ptr<Data> run() = 0;
+    virtual DataPtr run() = 0;
 
     void set_inputs(DataVector &input_data) {
         this->inputs = input_data;

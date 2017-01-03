@@ -116,7 +116,7 @@ void InterConnection::on_stream_data(const char *buffer, size_t size, size_t rem
     }
 }
 
-void InterConnection::send(Id id, std::shared_ptr<Data> &data)
+void InterConnection::send(Id id, DataPtr &data)
 {
     auto buffer = std::make_unique<loom::base::SendBuffer>();
 

@@ -7,7 +7,7 @@
 using namespace loom;
 using namespace loom::base;
 
-Array::Array(size_t length, std::unique_ptr<std::shared_ptr<Data>[]> items)
+Array::Array(size_t length, std::unique_ptr<DataPtr[]> items)
    : length(length), items(std::move(items))
 {
 
@@ -36,7 +36,7 @@ std::string Array::get_info() const
     return "Array";
 }
 
-std::shared_ptr<Data> Array::get_slice(size_t from, size_t to) const
+DataPtr Array::get_slice(size_t from, size_t to) const
 {
     if (from > length) {
         from = length;
@@ -53,7 +53,7 @@ std::shared_ptr<Data> Array::get_slice(size_t from, size_t to) const
         size = to - from;
     }
 
-    auto items = std::make_unique<std::shared_ptr<Data>[]>(size);
+    auto items = std::make_unique<DataPtr[]>(size);
 
     size_t j = 0;
     for (size_t i = from; i < to; i++, j++) {
@@ -62,7 +62,7 @@ std::shared_ptr<Data> Array::get_slice(size_t from, size_t to) const
     return std::make_shared<Array>(size, std::move(items));
 }
 
-std::shared_ptr<Data> &Array::get_ref_at_index(size_t index)
+DataPtr &Array::get_ref_at_index(size_t index)
 {
     assert(index < length);
     return items[index];
@@ -73,13 +73,13 @@ std::string Array::get_type_name() const
    return "loom/array";
 }
 
-std::shared_ptr<Data> Array::get_at_index(size_t index) const
+DataPtr Array::get_at_index(size_t index) const
 {
    assert(index < length);
    return items[index];
 }
 
-size_t Array::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const
+size_t Array::serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const
 {
     auto types = std::make_unique<base::MemItemWithSz>(sizeof(loom::base::Id) * length);
     loom::base::Id *ts = reinterpret_cast<loom::base::Id*>(types->get_ptr());
@@ -116,7 +116,7 @@ DataUnpacker::Result ArrayUnpacker::on_message(const char *data, size_t size)
            return FINISHED;
        }
 
-       items = std::make_unique<std::shared_ptr<Data>[]>(sz);
+       items = std::make_unique<DataPtr[]>(sz);
        unpacker = worker.get_unpacker(types[0]);
        return unpacker->get_initial_mode();
    } else {
@@ -138,7 +138,7 @@ DataUnpacker::Result ArrayUnpacker::on_stream_data(const char *data, size_t size
    return unpack_next();
 }
 
-std::shared_ptr<Data> ArrayUnpacker::finish()
+DataPtr ArrayUnpacker::finish()
 {
    return std::make_shared<Array>(types.size(), std::move(items));
 }

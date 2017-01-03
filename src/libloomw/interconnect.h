@@ -22,7 +22,7 @@ public:
     InterConnection(Worker &worker);
     ~InterConnection();
 
-    void send(base::Id id, std::shared_ptr<Data> &data);
+    void send(base::Id id, DataPtr &data);
 
     std::string get_peername() {
         return socket.get_peername();

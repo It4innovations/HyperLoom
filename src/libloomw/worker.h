@@ -36,7 +36,7 @@ public:
     void register_basic_tasks();
     
     void new_task(std::unique_ptr<Task> task);
-    void send_data(const std::string &address, base::Id id, std::shared_ptr<Data> &data);
+    void send_data(const std::string &address, base::Id id, DataPtr &data);
     bool send_data(const std::string &address, base::Id id) {
         auto& data = public_data[id];
         if (data.get() == nullptr) {
@@ -46,10 +46,10 @@ public:
         return true;
     }
 
-    void task_finished(TaskInstance &task_instance, Data &data);
+    void task_finished(TaskInstance &task_instance, const DataPtr &data);
     void task_failed(TaskInstance &task_instance, const std::string &error_msg);
     void task_redirect(TaskInstance &task, std::unique_ptr<TaskDescription> new_task_desc);
-    void publish_data(base::Id id, const std::shared_ptr<Data> &data);
+    void publish_data(base::Id id, const DataPtr &data);
     void remove_data(base::Id id);
 
     bool has_data(base::Id id) const
@@ -57,7 +57,7 @@ public:
         return public_data.find(id) != public_data.end();
     }
 
-    std::shared_ptr<Data>& get_data(base::Id id)
+    DataPtr& get_data(base::Id id)
     {
         auto it = public_data.find(id);
         assert(it != public_data.end());
@@ -133,7 +133,7 @@ private:
     std::vector<std::unique_ptr<Task>> waiting_tasks;
     std::unordered_map<base::Id, std::unique_ptr<TaskFactory>> task_factories;
 
-    std::unordered_map<int, std::shared_ptr<Data>> public_data;
+    std::unordered_map<int, DataPtr> public_data;
     std::string work_dir;
 
     std::unordered_map<base::Id, UnpackFactoryFn> unpack_ffs;

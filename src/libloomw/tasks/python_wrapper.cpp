@@ -92,7 +92,7 @@ void data_wrapper_init()
     assert(!PyType_Ready(&data_wrapper_type));
 }
 
-DataWrapper *data_wrapper_create(const std::shared_ptr<loom::Data> &data)
+DataWrapper *data_wrapper_create(const loom::DataPtr &data)
 {
     DataWrapper *self = (DataWrapper*) PyObject_CallFunctionObjArgs((PyObject*) &data_wrapper_type, NULL);
     assert(self);

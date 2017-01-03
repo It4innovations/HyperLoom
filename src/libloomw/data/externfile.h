@@ -18,7 +18,7 @@ public:
     bool has_raw_data() const override;
     std::string get_info() const override;
     std::string get_filename() const override;
-    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const override;
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const override;
 
 protected:
 

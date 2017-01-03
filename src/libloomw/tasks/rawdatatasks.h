@@ -20,7 +20,7 @@ public:
     using ThreadJob::ThreadJob;
 
     bool check_run_in_thread();
-    std::shared_ptr<loom::Data> run() override;
+    DataPtr run() override;
 };
 
 

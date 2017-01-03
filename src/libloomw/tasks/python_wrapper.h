@@ -7,11 +7,11 @@
 
 typedef struct {
     PyObject_HEAD
-    std::shared_ptr<loom::Data> data;
+    loom::DataPtr data;
 } DataWrapper;
 
 void data_wrapper_init();
 bool is_data_wrapper(PyObject *obj);
-DataWrapper *data_wrapper_create(const std::shared_ptr<loom::Data> &data);
+DataWrapper *data_wrapper_create(const loom::DataPtr &data);
 
 #endif // LIBLOOM_TASKS_PYTHON_WRAPPER_H

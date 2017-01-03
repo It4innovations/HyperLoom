@@ -38,7 +38,7 @@ bool MergeJob::check_run_in_thread()
     return false;
 }
 
-std::shared_ptr<Data> MergeJob::run() {
+DataPtr MergeJob::run() {
     size_t size = 0;
     for (auto& data : inputs) {
         size += data->get_size();
@@ -50,9 +50,8 @@ std::shared_ptr<Data> MergeJob::run() {
         size += (inputs.size() - 1) * config.size();
     }
 
-    std::shared_ptr<Data> output = std::make_shared<RawData>();
-    RawData &data = static_cast<RawData&>(*output);
-    char *dst = data.init_empty(work_dir, size);
+    auto data = std::make_shared<RawData>();
+    char *dst = data->init_empty(work_dir, size);
 
     if (config.empty()) {
         for (auto& data : inputs) {
@@ -80,12 +79,12 @@ std::shared_ptr<Data> MergeJob::run() {
             dst += size;
         }
     }
-    return output;
+    return data;
 }
 
 void OpenTask::start(DataVector &inputs)
 {
-    std::shared_ptr<Data> data = std::make_shared<ExternFile>(task->get_config());
+    DataPtr data = std::make_shared<ExternFile>(task->get_config());
     finish(data);
 }
 
@@ -109,7 +108,7 @@ void SplitTask::start(DataVector &inputs)
 
     auto indices_data = std::make_unique<size_t[]>(indices.size());
     memcpy(&indices_data[0], &indices[0], sizeof(size_t) * indices.size());
-    std::shared_ptr<Data> result = std::make_shared<Index>(worker, input, indices.size() - 1, std::move(indices_data));
+    DataPtr result = std::make_shared<Index>(worker, input, indices.size() - 1, std::move(indices_data));
     finish(result);
 }
 

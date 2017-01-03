@@ -15,7 +15,7 @@ class Worker;
 class Index : public Data {
 public:
     Index(Worker &worker,
-          std::shared_ptr<Data> &data,
+          DataPtr &data,
           size_t length,
           std::unique_ptr<size_t[]> indices);
 
@@ -25,15 +25,15 @@ public:
     size_t get_length() const override;
     size_t get_size() const override;
     std::string get_info() const override;
-    std::shared_ptr<Data> get_at_index(size_t index) const override;
-    std::shared_ptr<Data> get_slice(size_t from, size_t to) const override;
-    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const override;
+    DataPtr get_at_index(size_t index) const override;
+    DataPtr get_slice(size_t from, size_t to) const override;
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const override;
 
 protected:
 
 
     Worker &worker;
-    std::shared_ptr<Data> data;
+    DataPtr data;
     size_t length;
     std::unique_ptr<size_t[]> indices;
 };
@@ -46,7 +46,7 @@ public:
    ~IndexUnpacker();
 
    Result on_message(const char *data, size_t size) override;
-   std::shared_ptr<Data> finish() override;
+   DataPtr finish() override;
 };
 }
 

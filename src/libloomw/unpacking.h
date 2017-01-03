@@ -22,7 +22,7 @@ public:
    virtual Result get_initial_mode();
    virtual Result on_message(const char *data, size_t size);
    virtual Result on_stream_data(const char *data, size_t size, size_t remaining);
-   virtual std::shared_ptr<Data> finish() = 0;
+   virtual DataPtr finish() = 0;
 };
 
 using UnpackFactoryFn = std::function<std::unique_ptr<DataUnpacker>()>;

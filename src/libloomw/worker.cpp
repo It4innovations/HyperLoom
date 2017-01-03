@@ -220,7 +220,7 @@ void Worker::start_task(std::unique_ptr<Task> task)
     resource_cpus -= 1;
 }
 
-void Worker::publish_data(Id id, const std::shared_ptr<Data> &data)
+void Worker:: publish_data(Id id, const DataPtr &data)
 {
     logger->debug("Publishing data id={} size={} info={}", id, data->get_size(), data->get_info());
     public_data[id] = data;
@@ -430,21 +430,21 @@ void Worker::task_redirect(TaskInstance &task,
     t->start(new_task_desc->inputs);
 }
 
-void Worker::task_finished(TaskInstance &task, Data &data)
+void Worker::task_finished(TaskInstance &task, const DataPtr &data)
 {
     if (server_conn.is_connected()) {
         loomcomm::WorkerResponse msg;
         msg.set_type(loomcomm::WorkerResponse_Type_FINISH);
         msg.set_id(task.get_id());
-        msg.set_size(data.get_size());
-        msg.set_length(data.get_length());
+        msg.set_size(data->get_size());
+        msg.set_length(data->get_length());
         send_message(server_conn, msg);
     }
     remove_task(task);
     check_ready_tasks();
 }
 
-void Worker::send_data(const std::string &address, Id id, std::shared_ptr<Data> &data)
+void Worker::send_data(const std::string &address, Id id, DataPtr &data)
 {
     auto &connection = get_connection(address);;
     connection.send(id, data);

@@ -8,7 +8,7 @@
 using namespace loom;
 using namespace loom::base;
 
-Index::Index(Worker &worker, std::shared_ptr<Data> &data, size_t length, std::unique_ptr<size_t[]> indices)
+Index::Index(Worker &worker, DataPtr &data, size_t length, std::unique_ptr<size_t[]> indices)
     : worker(worker), data(data), length(length), indices(std::move(indices))
 {
 
@@ -39,7 +39,7 @@ std::string Index::get_info() const
     return "Index";
 }
 
-std::shared_ptr<Data> Index::get_at_index(size_t index) const
+DataPtr Index::get_at_index(size_t index) const
 {
     assert (index < length);
     size_t addr = indices[index];
@@ -53,7 +53,7 @@ std::shared_ptr<Data> Index::get_at_index(size_t index) const
     return data;
 }
 
-std::shared_ptr<Data> Index::get_slice(size_t from, size_t to) const
+DataPtr Index::get_slice(size_t from, size_t to) const
 {
     if (from > length) {
         from = length;
@@ -81,7 +81,7 @@ std::shared_ptr<Data> Index::get_slice(size_t from, size_t to) const
     return data;
 }
 
-size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const
+size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const
 {
     logger->critical("Index::serialize_data");
     abort();
@@ -140,7 +140,7 @@ bool IndexUnpacker::on_data_finish(Connection &connection)
 
 void IndexUnpacker::finish_data()
 {
-    std::shared_ptr<Data> &inner_data = unpacker->get_data();
+    DataPtr &inner_data = unpacker->get_data();
     data = std::make_shared<Index>(*worker, inner_data, length, std::move(indices));
 }
 */
@@ -160,7 +160,7 @@ DataUnpacker::Result IndexUnpacker::on_message(const char *data, size_t size)
    assert(0);
 }
 
-std::shared_ptr<Data> IndexUnpacker::finish()
+DataPtr IndexUnpacker::finish()
 {
    assert(0);
 }

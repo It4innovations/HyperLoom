@@ -10,7 +10,7 @@ class PyCallJob : public loom::ThreadJob
 public:
     PyCallJob(Worker &worker, Task &task);
 
-    std::shared_ptr<loom::Data> run() override;
+    DataPtr run() override;
 private:
     void set_python_error();
 };

@@ -44,12 +44,12 @@ void TaskInstance::fail_libuv(const std::string &error_msg, int error_code)
     fail(s.str());
 }
 
-void TaskInstance::finish(const std::shared_ptr<Data> &output)
+void TaskInstance::finish(const DataPtr &output)
 {
    assert(output);
    worker.publish_data(get_id(), output);
    assert(output);
-   worker.task_finished(*this, *output);
+   worker.task_finished(*this, output);
 }
 
 void TaskInstance::redirect(std::unique_ptr<TaskDescription> tdesc)

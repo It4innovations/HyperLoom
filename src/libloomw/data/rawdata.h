@@ -23,7 +23,7 @@ public:
     bool has_raw_data() const override;
     std::string get_info() const override;
     std::string get_filename() const override;
-    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const override;
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const override;
 
     char* init_empty(const std::string &work_dir, size_t size);
     void init_from_string(const std::string &work_dir, const std::string &str);
@@ -54,9 +54,9 @@ public:
 
    Result get_initial_mode() override;
    Result on_stream_data(const char *data, size_t size, size_t remaining) override;
-   std::shared_ptr<Data> finish() override;
+   DataPtr finish() override;
 private:
-   std::shared_ptr<Data> result;
+   DataPtr result;
    char* ptr;
    const std::string& worker_dir;
 };

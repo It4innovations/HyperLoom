@@ -211,7 +211,7 @@ void RunTask::_on_close(uv_handle_t *handle)
    }
 
    if (output_size == 1) {
-      std::shared_ptr<Data> data_ptr = std::make_shared<RawData>();
+      auto data_ptr = std::make_shared<RawData>();
       RawData& data = static_cast<RawData&>(*data_ptr);
       data.assign_filename(task->worker.get_work_dir());
 
@@ -230,15 +230,13 @@ void RunTask::_on_close(uv_handle_t *handle)
    }
 
 
-   auto items = std::make_unique<std::shared_ptr<Data>[]>(output_size);
+   auto items = std::make_unique<DataPtr[]>(output_size);
 
    for (int i = 0; i < output_size; i++) {
-
-      items[i] = std::make_shared<RawData>();
-      RawData& data = static_cast<RawData&>(*items[i]);
-      data.assign_filename(task->worker.get_work_dir());
+      auto data = std::make_shared<RawData>();
+      data->assign_filename(task->worker.get_work_dir());
       std::string path = task->get_path(msg.map_outputs(i));
-      std::string data_path = data.get_filename();
+      std::string data_path = data->get_filename();
       logger->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
       //data->create(task->worker, 10);
       if (unlikely(rename(path.c_str(),
@@ -247,10 +245,11 @@ void RunTask::_on_close(uv_handle_t *handle)
                         path, data_path);
          log_errno_abort("rename");
       }
-      data.init_from_file(task->worker.get_work_dir());
+      data->init_from_file(task->worker.get_work_dir());
+      items[i] = std::move(data);
    }
 
-   std::shared_ptr<Data> output = std::make_shared<Array>(output_size, std::move(items));
+   DataPtr output = std::make_shared<Array>(output_size, std::move(items));
    task->finish(output);
 }
 

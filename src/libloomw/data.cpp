@@ -12,12 +12,12 @@ size_t Data::get_length() const
     return 0;
 }
 
-std::shared_ptr<Data> Data::get_at_index(size_t index) const
+DataPtr Data::get_at_index(size_t index) const
 {
     assert(0);
 }
 
-std::shared_ptr<Data> Data::get_slice(size_t from, size_t to) const
+DataPtr Data::get_slice(size_t from, size_t to) const
 {
     assert(0);
 }
@@ -42,7 +42,7 @@ base::Id Data::get_type_id(Worker &worker) const
    return worker.get_dictionary().find_symbol(get_type_name());
 }
 
-DataBufferItem::DataBufferItem(std::shared_ptr<Data> &data, const char *mem, size_t size)
+DataBufferItem::DataBufferItem(DataPtr &data, const char *mem, size_t size)
    : mem(mem), size(size), data(data)
 {
 

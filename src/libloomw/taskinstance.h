@@ -45,7 +45,7 @@ public:
 protected:
     void fail(const std::string &error_msg);
     void fail_libuv(const std::string &error_msg, int error_code);
-    void finish(const std::shared_ptr<Data> &output);
+    void finish(const DataPtr &output);
     void redirect(std::unique_ptr<TaskDescription> tdesc);
 
 
