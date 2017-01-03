@@ -18,21 +18,25 @@ Array::~Array()
     logger->debug("Disposing array");
 }
 
-size_t Array::get_size()
+size_t Array::get_length() const {
+    return length;
+}
+
+size_t Array::get_size() const
 {
-   size_t size = 0;
-   for (size_t i = 0; i < length; i++) {
+    size_t size = 0;
+    for (size_t i = 0; i < length; i++) {
       size += items[i]->get_size();
    }
    return size;
 }
 
-std::string Array::get_info()
+std::string Array::get_info() const
 {
     return "Array";
 }
 
-std::shared_ptr<Data> Array::get_slice(size_t from, size_t to)
+std::shared_ptr<Data> Array::get_slice(size_t from, size_t to) const
 {
     if (from > length) {
         from = length;
@@ -69,13 +73,13 @@ std::string Array::get_type_name() const
    return "loom/array";
 }
 
-std::shared_ptr<Data> Array::get_at_index(size_t index)
+std::shared_ptr<Data> Array::get_at_index(size_t index) const
 {
    assert(index < length);
    return items[index];
 }
 
-size_t Array::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t Array::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const
 {
     auto types = std::make_unique<base::MemItemWithSz>(sizeof(loom::base::Id) * length);
     loom::base::Id *ts = reinterpret_cast<loom::base::Id*>(types->get_ptr());

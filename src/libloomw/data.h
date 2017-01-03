@@ -26,22 +26,22 @@ public:
     virtual std::string get_type_name() const = 0;
 
     /** Get size of data */
-    virtual size_t get_size() = 0;
+    virtual size_t get_size() const = 0;
 
     /** Get length of data (when object is not indexable then returns 0) */
-    virtual size_t get_length();
+    virtual size_t get_length() const;
 
     /** Get debugging info string */
-    virtual std::string get_info() = 0;
+    virtual std::string get_info() const = 0;
 
     /** Get subobject at given index (0 ... get_length()) */
-    virtual std::shared_ptr<Data> get_at_index(size_t index);
+    virtual std::shared_ptr<Data> get_at_index(size_t index) const;
 
     /** Get subobject slice at given indices (0 ... get_length()) */
-    virtual std::shared_ptr<Data> get_slice(size_t from, size_t to);
+    virtual std::shared_ptr<Data> get_slice(size_t from, size_t to) const;
 
     /** Serialize object into send buffer */
-    virtual size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) = 0;
+    virtual size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const = 0;
 
     /** Get pointer to raw data, returns nullptr when it is not possible */
     virtual const char *get_raw_data() const;

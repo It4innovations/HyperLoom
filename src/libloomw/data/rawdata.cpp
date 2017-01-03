@@ -17,7 +17,7 @@
 using namespace loom;
 using namespace loom::base;
 
-size_t RawData::file_id_counter = 1;
+std::atomic<size_t> RawData::file_id_counter(1);
 
 RawData::RawData()
     : data(nullptr), size(0)
@@ -43,6 +43,22 @@ RawData::~RawData()
 std::string RawData::get_type_name() const
 {
       return "loom/data";
+}
+
+size_t RawData::get_size() const {
+    return size;
+}
+
+const char *RawData::get_raw_data() const
+{
+    if (data == nullptr) {
+        open();
+    }
+    return data;
+}
+
+bool RawData::has_raw_data() const {
+    return true;
 }
 
 char* RawData::init_empty(const std::string &work_dir, size_t size)
@@ -135,7 +151,7 @@ void RawData::map(int fd, bool write) const
     }
 }
 
-std::string RawData::get_info()
+std::string RawData::get_info() const
 {
     return "RawData file=" + filename;
 }
@@ -153,7 +169,7 @@ void RawData::init_from_mem(const std::string &work_dir, const void *ptr, size_t
     memcpy(mem, ptr, size);
 }
 
-size_t RawData::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t RawData::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const
 {
     buffer.add(std::make_unique<base::SizeBufferItem>(size));
     buffer.add(std::make_unique<DataBufferItem>(data_ptr, get_raw_data(), size));

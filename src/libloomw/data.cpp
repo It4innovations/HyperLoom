@@ -7,17 +7,17 @@ Data::~Data() {
 
 }
 
-size_t Data::get_length()
+size_t Data::get_length() const
 {
     return 0;
 }
 
-std::shared_ptr<Data> Data::get_at_index(size_t index)
+std::shared_ptr<Data> Data::get_at_index(size_t index) const
 {
     assert(0);
 }
 
-std::shared_ptr<Data> Data::get_slice(size_t from, size_t to)
+std::shared_ptr<Data> Data::get_slice(size_t from, size_t to) const
 {
     assert(0);
 }

@@ -14,26 +14,14 @@ public:
 
     std::string get_type_name() const override;
 
-    size_t get_size() override {
-        return size;
-    }
+    size_t get_size() const override;
 
-    const char *get_raw_data() const override
-    {
-        if (data == nullptr) {
-            open();
-        }
-        return data;
-    }
+    const char *get_raw_data() const override;
 
-    bool has_raw_data() const override {
-        return true;
-    }
-
-    std::string get_info() override;
-
+    bool has_raw_data() const override;
+    std::string get_info() const override;
     std::string get_filename() const override;
-    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) override;
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const override;
 
     char* init_empty(const std::string &work_dir, size_t size);
     void init_from_string(const std::string &work_dir, const std::string &str);
@@ -51,7 +39,7 @@ protected:
     size_t size;
     std::string filename;
 
-    static size_t file_id_counter;
+    static std::atomic<size_t> file_id_counter;
 };
 
 

@@ -24,22 +24,22 @@ std::string Index::get_type_name() const
    return "loom/index";
 }
 
-size_t Index::get_length()
+size_t Index::get_length() const
 {
     return length;
 }
 
-size_t Index::get_size()
+size_t Index::get_size() const
 {
     return data->get_size() + sizeof(size_t) * (length + 1);
 }
 
-std::string Index::get_info()
+std::string Index::get_info() const
 {
     return "Index";
 }
 
-std::shared_ptr<Data> Index::get_at_index(size_t index)
+std::shared_ptr<Data> Index::get_at_index(size_t index) const
 {
     assert (index < length);
     size_t addr = indices[index];
@@ -53,7 +53,7 @@ std::shared_ptr<Data> Index::get_at_index(size_t index)
     return data;
 }
 
-std::shared_ptr<Data> Index::get_slice(size_t from, size_t to)
+std::shared_ptr<Data> Index::get_slice(size_t from, size_t to) const
 {
     if (from > length) {
         from = length;
@@ -81,7 +81,7 @@ std::shared_ptr<Data> Index::get_slice(size_t from, size_t to)
     return data;
 }
 
-size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const
 {
     logger->critical("Index::serialize_data");
     abort();

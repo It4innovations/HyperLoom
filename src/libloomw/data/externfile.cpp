@@ -30,12 +30,25 @@ ExternFile::~ExternFile()
     }
 }
 
-std::string loom::ExternFile::get_info()
+size_t ExternFile::get_size() const {
+    return size;
+}
+
+const char *ExternFile::get_raw_data() const
+{
+    return data;
+}
+
+bool ExternFile::has_raw_data() const {
+    return true;
+}
+
+std::string loom::ExternFile::get_info() const
 {
     return "<ExternFile '" + filename + "'>";
 }
 
-size_t ExternFile::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr)
+size_t ExternFile::serialize(Worker &worker, loom::base::SendBuffer &buffer, std::shared_ptr<Data> &data_ptr) const
 {
     assert(0); // TODO
 }
