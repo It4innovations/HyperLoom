@@ -91,7 +91,7 @@ Worker::Worker(uv_loop_t *loop,
 
         logger->info("Using '{}' as working directory", work_dir);
     }
-    resource_cpus = config.get_cpus();
+    set_cpus(config.get_cpus());
 
     server_conn.set_on_error([this](int error_code) {
        logger->critical("Server connection error: {}", uv_strerror(error_code));
@@ -326,7 +326,8 @@ void Worker::set_cpus(int value)
         logger->debug("Autodetection of CPUs: {}", value);
     }
     if (value <= 0) {
-        value = 1;
+        logger->critical("Cannot detect number of CPUs");
+        exit(1);
     }
 
     resource_cpus = value;
