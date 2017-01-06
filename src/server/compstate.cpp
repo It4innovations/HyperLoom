@@ -43,16 +43,16 @@ void ComputationState::set_running_task(const PlanNode &node, WorkerConnection *
    assert(it != pending_tasks.end());
    pending_tasks.erase(it);
 
-   assert(state.get_worker_status(wc) == TaskState::S_NONE);
-   state.set_worker_status(wc, TaskState::S_RUNNING);
+   assert(state.get_worker_status(wc) == WStatus::NONE);
+   state.set_worker_status(wc, WStatus::RUNNING);
    workers[wc].free_cpus -= node.get_n_cpus();
 }
 
 void ComputationState::set_task_finished(const PlanNode&node, size_t size, size_t length, WorkerConnection *wc)
 {
    TaskState &state = get_state(node.get_id());
-   assert(state.get_worker_status(wc) == TaskState::S_RUNNING);
-   state.set_worker_status(wc, TaskState::S_OWNER);
+   assert(state.get_worker_status(wc) == WStatus::RUNNING);
+   state.set_worker_status(wc, WStatus::OWNER);
    state.set_size(size);
    state.set_length(length);
    workers[wc].free_cpus += node.get_n_cpus();
@@ -293,7 +293,7 @@ void ComputationState::collect_requirements_for_node(WorkerConnection *wc,
 {
    for (loom::base::Id id : node.get_inputs()) {
       TaskState &state = get_state(id);
-      if (state.get_worker_status(wc) == TaskState::S_OWNER) {
+      if (state.get_worker_status(wc) == WStatus::OWNER) {
          // nothing
       } else {
          nonlocals.insert(id);

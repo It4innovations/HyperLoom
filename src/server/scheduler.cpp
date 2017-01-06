@@ -162,7 +162,7 @@ Scheduler::Scheduler(ComputationState &cstate)
       const TaskState &state = cstate.get_state(pair.first);
       DataObj obj;
       obj.size = state.get_size();
-      state.foreach_source([&obj, &worker_map](WorkerConnection *wc) {
+      state.foreach_planned_owner([&obj, &worker_map](WorkerConnection *wc) {
          obj.owners.push_back(worker_map[wc]);
       });
       data[pair.second] = std::move(obj);

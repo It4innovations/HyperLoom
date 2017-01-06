@@ -50,12 +50,12 @@ void TaskManager::start_task(WorkerConnection *wc, Id task_id)
     const PlanNode &node = cstate.get_node(task_id);
     for (loom::base::Id id : node.get_inputs()) {
         TaskState &state = cstate.get_state(id);
-        TaskState::WStatus st = state.get_worker_status(wc);
-        if (st == TaskState::S_NONE) {
+        WStatus st = state.get_worker_status(wc);
+        if (st == WStatus::NONE) {
             WorkerConnection *owner = state.get_first_owner();
             assert(owner);
             owner->send_data(id, wc->get_address());
-            state.set_worker_status(wc, TaskState::S_OWNER);
+            state.set_worker_status(wc, WStatus::OWNER);
         }
     }
 

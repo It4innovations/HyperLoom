@@ -18,7 +18,7 @@ std::string TaskState::get_info() const
    s << "[TS id=" << id << " size=" << size;
    for (auto &pair : workers) {
       s << " " << pair.first->get_address() << ":";
-      s << pair.second;
+      s << static_cast<int>(pair.second);
    }
    s << "]";
    return s.str();

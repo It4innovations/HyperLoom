@@ -10,16 +10,24 @@ template<typename T> using WorkerMap = std::unordered_map<WorkerConnection*, T>;
 class ComputationState;
 class PlanNode;
 
+enum class WStatus {
+    NONE,
+    READY,
+    RUNNING,
+    TRANSFER,
+    OWNER,
+};
+
+inline bool is_planned_owner(WStatus status) {
+    return status == WStatus::OWNER || \
+           status == WStatus::RUNNING || \
+           status == WStatus::TRANSFER;
+}
+
+
 class TaskState {
 
 public:
-    enum WStatus {
-        S_NONE,
-        S_READY,
-        S_RUNNING,
-        S_OWNER,
-    };
-
     TaskState(const PlanNode &node);
 
     loom::base::Id get_id() const {
@@ -61,14 +69,14 @@ public:
     WStatus get_worker_status(WorkerConnection *wc) {
         auto i = workers.find(wc);
         if (i == workers.end()) {
-            return S_NONE;
+            return WStatus::NONE;
         }
         return i->second;
     }
 
     WorkerConnection *get_first_owner() {
         for (auto &p : workers) {
-            if (p.second == S_OWNER) {
+            if (p.second == WStatus::OWNER) {
                 return p.first;
             }
         }
@@ -81,17 +89,16 @@ public:
 
     bool is_running() const {
         for(auto &pair : workers) {
-            if (pair.second == S_RUNNING) {
+            if (pair.second == WStatus::RUNNING) {
                 return true;
             }
         }
         return false;
     }
 
-
-    template<typename F> void foreach_source(F f) const {
+    template<typename F> void foreach_planned_owner(F f) const {
         for(auto &pair : workers) {
-            if (pair.second == S_OWNER || pair.second == S_RUNNING) {
+            if (is_planned_owner(pair.second)) {
                 f(pair.first);
             }
         }
@@ -99,7 +106,7 @@ public:
 
     template<typename F> void foreach_owner(F f) const {
         for(auto &pair : workers) {
-            if (pair.second == S_OWNER) {
+            if (pair.second == WStatus::OWNER) {
                 f(pair.first);
             }
         }

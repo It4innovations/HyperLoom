@@ -18,7 +18,7 @@ public:
         New,
         Connecting,
         Open,
-        Closing,
+        Closing,        
         Closed,
     };
 
