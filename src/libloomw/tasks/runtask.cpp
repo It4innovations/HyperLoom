@@ -160,7 +160,7 @@ void RunTask::start(DataVector &inputs)
    close(stderr_fd);
 
    if (r) {
-       fail_libuv("uv_spawn", r);
+       fail_libuv(std::string("spawning '") + options.file + "'", r);
        return;
    }
 }

@@ -96,7 +96,7 @@ public:
         return false;
     }
 
-    template<typename F> void foreach_planned_owner(F f) const {
+    template<typename F> void foreach_planned_owner(const F &f) const {
         for(auto &pair : workers) {
             if (is_planned_owner(pair.second)) {
                 f(pair.first);
@@ -104,11 +104,17 @@ public:
         }
     }
 
-    template<typename F> void foreach_owner(F f) const {
+    template<typename F> void foreach_owner(const F &f) const {
         for(auto &pair : workers) {
             if (pair.second == WStatus::OWNER) {
                 f(pair.first);
             }
+        }
+    }
+
+    template<typename F> void foreach_worker(const F &f) const {
+        for(auto &pair : workers) {
+            f(pair.first, pair.second);
         }
     }
 

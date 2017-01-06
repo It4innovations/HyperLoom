@@ -50,8 +50,9 @@ message WorkerCommand {
 
 message WorkerResponse {
 	enum Type {
-		FINISH = 1;
-		FAILED = 2;
+		FINISHED = 1;
+		TRANSFERED = 2;
+		FAILED = 3;
 	}
 	required Type type = 1;
 	required int32 id = 2;

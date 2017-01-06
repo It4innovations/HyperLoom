@@ -50,6 +50,15 @@ void InterConnection::on_connect()
     early_sends.clear();
 }
 
+void InterConnection::finish_receive()
+{
+    logger->debug("Interconnect: Data id={} received", unpacking_data_id);
+    worker.data_transfered(unpacking_data_id);
+    worker.publish_data(unpacking_data_id, unpacker->finish());
+    unpacking_data_id = -1;
+    unpacker.reset();
+}
+
 void InterConnection::on_message(const char *buffer, size_t size)
 {
     if (!address.empty()) {
@@ -58,9 +67,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
             auto result = unpacker->on_message(buffer, size);
             switch(result) {
             case DataUnpacker::FINISHED:
-                worker.publish_data(unpacking_data_id, unpacker->finish());
-                unpacking_data_id = -1;
-                unpacker.reset();
+                finish_receive();
                 return;
             case DataUnpacker::MESSAGE:
                 return;
@@ -103,10 +110,8 @@ void InterConnection::on_stream_data(const char *buffer, size_t size, size_t rem
     auto result = unpacker->on_stream_data(buffer, size, remaining);
     switch(result) {
     case DataUnpacker::FINISHED:
-        worker.publish_data(unpacking_data_id, unpacker->finish());
-        unpacking_data_id = -1;
-        unpacker.reset();
         socket.set_stream_mode(false);
+        finish_receive();
         return;
     case DataUnpacker::MESSAGE:
         socket.set_stream_mode(false);

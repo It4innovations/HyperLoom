@@ -58,6 +58,13 @@ void ComputationState::set_task_finished(const PlanNode&node, size_t size, size_
    workers[wc].free_cpus += node.get_n_cpus();
 }
 
+void ComputationState::set_data_transfered(loom::base::Id id, WorkerConnection *wc)
+{
+   TaskState &state = get_state(id);
+   assert(state.get_worker_status(wc) == WStatus::TRANSFER);
+   state.set_worker_status(wc, WStatus::OWNER);
+}
+
 void ComputationState::remove_state(loom::base::Id id)
 {
    auto it = states.find(id);

@@ -435,7 +435,7 @@ void Worker::task_finished(TaskInstance &task, const DataPtr &data)
 {
     if (server_conn.is_connected()) {
         loomcomm::WorkerResponse msg;
-        msg.set_type(loomcomm::WorkerResponse_Type_FINISH);
+        msg.set_type(loomcomm::WorkerResponse_Type_FINISHED);
         msg.set_id(task.get_id());
         msg.set_size(data->get_size());
         msg.set_length(data->get_length());
@@ -443,6 +443,16 @@ void Worker::task_finished(TaskInstance &task, const DataPtr &data)
     }
     remove_task(task);
     check_ready_tasks();
+}
+
+void Worker::data_transfered(base::Id task_id)
+{
+    if (server_conn.is_connected()) {
+        loomcomm::WorkerResponse msg;
+        msg.set_type(loomcomm::WorkerResponse_Type_TRANSFERED);
+        msg.set_id(task_id);
+        send_message(server_conn, msg);
+    }
 }
 
 void Worker::send_data(const std::string &address, Id id, DataPtr &data)

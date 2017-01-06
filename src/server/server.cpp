@@ -87,6 +87,11 @@ void Server::on_task_finished(loom::base::Id id, size_t size, size_t length, Wor
     task_manager.on_task_finished(id, size, length, wc);
 }
 
+void Server::on_data_transfered(loom::base::Id id, WorkerConnection *wc)
+{
+    task_manager.on_data_transfered(id, wc);
+}
+
 void Server::inform_about_error(std::string &error_msg)
 {
 

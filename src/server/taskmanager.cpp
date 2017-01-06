@@ -55,7 +55,7 @@ void TaskManager::start_task(WorkerConnection *wc, Id task_id)
             WorkerConnection *owner = state.get_first_owner();
             assert(owner);
             owner->send_data(id, wc->get_address());
-            state.set_worker_status(wc, WStatus::OWNER);
+            state.set_worker_status(wc, WStatus::TRANSFER);
         }
     }
 
@@ -92,7 +92,9 @@ void TaskManager::remove_state(TaskState &state)
     logger->debug("Removing state id={}", state.get_id());
     assert(state.get_ref_counter() == 0);
     loom::base::Id id = state.get_id();
-    state.foreach_owner([id](WorkerConnection *wc) {
+
+    state.foreach_worker([id](WorkerConnection *wc, WStatus status) {
+        assert(status == WStatus::OWNER);
         wc->remove_data(id);
     });
     cstate.remove_state(id);
@@ -142,6 +144,12 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
     if (cstate.has_pending_tasks()) {
         server.need_task_distribution();
     }
+}
+
+void TaskManager::on_data_transfered(Id id, WorkerConnection *wc)
+{
+    logger->debug("Data id={} transfered to {}", id, wc->get_address());
+    cstate.set_data_transfered(id, wc);
 }
 
 void TaskManager::register_worker(WorkerConnection *wc)

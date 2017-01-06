@@ -61,6 +61,7 @@ public:
     void add_resend_task(loom::base::Id id);
 
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
+    void on_data_transfered(loom::base::Id id, WorkerConnection *wc);
 
     loom::base::Dictionary& get_dictionary() {
         return dictionary;

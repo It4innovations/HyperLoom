@@ -1083,6 +1083,7 @@ bool WorkerResponse_Type_IsValid(int value) {
   switch(value) {
     case 1:
     case 2:
+    case 3:
       return true;
     default:
       return false;
@@ -1090,7 +1091,8 @@ bool WorkerResponse_Type_IsValid(int value) {
 }
 
 #ifndef _MSC_VER
-const WorkerResponse_Type WorkerResponse::FINISH;
+const WorkerResponse_Type WorkerResponse::FINISHED;
+const WorkerResponse_Type WorkerResponse::TRANSFERED;
 const WorkerResponse_Type WorkerResponse::FAILED;
 const WorkerResponse_Type WorkerResponse::Type_MIN;
 const WorkerResponse_Type WorkerResponse::Type_MAX;

@@ -37,6 +37,7 @@ public:
     }
 
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
+    void on_data_transfered(loom::base::Id id, WorkerConnection *wc);
     void register_worker(WorkerConnection *wc);
 
     bool is_plan_finished() const {

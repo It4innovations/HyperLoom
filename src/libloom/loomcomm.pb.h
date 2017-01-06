@@ -73,11 +73,12 @@ const WorkerCommand_Type WorkerCommand_Type_Type_MAX = WorkerCommand_Type_DICTIO
 const int WorkerCommand_Type_Type_ARRAYSIZE = WorkerCommand_Type_Type_MAX + 1;
 
 enum WorkerResponse_Type {
-  WorkerResponse_Type_FINISH = 1,
-  WorkerResponse_Type_FAILED = 2
+  WorkerResponse_Type_FINISHED = 1,
+  WorkerResponse_Type_TRANSFERED = 2,
+  WorkerResponse_Type_FAILED = 3
 };
 bool WorkerResponse_Type_IsValid(int value);
-const WorkerResponse_Type WorkerResponse_Type_Type_MIN = WorkerResponse_Type_FINISH;
+const WorkerResponse_Type WorkerResponse_Type_Type_MIN = WorkerResponse_Type_FINISHED;
 const WorkerResponse_Type WorkerResponse_Type_Type_MAX = WorkerResponse_Type_FAILED;
 const int WorkerResponse_Type_Type_ARRAYSIZE = WorkerResponse_Type_Type_MAX + 1;
 
@@ -612,7 +613,8 @@ class WorkerResponse : public ::google::protobuf::MessageLite {
   // nested types ----------------------------------------------------
 
   typedef WorkerResponse_Type Type;
-  static const Type FINISH = WorkerResponse_Type_FINISH;
+  static const Type FINISHED = WorkerResponse_Type_FINISHED;
+  static const Type TRANSFERED = WorkerResponse_Type_TRANSFERED;
   static const Type FAILED = WorkerResponse_Type_FAILED;
   static inline bool Type_IsValid(int value) {
     return WorkerResponse_Type_IsValid(value);

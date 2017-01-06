@@ -45,8 +45,13 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
     loomcomm::WorkerResponse msg;
     msg.ParseFromArray(buffer, size);
 
-    if (msg.type() == loomcomm::WorkerResponse_Type_FINISH) {
+    if (msg.type() == loomcomm::WorkerResponse_Type_FINISHED) {
         server.on_task_finished(msg.id(), msg.size(), msg.length(), this);
+        return;
+    }
+
+    if (msg.type() == loomcomm::WorkerResponse_Type_TRANSFERED) {
+        server.on_data_transfered(msg.id(), this);
         return;
     }
 

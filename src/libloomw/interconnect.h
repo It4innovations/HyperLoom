@@ -52,6 +52,8 @@ protected:
     void on_stream_data(const char *buffer, size_t size, size_t remaining);
     void on_connect();
 
+    void finish_receive();
+
     base::Socket socket;
     Worker &worker;
     std::string address;
