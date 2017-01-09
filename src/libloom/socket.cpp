@@ -138,6 +138,7 @@ void Socket::_on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
          socket->on_stream_data(data, socket->stream_remaining, 0);
          assert(buffer.size() == 0);
          char *start_data = data + socket->stream_remaining;
+         socket->stream_remaining = 0;
          buffer.insert(buffer.begin(), start_data, data + size_read);
     } else {
        buffer.insert(buffer.end(), data, data + size_read);
