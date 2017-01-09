@@ -97,7 +97,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
    remaining_messages = msg.n_messages();
 
    auto data_id = msg.id();
-   auto client_id = worker.server.translate_to_client_id(data_id);
+   auto client_id = worker.server.get_task_manager().pop_result_client_id(data_id);
    msg.set_id(client_id);
    logger->debug("DummyWorker: Capturing data for client data_id={} (messages={})", data_id, remaining_messages);
 

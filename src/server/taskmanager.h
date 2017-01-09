@@ -19,26 +19,24 @@ class TaskManager
 
 public:
 
-    struct WorkerLoad {
-        WorkerLoad(WorkerConnection &connection, PlanNode::Vector &&tasks)
-            : connection(connection), tasks(tasks) {}
-
-        WorkerConnection &connection;
-        PlanNode::Vector tasks;
-    };
-    typedef std::vector<WorkerLoad> WorkDistribution;
-
     TaskManager(Server &server);
 
-    void add_plan(Plan &&plan, bool report);
+    void add_node(TaskNode &&node) {
+        cstate.add_node(std::move(node));
+    }
 
-    const Plan& get_plan() const {
-        return cstate.get_plan();
+    void set_final_node(loom::base::Id id) {
+        cstate.set_final_node(id);
+    }
+
+    void add_plan(const loomplan::Plan &plan);
+
+    void set_report(bool report) {
+        this->report = report;
     }
 
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
-    void on_data_transfered(loom::base::Id id, WorkerConnection *wc);
-    void register_worker(WorkerConnection *wc);
+    void on_data_transferred(loom::base::Id id, WorkerConnection *wc);
 
     bool is_plan_finished() const {
         return cstate.is_finished();
@@ -48,19 +46,23 @@ public:
         return cstate.get_n_data_objects();
     }
 
-    void run_task_distribution();
+    void run_task_distribution();   
 
-private:    
+    loom::base::Id pop_result_client_id(loom::base::Id id) {
+        return cstate.pop_result_client_id(id);
+    }
+
+private:
     Server &server;
     ComputationState cstate;
 
     void distribute_work(const TaskDistribution &distribution);
     void start_task(WorkerConnection *wc, loom::base::Id task_id);
-    void remove_state(TaskState &state);
+    void remove_node(TaskNode &node);
 
     bool report;
-    void report_task_start(WorkerConnection *wc, const PlanNode &node);
-    void report_task_end(WorkerConnection *wc, const PlanNode &node);
+    void report_task_start(WorkerConnection *wc, const TaskNode &node);
+    void report_task_end(WorkerConnection *wc, const TaskNode &node);
 };
 
 

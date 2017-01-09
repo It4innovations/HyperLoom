@@ -48,10 +48,10 @@ void ClientConnection::on_message(const char *buffer, size_t size)
 
     if (request.type() == loomcomm::ClientRequest_Type_PLAN) {
         logger->debug("Plan received");
-        const loomplan::Plan &plan = request.plan();
-        loom::base::Id id_base = server.new_id(plan.tasks_size());
+        const loomplan::Plan &plan = request.plan();        
+        task_manager.add_plan(plan);
         bool report = request.report();
-        task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()), report);
+        task_manager.set_report(report);
         logger->info("Plan submitted tasks={} report={}", plan.tasks_size(), report);
     } else if (request.type() == loomcomm::ClientRequest_Type_STATS) {
         logger->debug("Stats request");

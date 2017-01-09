@@ -17,7 +17,8 @@ WorkerConnection::WorkerConnection(Server &server,
                                    int resource_cpus, int worker_id)
     : server(server),
       socket(std::move(socket)),
-      resource_cpus(resource_cpus),
+      free_cpus(resource_cpus),
+      resource_cpus(resource_cpus),      
       address(address),
       task_types(task_types),
       data_types(data_types),
@@ -51,7 +52,7 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
     }
 
     if (msg.type() == loomcomm::WorkerResponse_Type_TRANSFERED) {
-        server.on_data_transfered(msg.id(), this);
+        server.on_data_transferred(msg.id(), this);
         return;
     }
 
@@ -61,7 +62,7 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
     }
 }
 
-void WorkerConnection::send_task(const PlanNode &task)
+void WorkerConnection::send_task(const TaskNode &task)
 {
     auto id = task.get_id();
     logger->debug("Assigning task id={} to address={} cpus={}", id, address, task.get_n_cpus());
@@ -69,8 +70,8 @@ void WorkerConnection::send_task(const PlanNode &task)
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_TASK);
     msg.set_id(id);
-    msg.set_task_type(task.get_task_type());
-    msg.set_task_config(task.get_config());
+    msg.set_task_type(task.get_task_def().task_type);
+    msg.set_task_config(task.get_task_def().config);
 
     for (loom::base::Id id : task.get_inputs()) {
         msg.add_task_inputs(id);

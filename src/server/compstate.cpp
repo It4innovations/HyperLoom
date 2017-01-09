@@ -4,6 +4,7 @@
 #include "server.h"
 
 #include "libloom/log.h"
+#include "libloom/loomplan.pb.h"
 
 constexpr static double TRANSFER_COST_COEF = 1.0 / (1024 * 1024); // 1MB = 1cost
 
@@ -22,65 +23,78 @@ ComputationState::ComputationState(Server &server) : server(server)
    }
 }
 
-void ComputationState::set_plan(Plan &&plan)
+void ComputationState::add_node(TaskNode &&node) {
+    auto id = node.get_id();
+
+    if (node.get_inputs().empty()) {
+        pending_nodes.insert(id);
+    }
+
+    auto inputs = node.get_inputs();
+    std::sort(inputs.begin(), inputs.end());
+    inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
+
+    for (auto input_id : inputs) {
+        TaskNode& node = get_node(input_id);
+        node.add_next(id);
+    }
+
+    nodes.insert(std::make_pair(id, std::move(node)));
+}
+
+void ComputationState::set_final_node(Id id)
 {
-   this->plan = std::move(plan);
+    final_nodes[id] = get_node(id).get_client_id();
+}
+
+/*void ComputationState::set_plan(Plan &&plan)
+{
+    this->plan = std::move(plan);
    auto task_ids = this->plan.get_init_tasks();
    assert(!task_ids.empty());
    add_ready_nodes(task_ids);
-}
+}*/
 
-void ComputationState::add_worker(WorkerConnection* wconn)
+void ComputationState::reserve_new_nodes(size_t size)
 {
-   auto &w = workers[wconn];
-   w.free_cpus = wconn->get_resource_cpus();
+    nodes.reserve(nodes.size() + size);
 }
 
-void ComputationState::set_running_task(const PlanNode &node, WorkerConnection *wc)
+TaskNode& ComputationState::get_node(Id id)
 {
-   TaskState &state = get_state(node.get_id());
-   auto it = pending_tasks.find(node.get_id());
-   assert(it != pending_tasks.end());
-   pending_tasks.erase(it);
-
-   assert(state.get_worker_status(wc) == WStatus::NONE);
-   state.set_worker_status(wc, WStatus::RUNNING);
-   workers[wc].free_cpus -= node.get_n_cpus();
+    auto it = nodes.find(id);
+    if (it == nodes.end()) {
+       logger->critical("Cannot find node for id={}", id);
+       abort();
+    }
+    return it->second;
 }
 
-void ComputationState::set_task_finished(const PlanNode&node, size_t size, size_t length, WorkerConnection *wc)
+void ComputationState::activate_pending_node(TaskNode &node, WorkerConnection *wc)
+{   
+   auto it = pending_nodes.find(node.get_id());
+   assert(it != pending_nodes.end());
+   pending_nodes.erase(it);
+   node.set_as_running(wc);
+}
+
+void ComputationState::remove_node(TaskNode &node)
 {
-   TaskState &state = get_state(node.get_id());
-   assert(state.get_worker_status(wc) == WStatus::RUNNING);
-   state.set_worker_status(wc, WStatus::OWNER);
-   state.set_size(size);
-   state.set_length(length);
-   workers[wc].free_cpus += node.get_n_cpus();
+   auto it = nodes.find(node.get_id());
+   assert(it != nodes.end());
+   nodes.erase(it);
 }
 
-void ComputationState::set_data_transfered(loom::base::Id id, WorkerConnection *wc)
-{
-   TaskState &state = get_state(id);
-   assert(state.get_worker_status(wc) == WStatus::TRANSFER);
-   state.set_worker_status(wc, WStatus::OWNER);
-}
-
-void ComputationState::remove_state(loom::base::Id id)
-{
-   auto it = states.find(id);
-   assert(it != states.end());
-   states.erase(it);
-}
-
-void ComputationState::add_ready_nexts(const PlanNode &node)
+void ComputationState::add_ready_nexts(const TaskNode &node)
 {
    for (loom::base::Id id : node.get_nexts()) {
-      const PlanNode &node = get_node(id);
+      const TaskNode &node = get_node(id);
       if (is_ready(node)) {
-         if (node.get_policy() == PlanNode::POLICY_SCHEDULER) {
-            expand_node(node);
-         } else {
-            add_pending_task(id);
+         if (node.get_task_def().policy == TaskPolicy::SCHEDULER) {
+            assert(0);
+            //expand_node(node);
+         } else {            
+            add_pending_node(node);
          }
       }
    }
@@ -88,28 +102,26 @@ void ComputationState::add_ready_nexts(const PlanNode &node)
 
 bool ComputationState::is_finished() const
 {
-    return states.empty();
+    return nodes.empty();
 }
 
 int ComputationState::get_n_data_objects() const
 {
     int count = 0;
-    for (auto& pair : states) {
-        if (pair.second.has_owner()) {
+    for (auto& pair : nodes) {
+        if (pair.second.is_computed()) {
             count += 1;
         }
     }
     return count;
 }
 
-void ComputationState::add_pending_task(loom::base::Id id)
+void ComputationState::add_pending_node(const TaskNode &node)
 {
-   logger->debug("Add pending task and creating state id={}", id);
-   auto pair = states.emplace(std::make_pair(id, TaskState(get_node(id))));
-   assert(pair.second);
-   pending_tasks.insert(id);
+   pending_nodes.insert(node.get_id());
 }
 
+/*
 void ComputationState::expand_node(const PlanNode &node)
 {
    loom::base::Id id = node.get_task_type();
@@ -249,72 +261,97 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
    for (loom::base::Id id : node2.get_nexts()) {
       plan.get_node(id).replace_input(node2.get_id(), ids2);
    }
-}
+}*/
 
 
-bool ComputationState::is_ready(const PlanNode &node)
+bool ComputationState::is_ready(const TaskNode &node)
 {
    for (loom::base::Id id : node.get_inputs()) {
-      if (states.find(id) == states.end()) {
-         return false;
-      }
-      if (get_state(id).get_first_owner() == nullptr) {
+      const TaskNode &node = get_node(id);
+      if (!node.is_computed()) {
          return false;
       }
    }
    return true;
 }
 
-int ComputationState::get_max_cpus()
-{
-    int max_cpus = 0;
-    for (auto &pair : workers) {
-        if (max_cpus < pair.first->get_resource_cpus()) {
-            max_cpus = pair.first->get_resource_cpus();
-        }
+static TaskPolicy read_task_policy(loomplan::Task_Policy policy) {
+    switch(policy) {
+        case loomplan::Task_Policy_POLICY_STANDARD:
+            return TaskPolicy::STANDARD;
+        case loomplan::Task_Policy_POLICY_SIMPLE:
+            return TaskPolicy::SIMPLE;
+        case loomplan::Task_Policy_POLICY_SCHEDULER:
+            return TaskPolicy::SCHEDULER;
+        default:
+            loom::base::logger->critical("Invalid task policy");
+            exit(1);
     }
-    return max_cpus;
 }
 
-TaskState &ComputationState::get_state(loom::base::Id id)
+void ComputationState::add_plan(const loomplan::Plan &plan)
 {
-   auto it = states.find(id);
-   if (it == states.end()) {
-      logger->critical("Cannot find state for id={}", id);
-      abort();
-   }
-   return it->second;
+    loom::base::Id id_base = server.new_id(plan.tasks_size());
 
+    std::vector<int> resources;
+    loom::base::Id resource_ncpus = server.get_dictionary().find_or_create("loom/resource/cpus");
+    auto rr_size = plan.resource_requests_size();
+    for (int i = 0; i < rr_size; i++) {
+        auto &rr = plan.resource_requests(i);
+        assert(rr.resources_size() == 1);
+        assert(rr.resources(0).resource_type() == resource_ncpus);
+        resources.push_back(rr.resources(0).value());
+    }
+
+    auto task_size = plan.tasks_size();
+    reserve_new_nodes(task_size);
+    for (int i = 0; i < task_size; i++) {
+        const auto& pt = plan.tasks(i);
+        auto id = i + id_base;
+
+        TaskDef def;
+
+        def.task_type = pt.task_type();
+        def.config = pt.config();
+        def.policy = read_task_policy(pt.policy());
+
+        auto inputs_size = pt.input_ids_size();
+        for (int j = 0; j < inputs_size; j++) {
+            def.inputs.push_back(id_base + pt.input_ids(j));
+        }
+
+        int n_cpus = 0;
+        if (pt.resource_request_index() != -1) {
+            assert(pt.resource_request_index() >= 0);
+            assert(pt.resource_request_index() < (int) resources.size());
+            n_cpus = resources[pt.resource_request_index()];
+        }
+        def.n_cpus = n_cpus;
+
+        add_node(TaskNode(id, i, std::move(def)));
+    }
+
+    final_nodes.reserve(final_nodes.size() + plan.result_ids_size());
+
+    for (int i = 0; i < plan.result_ids_size(); i++)
+    {
+        set_final_node(plan.result_ids(i) + id_base);
+    }
 }
 
-/*TaskState &ComputationState::get_state_or_create(loom::base::Id id)
+void ComputationState::test_ready_nodes(std::vector<Id> ids)
 {
-   auto it = states.find(id);
-   if (it == states.end()) {
-      loom::logger->debug("Creating state id={}", id);
-      auto p = states.emplace(std::make_pair(id, TaskState(get_node(id))));
-      it = p.first;
-   }
-   return it->second;
-}*/
-
-void ComputationState::add_ready_nodes(const std::vector<loom::base::Id> &ids)
-{
-   for (loom::base::Id id : ids) {
-      add_pending_task(id);
-   }
+    pending_nodes.clear();
+    for (auto id : ids) {
+        pending_nodes.insert(id);
+    }
 }
 
-void ComputationState::collect_requirements_for_node(WorkerConnection *wc,
-                                                     const PlanNode &node,
-                                                     std::unordered_set<loom::base::Id> &nonlocals)
+Id ComputationState::pop_result_client_id(Id id)
 {
-   for (loom::base::Id id : node.get_inputs()) {
-      TaskState &state = get_state(id);
-      if (state.get_worker_status(wc) == WStatus::OWNER) {
-         // nothing
-      } else {
-         nonlocals.insert(id);
-      }
-   }
+    auto it = final_nodes.find(id);
+    assert(it != final_nodes.end());
+    Id client_id = it->second;
+    final_nodes.erase(it);
+    return client_id;
 }

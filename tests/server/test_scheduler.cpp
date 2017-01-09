@@ -14,17 +14,14 @@ template<typename T> std::set<T> v_to_s(std::vector<T> &v) {
    return std::set<T>(v.begin(), v.end());
 }
 
-typedef std::unordered_set<PlanNode*> TaskSet;
-
-typedef
-std::unordered_map<WorkerConnection*, TaskSet>
-DistMap;
-
-static std::unique_ptr<WorkerConnection>
+static WorkerConnection *
 simple_worker(Server &server, const std::string &name, int cpus=1)
 {
    std::vector<loom::base::Id> tt, dt;
-   return std::make_unique<WorkerConnection>(server, nullptr, name, tt, dt, cpus, 0);
+   auto wc = std::make_unique<WorkerConnection>(server, nullptr, name, tt, dt, cpus, 0);
+   WorkerConnection *r = wc.get();
+   server.add_worker_connection(std::move(wc));
+   return r;
 }
 
 template<typename T>
@@ -278,8 +275,6 @@ std::vector<loom::base::Id> range(size_t limit)
     return result;
 }
 
-
-
 void dump_dist(const TaskDistribution &d)
 {
    for (auto& pair : d) {
@@ -293,230 +288,165 @@ void dump_dist(const TaskDistribution &d)
 
 static void start(ComputationState &cstate, loom::base::Id id, WorkerConnection *wc)
 {
-    std::vector<loom::base::Id> ids = {id};
-    cstate.add_ready_nodes(ids);
     auto &node = cstate.get_node(id);
-    cstate.set_running_task(node, wc);
+    node.set_as_running(wc);
 }
 
 static void finish(ComputationState &cstate, loom::base::Id id, size_t size, size_t length, WorkerConnection *wc)
-{
-    start(cstate, id, wc);
+{    
     auto &node = cstate.get_node(id);
-    cstate.set_task_finished(node, size, length, wc);
-}
-
-TEST_CASE( "Server scheduling - plan construction", "[scheduling]" ) {
-   Server server(NULL, 0);
-   Plan p(make_simple_plan(server), 100, server.get_dictionary());
-
-   REQUIRE(p.get_size() == 3);
-
-   auto& d1 = p.get_node(100);
-   REQUIRE(d1.get_id() == 100);
-   REQUIRE(d1.get_client_id() == 0);
-   REQUIRE(d1.get_inputs().empty());
-   REQUIRE((d1.get_nexts() == std::vector<loom::base::Id>{102}));
-
-   auto& d2 = p.get_node(101);
-   REQUIRE(d2.get_id() == 101);
-   REQUIRE(d2.get_client_id() == 1);
-   REQUIRE(d2.get_inputs().empty());
-   REQUIRE((d2.get_nexts() == std::vector<loom::base::Id>{102}));
-
-   auto& d3 = p.get_node(102);
-   REQUIRE(d3.get_id() == 102);
-   REQUIRE(d3.get_client_id() == 2);
-   REQUIRE((d3.get_inputs() == std::vector<loom::base::Id>{100, 101, 100}));
-   REQUIRE((d3.get_nexts() == std::vector<loom::base::Id>{}));
-}
-
-TEST_CASE("Server scheduling - init tasks", "[scheduling]") {
-   Server server(NULL, 0);
-   Plan p(make_simple_plan(server), 10, server.get_dictionary());
-   auto st = p.get_init_tasks();
-   REQUIRE((v_to_s(st) == std::set<loom::base::Id>{10, 11}));
+    node.set_as_finished_no_check(wc, size, length);
 }
 
 TEST_CASE("Basic plan scheduling", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.set_plan(Plan(make_simple_plan(server), 10, server.get_dictionary()));
+   s.add_plan(make_simple_plan(server));
 
 
    auto w1 = simple_worker(server, "w1");
-   s.add_worker(w1.get());
-
    auto w2 = simple_worker(server, "w2");
-   s.add_worker(w2.get());
-
 
    SECTION("Scheduling first two tasks") {
-      s.add_ready_nodes(std::vector<loom::base::Id>{10, 11});
+      s.test_ready_nodes({0, 1});
 
       TaskDistribution d = schedule(s);
       //dump_dist(d);
-      REQUIRE(d[w1.get()].size() == 1);
-      REQUIRE(d[w2.get()].size() == 1);
-      loom::base::Id id1 = d[w1.get()][0];
-      loom::base::Id id2 = d[w2.get()][0];
+      REQUIRE(d[w1].size() == 1);
+      REQUIRE(d[w2].size() == 1);
+      loom::base::Id id1 = d[w1][0];
+      loom::base::Id id2 = d[w2][0];
       REQUIRE(id1 != id2);
-      REQUIRE((id1 == 10 || id1 == 11));
-      REQUIRE((id2 == 10 || id2 == 11));
+      REQUIRE((id1 == 0 || id1 == 1));
+      REQUIRE((id2 == 0 || id2 == 1));
    }
 
    SECTION("Scheduling third task - first dep is bigger") {
-      finish(s, 10, 200, 0, w1.get());
-      finish(s, 11, 100, 0, w2.get());
+      finish(s, 0, 200, 0, w1);
+      finish(s, 1, 100, 0, w2);
 
-      s.add_ready_nodes(std::vector<loom::base::Id>{12});
+      s.test_ready_nodes({2});
       TaskDistribution d = schedule(s);
       //dump_dist(d);
 
-      REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{12}));
-      REQUIRE((d[w2.get()] == std::vector<loom::base::Id>{}));
+      REQUIRE((d[w1] == std::vector<loom::base::Id>{2}));
+      REQUIRE((d[w2] == std::vector<loom::base::Id>{}));
    }
 
    SECTION("Scheduling third task - second dep is bigger") {
-      finish(s, 10, 100, 0, w1.get());
-      finish(s, 11, 200, 0, w2.get());
+      finish(s, 0, 100, 0, w1);
+      finish(s, 1, 200, 0, w2);
 
-      s.add_ready_nodes(std::vector<loom::base::Id>{12});
+      s.test_ready_nodes({2});
       TaskDistribution d = schedule(s);
 
-      REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{}));
-      REQUIRE((d[w2.get()] == std::vector<loom::base::Id>{12}));
+      REQUIRE((d[w1] == std::vector<loom::base::Id>{}));
+      REQUIRE((d[w2] == std::vector<loom::base::Id>{2}));
    }
 
    SECTION("Scheduling third task - all on first") {
-      finish(s, 10, 100, 0, w1.get());
-      finish(s, 11, 200, 0, w1.get());
+      finish(s, 0, 100, 0, w1);
+      finish(s, 1, 200, 0, w1);
 
-      s.add_ready_nodes(std::vector<loom::base::Id>{12});
+      s.test_ready_nodes(std::vector<loom::base::Id>{2});
       TaskDistribution d = schedule(s);
 
-      REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{12}));
-      REQUIRE((d[w2.get()] == std::vector<loom::base::Id>{}));
+      REQUIRE((d[w1] == std::vector<loom::base::Id>{2}));
+      REQUIRE((d[w2] == std::vector<loom::base::Id>{}));
    }
 
    SECTION("Scheduling third task - all on second") {
-      finish(s, 10, 100, 0, w2.get());
-      finish(s, 11, 200, 0, w2.get());
+      finish(s, 0, 100, 0, w2);
+      finish(s, 1, 200, 0, w2);
 
-      s.add_ready_nodes(std::vector<loom::base::Id>{12});
+      s.test_ready_nodes(std::vector<loom::base::Id>{2});
       TaskDistribution d = schedule(s);
 
-      REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{}));
-      REQUIRE((d[w2.get()] == std::vector<loom::base::Id>{12}));
+      REQUIRE((d[w1] == std::vector<loom::base::Id>{}));
+      REQUIRE((d[w2] == std::vector<loom::base::Id>{2}));
    }
 }
 
 TEST_CASE("Plan 4", "[scheduling]") {
     Server server(NULL, 0);
     ComputationState s(server);
-    s.set_plan(Plan(make_plan4(server), 0, server.get_dictionary()));
+    s.add_plan(make_plan4(server));
 
     SECTION("More narrow") {
         auto w1 = simple_worker(server, "w1", 1);
-        s.add_worker(w1.get());
         auto w2 = simple_worker(server, "w2", 1);
-        s.add_worker(w2.get());
         auto w3 = simple_worker(server, "w2", 1);
-        s.add_worker(w3.get());
 
         SECTION("w2 is busy") {
-           start(s, 8, w2.get());
-           s.add_ready_nodes({3, 7});
+           s.test_ready_nodes({3, 7});
 
            SECTION("Case 1") {
-               finish(s, 0, 1000, 0, w1.get());
-               finish(s, 1, 1000, 0, w2.get());
-               finish(s, 2, 1000, 0, w3.get());
+               finish(s, 0, 1000, 0, w1);
+               finish(s, 1, 1000, 0, w2);
+               finish(s, 2, 1000, 0, w3);
 
-               finish(s, 4, 1000, 0, w1.get());
-               finish(s, 5, 1000, 0, w2.get());
-               finish(s, 6,  500, 0, w3.get());
+               finish(s, 4, 1000, 0, w1);
+               finish(s, 5, 1000, 0, w2);
+               finish(s, 6,  500, 0, w3);
+               start(s, 8, w2);
 
                TaskDistribution d = schedule(s);
                //dump_dist(d);
-               REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{7}));
+               REQUIRE((d[w1] == std::vector<loom::base::Id>{7}));
            }
 
            SECTION("Case 2") {
-               finish(s, 0, 1000, 0, w1.get());
-               finish(s, 1, 1000, 0, w2.get());
-               finish(s, 2,  100, 0, w3.get());
+               finish(s, 0, 1000, 0, w1);
+               finish(s, 1, 1000, 0, w2);
+               finish(s, 2,  100, 0, w3);
 
-               finish(s, 4, 1000, 0, w1.get());
-               finish(s, 5, 1000, 0, w2.get());
-               finish(s, 6,  500, 0, w3.get());
+               finish(s, 4, 1000, 0, w1);
+               finish(s, 5, 1000, 0, w2);
+               finish(s, 6,  500, 0, w3);
+               start(s, 8, w2);
 
                TaskDistribution d = schedule(s);
                //dump_dist(d);
-               REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{3}));
+               REQUIRE((d[w1] == std::vector<loom::base::Id>{3}));
            }
-
-           /*SECTION("Case 3") {
-               finish(s, 0, 1000, 0, w1.get());
-               finish(s, 1, 1000, 0, w2.get());
-               finish(s, 2,  100, 0, w3.get());
-
-               finish(s, 4, 100, 0, w1.get());
-               finish(s, 5, 100, 0, w2.get());
-               finish(s, 6,  50, 0, w3.get());
-
-               TaskDistribution d = schedule(s);
-               dump_dist(d);
-               REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{3}));
-           }*/
         }
 
         SECTION("w2+w3 are busy") {
-           start(s, 8, w2.get());
-           start(s, 9, w3.get());
-           s.add_ready_nodes({3, 7});
+           s.test_ready_nodes({3, 7});
 
            SECTION("Case 1") {
-               finish(s, 0, 1000, 0, w1.get());
-               finish(s, 1, 1000, 0, w2.get());
-               finish(s, 2, 1000, 0, w3.get());
+               finish(s, 0, 1000, 0, w1);
+               finish(s, 1, 1000, 0, w2);
+               finish(s, 2, 1000, 0, w3);
 
-               finish(s, 4, 1000, 0, w1.get());
-               finish(s, 5, 1000, 0, w2.get());
-               finish(s, 6,  500, 0, w3.get());
+               finish(s, 4, 1000, 0, w1);
+               finish(s, 5, 1000, 0, w2);
+               finish(s, 6,  500, 0, w3);
+
+               start(s, 8, w2);
+               start(s, 9, w3);
 
                TaskDistribution d = schedule(s);
                //dump_dist(d);
-               REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{7}));
+               REQUIRE((d[w1] == std::vector<loom::base::Id>{7}));
            }
 
            SECTION("Case 2") {
-               finish(s, 0, 1000, 0, w1.get());
-               finish(s, 1, 1000, 0, w2.get());
-               finish(s, 2,  100, 0, w3.get());
+               finish(s, 0, 1000, 0, w1);
+               finish(s, 1, 1000, 0, w2);
+               finish(s, 2,  100, 0, w3);
 
-               finish(s, 4, 1000, 0, w1.get());
-               finish(s, 5, 1000, 0, w2.get());
-               finish(s, 6,  500, 0, w3.get());
+               finish(s, 4, 1000, 0, w1);
+               finish(s, 5, 1000, 0, w2);
+               finish(s, 6,  500, 0, w3);
+
+               start(s, 8, w2);
+               start(s, 9, w3);
 
                TaskDistribution d = schedule(s);
                //dump_dist(d);
-               REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{3}));
+               REQUIRE((d[w1] == std::vector<loom::base::Id>{3}));
            }
-
-           /*SECTION("Case 3") {
-               finish(s, 0, 1000, 0, w1.get());
-               finish(s, 1, 1000, 0, w2.get());
-               finish(s, 2,  100, 0, w3.get());
-
-               finish(s, 4, 100, 0, w1.get());
-               finish(s, 5, 100, 0, w2.get());
-               finish(s, 6,  50, 0, w3.get());
-
-               TaskDistribution d = schedule(s);
-               dump_dist(d);
-               REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{3}));
-           }*/
         }
     }
 }
@@ -525,90 +455,82 @@ TEST_CASE("Plan 4", "[scheduling]") {
 TEST_CASE("Plan2 scheduling", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.set_plan(Plan(make_plan2(server), 0, server.get_dictionary()));
+   s.add_plan(make_plan2(server));
 
    SECTION("Two simple workers") {
-      auto w1 = simple_worker(server, "w1");
-      s.add_worker(w1.get());
-
+      auto w1 = simple_worker(server, "w1");      
       auto w2 = simple_worker(server, "w2");
-      s.add_worker(w2.get());
 
       SECTION("Each one has own") {
-         finish(s, 0, 100, 0, w2.get());
-         finish(s, 1, 100, 0, w1.get());
-         finish(s, 2, 100, 0, w1.get());
-         finish(s, 3, 100, 0, w1.get());
-         finish(s, 4, 100, 0, w2.get());
+         finish(s, 0, 100, 0, w2);
+         finish(s, 1, 100, 0, w1);
+         finish(s, 2, 100, 0, w1);
+         finish(s, 3, 100, 0, w1);
+         finish(s, 4, 100, 0, w2);
 
-         s.add_ready_nodes(std::vector<loom::base::Id>{5, 6, 7, 8});
+         s.test_ready_nodes(std::vector<loom::base::Id>{5, 6, 7, 8});
          TaskDistribution d = schedule(s);
          //dump_dist(d);
 
-         REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{6}));
-         REQUIRE((d[w2.get()] == std::vector<loom::base::Id>{8}));
+         REQUIRE((d[w1] == std::vector<loom::base::Id>{6}));
+         REQUIRE((d[w2] == std::vector<loom::base::Id>{8}));
       }
    }
 
    SECTION("Three simple workers - 2-2-0 cpus") {
       auto w1 = simple_worker(server, "w1", 2);
-      s.add_worker(w1.get());
-
       auto w2 = simple_worker(server, "w2", 2);
-      s.add_worker(w2.get());
-
       auto w3 = simple_worker(server, "w3", 0);
-      s.add_worker(w3.get());
 
       SECTION("Each one has own") {
-         finish(s, 0, 100, 0, w1.get());
-         finish(s, 1, 100, 0, w1.get());
-         finish(s, 2, 100, 0, w1.get());
-         finish(s, 3, 100, 0, w1.get());
-         finish(s, 4, 100, 0, w2.get());
+         finish(s, 0, 100, 0, w1);
+         finish(s, 1, 100, 0, w1);
+         finish(s, 2, 100, 0, w1);
+         finish(s, 3, 100, 0, w1);
+         finish(s, 4, 100, 0, w2);
 
-         s.add_ready_nodes(std::vector<loom::base::Id>{5, 6, 7, 8});
+         s.test_ready_nodes(std::vector<loom::base::Id>{5, 6, 7, 8});
          TaskDistribution d = schedule(s);
          //dump_dist(d);
 
-         REQUIRE(check_uvector(d[w1.get()], {5, 6}));
-         REQUIRE(check_uvector(d[w2.get()], {7, 8}));
-         REQUIRE(check_uvector(d[w3.get()], {}));
+         REQUIRE(check_uvector(d[w1], {5, 6}));
+         REQUIRE(check_uvector(d[w2], {7, 8}));
+         REQUIRE(check_uvector(d[w3], {}));
       }
 
       SECTION("Two task with shared deps") {
-         finish(s, 0, 100, 0, w3.get());
-         finish(s, 1, 200, 0, w3.get());
-         finish(s, 2, 100, 0, w3.get());
-         finish(s, 3, 100, 0, w3.get());
-         finish(s, 4, 100, 0, w3.get());
+         finish(s, 0, 100, 0, w3);
+         finish(s, 1, 200, 0, w3);
+         finish(s, 2, 100, 0, w3);
+         finish(s, 3, 100, 0, w3);
+         finish(s, 4, 100, 0, w3);
 
-         s.add_ready_nodes(std::vector<loom::base::Id>{5, 6, 8});
+         s.test_ready_nodes(std::vector<loom::base::Id>{5, 6, 8});
          TaskDistribution d = schedule(s);
          //dump_dist(d);
 
-         if (d[w1.get()].size() > d[w2.get()].size()) {
-            REQUIRE(check_uvector(d[w1.get()], {5, 6}));
-            REQUIRE(check_uvector(d[w2.get()], {8}));
+         if (d[w1].size() > d[w2].size()) {
+            REQUIRE(check_uvector(d[w1], {5, 6}));
+            REQUIRE(check_uvector(d[w2], {8}));
          } else {
-            REQUIRE(check_uvector(d[w1.get()], {8}));
-            REQUIRE(check_uvector(d[w2.get()], {5, 6}));
+            REQUIRE(check_uvector(d[w1], {8}));
+            REQUIRE(check_uvector(d[w2], {5, 6}));
          }
       }
 
       SECTION("Better one big than two smaller with bigger sum") {
-         finish(s, 0, 800, 0, w2.get());
-         finish(s, 1, 1100, 0, w1.get());
-         finish(s, 2, 800, 0, w2.get());
-         finish(s, 3, 0, 0, w3.get());
-         //finish(s, 4, 100, 0, w3.get());
+         finish(s, 0, 800, 0, w2);
+         finish(s, 1, 1100, 0, w1);
+         finish(s, 2, 800, 0, w2);
+         finish(s, 3, 0, 0, w3);
+         //finish(s, 4, 100, 0, w3);
 
-         s.add_ready_nodes(std::vector<loom::base::Id>{5, 6});
+         s.test_ready_nodes(std::vector<loom::base::Id>{5, 6});
          TaskDistribution d = schedule(s);
          //dump_dist(d);
 
-         REQUIRE(check_uvector(d[w2.get()], {5, 6}));
-         REQUIRE(check_uvector(d[w1.get()], {}));
+         REQUIRE(check_uvector(d[w2], {5, 6}));
+         REQUIRE(check_uvector(d[w1], {}));
       }
    }
 }
@@ -621,21 +543,20 @@ TEST_CASE("Big plan", "[scheduling]") {
 
    Server server(NULL, 0);
    ComputationState s(server);
-   s.set_plan(Plan(make_big_plan(server, BIG_PLAN_SIZE), 0, server.get_dictionary()));
+   s.add_plan(make_big_plan(server, BIG_PLAN_SIZE));
 
-   std::vector<std::unique_ptr<WorkerConnection>> ws;
+   std::vector<WorkerConnection*> ws;
    ws.reserve(BIG_PLAN_WORKERS);
    for (size_t i = 0; i < BIG_PLAN_WORKERS; i++) {
-      ws.push_back(simple_worker(server, "w", 2));
-      s.add_worker(ws[i].get());
+      ws.push_back(simple_worker(server, "w", 2));      
    }
 
    std::vector<loom::base::Id> ready;
    for (size_t i = 0; i < BIG_PLAN_SIZE; i++) {
-      finish(s, i, 10 + i * 10, 0, ws[i % BIG_PLAN_WORKERS].get());
+      finish(s, i, 10 + i * 10, 0, ws[i % BIG_PLAN_WORKERS]);
       ready.push_back(i + BIG_PLAN_SIZE);
    }
-   s.add_ready_nodes(ready);
+   s.test_ready_nodes(ready);
    TaskDistribution d = schedule(s);
    //dump_dist(d);
    REQUIRE(d.size() == BIG_PLAN_WORKERS);
@@ -652,21 +573,20 @@ TEST_CASE("Big simple plan", "[scheduling]") {
 
    Server server(NULL, 0);
    ComputationState s(server);
-   s.set_plan(Plan(make_big_trivial_plan(server, BIG_PLAN_SIZE), 0, server.get_dictionary()));
+   s.add_plan(make_big_trivial_plan(server, BIG_PLAN_SIZE));
 
-   std::vector<std::unique_ptr<WorkerConnection>> ws;
+   std::vector<WorkerConnection*> ws;
    ws.reserve(BIG_PLAN_WORKERS);
    for (size_t i = 0; i < BIG_PLAN_WORKERS; i++) {
-      ws.push_back(simple_worker(server, "w", 5));
-      s.add_worker(ws[i].get());
+      ws.push_back(simple_worker(server, "w", 5));      
    }
 
    std::vector<loom::base::Id> ready;
    for (size_t i = 0; i < BIG_PLAN_SIZE; i++) {
-      finish(s, i, 10 + i * 10, 0, ws[i % BIG_PLAN_WORKERS].get());
+      finish(s, i, 10 + i * 10, 0, ws[i % BIG_PLAN_WORKERS]);
       ready.push_back(i + BIG_PLAN_SIZE);
    }
-   s.add_ready_nodes(ready);
+   s.test_ready_nodes(ready);
    TaskDistribution d = schedule(s);
    //dump_dist(d);
    REQUIRE(d.size() == BIG_PLAN_WORKERS);
@@ -680,88 +600,72 @@ TEST_CASE("Big simple plan", "[scheduling]") {
 TEST_CASE("Request plan", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.set_plan(Plan(make_request_plan(server), 0, server.get_dictionary()));
+   s.add_plan(make_request_plan(server));
 
    SECTION("0 cpus - include free tasks") {
        auto w1 = simple_worker(server, "w1", 0);
-       s.add_worker(w1.get());
-
-       s.add_ready_nodes(range(8));
+       s.test_ready_nodes(range(8));
        TaskDistribution d = schedule(s);
-       REQUIRE(d[w1.get()].size() == 1);
-       REQUIRE(d[w1.get()][0] == 7);
+       REQUIRE(d[w1].size() == 1);
+       REQUIRE(d[w1][0] == 7);
    }
 
    SECTION("0 cpus") {
        auto w1 = simple_worker(server, "w1", 0);
-       s.add_worker(w1.get());
-
-       s.add_ready_nodes(range(7));
+       s.test_ready_nodes(range(7));
        TaskDistribution d = schedule(s);
-       REQUIRE(d[w1.get()].empty());
+       REQUIRE(d[w1].empty());
    }
 
    SECTION("1/2 cpus") {
        auto w1 = simple_worker(server, "w1", 1);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 2);
-       s.add_worker(w2.get());
-
-       s.add_ready_nodes(range(7));
+       s.test_ready_nodes(range(7));
        TaskDistribution d = schedule(s);
        //dump_dist(d);
-       REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{0} ||
-                d[w1.get()] == std::vector<loom::base::Id>{1}));
-       REQUIRE((d[w2.get()] == std::vector<loom::base::Id>{2} ||
-                d[w2.get()] == std::vector<loom::base::Id>{3}));
+       REQUIRE((d[w1] == std::vector<loom::base::Id>{0} ||
+                d[w1] == std::vector<loom::base::Id>{1}));
+       REQUIRE((d[w2] == std::vector<loom::base::Id>{2} ||
+                d[w2] == std::vector<loom::base::Id>{3}));
    }
 
    SECTION("2/2 cpus") {
        auto w1 = simple_worker(server, "w1", 2);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 2);
-       s.add_worker(w2.get());
-
-       s.add_ready_nodes(range(7));
+       s.test_ready_nodes(range(7));
        TaskDistribution d = schedule(s);
-       REQUIRE((d[w1.get()] == std::vector<loom::base::Id>{2} ||
-                d[w1.get()] == std::vector<loom::base::Id>{3}));
-       REQUIRE((d[w2.get()] == std::vector<loom::base::Id>{2} ||
-                d[w2.get()] == std::vector<loom::base::Id>{3}));
+       REQUIRE((d[w1] == std::vector<loom::base::Id>{2} ||
+                d[w1] == std::vector<loom::base::Id>{3}));
+       REQUIRE((d[w2] == std::vector<loom::base::Id>{2} ||
+                d[w2] == std::vector<loom::base::Id>{3}));
    }
 
    SECTION("5 cpus") {
        auto w1 = simple_worker(server, "w1", 5);
-       s.add_worker(w1.get());
-
-       s.add_ready_nodes(range(6));
+       s.test_ready_nodes(range(6));
        TaskDistribution d = schedule(s);
 
-       REQUIRE((check_uvector(d[w1.get()], {0, 5}) ||
-                check_uvector(d[w1.get()], {1, 5})));
+       REQUIRE((check_uvector(d[w1], {0, 5}) ||
+                check_uvector(d[w1], {1, 5})));
    }
 
    SECTION("5/1/1 cpus") {
        auto w1 = simple_worker(server, "w1", 5);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 1);
-       s.add_worker(w2.get());
        auto w3 = simple_worker(server, "w3", 1);
-       s.add_worker(w3.get());
 
-       s.add_ready_nodes(range(6));
+       s.test_ready_nodes(range(6));
        TaskDistribution d = schedule(s);
        //dump_dist(d);
-       REQUIRE(d[w1.get()].size() + d[w2.get()].size() + d[w3.get()].size() >= 3);
+       REQUIRE(d[w1].size() + d[w2].size() + d[w3].size() >= 3);
    }
 
    SECTION("5 cpus (3-4-4-0 jobs)") {
        auto w1 = simple_worker(server, "w1", 5);
-       s.add_worker(w1.get());
 
-       s.add_ready_nodes(std::vector<loom::base::Id>{4, 5, 6, 7});
+       s.test_ready_nodes(std::vector<loom::base::Id>{4, 5, 6, 7});
        TaskDistribution d = schedule(s);
-       REQUIRE((check_uvector(d[w1.get()], {6, 7}) || check_uvector(d[w1.get()], {5, 7})));
+       REQUIRE((check_uvector(d[w1], {6, 7}) || check_uvector(d[w1], {5, 7})));
    }
 }
 
@@ -769,31 +673,25 @@ TEST_CASE("Request plan", "[scheduling]") {
 TEST_CASE("Plan continution (plan2)", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.set_plan(Plan(make_plan2(server), 0, server.get_dictionary()));
+   s.add_plan(make_plan2(server));
 
    SECTION("Stick together") {
        auto w1 = simple_worker(server, "w1", 2);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 2);
-       s.add_worker(w2.get());
-
-       s.add_ready_nodes({0, 1});
+       s.test_ready_nodes({0, 1});
        TaskDistribution d = schedule(s);
        //dump_dist(d);
-       REQUIRE((d[w1.get()].size() == 2 || d[w2.get()].size() == 2));
+       REQUIRE((d[w1].size() == 2 || d[w2].size() == 2));
    }
 
    SECTION("Stick to gether - 2") {
        auto w1 = simple_worker(server, "w1", 2);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 1);
-       s.add_worker(w2.get());
-
-       s.add_ready_nodes({0, 3, 4});
+       s.test_ready_nodes({0, 3, 4});
        TaskDistribution d = schedule(s);
-       //dump_dist(d);
-       REQUIRE(check_uvector(d[w1.get()], {3, 4}));
-       REQUIRE(check_uvector(d[w2.get()], {0}));
+       dump_dist(d);
+       REQUIRE(check_uvector(d[w1], {3, 4}));
+       REQUIRE(check_uvector(d[w2], {0}));
    }
 }
 
@@ -801,87 +699,75 @@ TEST_CASE("Plan continution (plan2)", "[scheduling]") {
 TEST_CASE("Plan continution (plan3)", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.set_plan(Plan(make_plan3(server), 0, server.get_dictionary()));
+   s.add_plan(make_plan3(server));
 
    SECTION("Stick together - inputs dominant ") {
        auto w1 = simple_worker(server, "w1", 2);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 2);
-       s.add_worker(w2.get());
        auto w3 = simple_worker(server, "w3", 0);
-       s.add_worker(w3.get());
 
-       finish(s, 0, 800000000, 0, w3.get());
-       finish(s, 1, 800000, 0, w3.get());
-       finish(s, 2, 800000000, 0, w3.get());
+       finish(s, 0, 800000000, 0, w3);
+       finish(s, 1, 800000, 0, w3);
+       finish(s, 2, 800000000, 0, w3);
 
-       s.add_ready_nodes({3, 4, 5, 6});
+       s.test_ready_nodes({3, 4, 5, 6});
 
        TaskDistribution d = schedule(s);
        //dump_dist(d);
-       REQUIRE((check_uvector(d[w1.get()], {3, 5}) || (check_uvector(d[w1.get()], {4, 6}))));
-       REQUIRE((check_uvector(d[w2.get()], {3, 5}) || (check_uvector(d[w2.get()], {4, 6}))));
+       REQUIRE((check_uvector(d[w1], {3, 5}) || (check_uvector(d[w1], {4, 6}))));
+       REQUIRE((check_uvector(d[w2], {3, 5}) || (check_uvector(d[w2], {4, 6}))));
    }
 
    SECTION("Stick together - follows are dominant") {
        auto w1 = simple_worker(server, "w1", 2);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 2);
-       s.add_worker(w2.get());
        auto w3 = simple_worker(server, "w3", 0);
-       s.add_worker(w3.get());
 
-       finish(s, 0, 20000, 0, w3.get());
-       finish(s, 1, 20000, 0, w3.get());
-       finish(s, 2, 20000, 0, w3.get());
+       finish(s, 0, 20000, 0, w3);
+       finish(s, 1, 20000, 0, w3);
+       finish(s, 2, 20000, 0, w3);
 
-       s.add_ready_nodes({3, 4, 5, 6});
+       s.test_ready_nodes({3, 4, 5, 6});
 
        TaskDistribution d = schedule(s);
        //dump_dist(d);
-       REQUIRE((check_uvector(d[w1.get()], {3, 4}) || (check_uvector(d[w1.get()], {5, 6}))));
-       REQUIRE((check_uvector(d[w2.get()], {3, 4}) || (check_uvector(d[w2.get()], {5, 6}))));
+       REQUIRE((check_uvector(d[w1], {3, 4}) || (check_uvector(d[w1], {5, 6}))));
+       REQUIRE((check_uvector(d[w2], {3, 4}) || (check_uvector(d[w2], {5, 6}))));
    }
 
    SECTION("Stick together - small neighbour tasks already exists") {
        auto w1 = simple_worker(server, "w1", 2);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 2);
-       s.add_worker(w2.get());
        auto w3 = simple_worker(server, "w3", 0);
-       s.add_worker(w3.get());
 
-       finish(s, 1, 20000, 0, w1.get());
-       finish(s, 2, 200000, 0, w2.get());
-       finish(s, 3, 200, 0, w1.get());
+       finish(s, 1, 20000, 0, w1);
+       finish(s, 2, 200000, 0, w2);
+       finish(s, 3, 200, 0, w1);
 
-       s.add_ready_nodes({4});
+       s.test_ready_nodes({4});
 
        TaskDistribution d = schedule(s);
        //dump_dist(d);
-       REQUIRE(check_uvector(d[w2.get()], {4}));
-       REQUIRE(check_uvector(d[w1.get()], {}));
-       REQUIRE(check_uvector(d[w3.get()], {}));
+       REQUIRE(check_uvector(d[w2], {4}));
+       REQUIRE(check_uvector(d[w1], {}));
+       REQUIRE(check_uvector(d[w3], {}));
    }
 
    SECTION("Stick together - big neighbour tasks already exists") {
        auto w1 = simple_worker(server, "w1", 2);
-       s.add_worker(w1.get());
        auto w2 = simple_worker(server, "w2", 2);
-       s.add_worker(w2.get());
        auto w3 = simple_worker(server, "w3", 0);
-       s.add_worker(w3.get());
 
-       finish(s, 1, 2000, 0, w1.get());
-       finish(s, 2, 20000, 0, w2.get());
-       finish(s, 3, 9000000, 0, w1.get());
+       finish(s, 1, 2000, 0, w1);
+       finish(s, 2, 20000, 0, w2);
+       finish(s, 3, 9000000, 0, w1);
 
-       s.add_ready_nodes({4});
+       s.test_ready_nodes({4});
 
        TaskDistribution d = schedule(s);
        //dump_dist(d);
-       REQUIRE(check_uvector(d[w1.get()], {4}));
-       REQUIRE(check_uvector(d[w2.get()], {}));
-       REQUIRE(check_uvector(d[w3.get()], {}));
+       REQUIRE(check_uvector(d[w1], {4}));
+       REQUIRE(check_uvector(d[w2], {}));
+       REQUIRE(check_uvector(d[w3], {}));
    }
 }

@@ -17,10 +17,9 @@ TaskManager::TaskManager(Server &server)
 {
 }
 
-void TaskManager::add_plan(Plan &&plan, bool report)
+void TaskManager::add_plan(const loomplan::Plan &plan)
 {
-    this->report = report;
-    cstate.set_plan(std::move(plan));
+    cstate.add_plan(plan);
     distribute_work(Scheduler(cstate).schedule());
 }
 
@@ -47,15 +46,14 @@ void TaskManager::distribute_work(const TaskDistribution &distribution)
 
 void TaskManager::start_task(WorkerConnection *wc, Id task_id)
 {
-    const PlanNode &node = cstate.get_node(task_id);
-    for (loom::base::Id id : node.get_inputs()) {
-        TaskState &state = cstate.get_state(id);
-        WStatus st = state.get_worker_status(wc);
-        if (st == WStatus::NONE) {
-            WorkerConnection *owner = state.get_first_owner();
+    TaskNode &node = cstate.get_node(task_id);
+    for (loom::base::Id input_id : node.get_inputs()) {
+        TaskNode &n = cstate.get_node(input_id);
+        if (n.get_worker_status(wc) == TaskStatus::NONE) {
+            WorkerConnection *owner = n.get_random_owner();
             assert(owner);
-            owner->send_data(id, wc->get_address());
-            state.set_worker_status(wc, WStatus::TRANSFER);
+            owner->send_data(input_id, wc->get_address());
+            n.set_worker_status(wc, TaskStatus::TRANSFER);
         }
     }
 
@@ -64,10 +62,10 @@ void TaskManager::start_task(WorkerConnection *wc, Id task_id)
     }
 
     wc->send_task(node);
-    cstate.set_running_task(node, wc);
+    cstate.activate_pending_node(node, wc);
 }
 
-void TaskManager::report_task_start(WorkerConnection *wc, const PlanNode &node)
+void TaskManager::report_task_start(WorkerConnection *wc, const TaskNode &node)
 {
     auto event = std::make_unique<loomcomm::Event>();
     event->set_type(loomcomm::Event_Type_TASK_START);
@@ -77,7 +75,7 @@ void TaskManager::report_task_start(WorkerConnection *wc, const PlanNode &node)
     server.report_event(std::move(event));
 }
 
-void TaskManager::report_task_end(WorkerConnection *wc, const PlanNode &node)
+void TaskManager::report_task_end(WorkerConnection *wc, const TaskNode &node)
 {
     auto event = std::make_unique<loomcomm::Event>();
     event->set_type(loomcomm::Event_Type_TASK_END);
@@ -87,43 +85,38 @@ void TaskManager::report_task_end(WorkerConnection *wc, const PlanNode &node)
     server.report_event(std::move(event));
 }
 
-void TaskManager::remove_state(TaskState &state)
+void TaskManager::remove_node(TaskNode &node)
 {
-    logger->debug("Removing state id={}", state.get_id());
-    assert(state.get_ref_counter() == 0);
-    loom::base::Id id = state.get_id();
+    logger->debug("Removing node id={}", node.get_id());
+    assert(node.get_ref_counter() == 0);
+    loom::base::Id id = node.get_id();
 
-    state.foreach_worker([id](WorkerConnection *wc, WStatus status) {
-        assert(status == WStatus::OWNER);
+    node.foreach_worker([id](WorkerConnection *wc, TaskStatus status) {
+        assert(status == TaskStatus::OWNER);
         wc->remove_data(id);
     });
-    cstate.remove_state(id);
+    cstate.remove_node(node);
 }
 
 void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
-    const PlanNode &node = cstate.get_node(id);
-
-    cstate.set_task_finished(node, size, length, wc);
+    TaskNode &node = cstate.get_node(id);
+    node.set_as_finished(wc, size, length);
 
     if (report) {
         report_task_end(wc, node);
     }
 
-    if (node.is_result()) {
+    if (cstate.is_result(id)) {
         logger->debug("Job id={} [RESULT] finished", id);
-        TaskState &state = cstate.get_state(id);
-        WorkerConnection *owner = state.get_first_owner();
+        WorkerConnection *owner = node.get_random_owner();
         assert(owner);
         owner->send_data(id, server.get_dummy_worker().get_address());
-
-        if (state.dec_ref_counter()) {
-            remove_state(state);
-        }
         if (cstate.is_finished()) {
             logger->debug("Plan is finished");
         }
     } else {
+        assert(!node.get_nexts().empty());
         logger->debug("Job id={} finished (size={}, length={})", id, size, length);
     }
 
@@ -133,28 +126,27 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
     inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
 
     for (loom::base::Id id : inputs) {
-        TaskState &state = cstate.get_state(id);
-        if (state.dec_ref_counter()) {
-            remove_state(state);
+        TaskNode &node = cstate.get_node(id);
+        if (node.dec_ref_counter()) {
+            remove_node(node);
         }
     }
 
-    cstate.add_ready_nexts(node);
+    if (node.get_ref_counter() > 0) {
+        cstate.add_ready_nexts(node);
+    } else {
+        remove_node(node);
+    }
 
-    if (cstate.has_pending_tasks()) {
+    if (cstate.has_pending_nodes()) {
         server.need_task_distribution();
     }
 }
 
-void TaskManager::on_data_transfered(Id id, WorkerConnection *wc)
+void TaskManager::on_data_transferred(Id id, WorkerConnection *wc)
 {
-    logger->debug("Data id={} transfered to {}", id, wc->get_address());
-    cstate.set_data_transfered(id, wc);
-}
-
-void TaskManager::register_worker(WorkerConnection *wc)
-{
-    cstate.add_worker(wc);
+    logger->debug("Data id={} transferred to {}", id, wc->get_address());
+    cstate.get_node(id).set_as_transferred(wc);
 }
 
 void TaskManager::run_task_distribution()

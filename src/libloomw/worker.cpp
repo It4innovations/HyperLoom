@@ -445,7 +445,7 @@ void Worker::task_finished(TaskInstance &task, const DataPtr &data)
     check_ready_tasks();
 }
 
-void Worker::data_transfered(base::Id task_id)
+void Worker::data_transferred(base::Id task_id)
 {
     if (server_conn.is_connected()) {
         loomcomm::WorkerResponse msg;

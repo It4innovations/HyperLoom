@@ -16,12 +16,8 @@ add_library(loom-server-lib OBJECT
                clientconn.h
                compstate.h
                compstate.cpp
-               taskstate.h
-               taskstate.cpp
-               plannode.cpp
-               plannode.h
-               plan.h
-               plan.cpp)
+               tasknode.cpp
+               tasknode.h)
 
 target_include_directories(loom-server-lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
 

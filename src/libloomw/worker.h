@@ -48,7 +48,7 @@ public:
 
     void task_finished(TaskInstance &task_instance, const DataPtr &data);
     void task_failed(TaskInstance &task_instance, const std::string &error_msg);
-    void data_transfered(base::Id task_id);
+    void data_transferred(base::Id task_id);
 
     void task_redirect(TaskInstance &task, std::unique_ptr<TaskDescription> new_task_desc);
     void publish_data(base::Id id, const DataPtr &data);

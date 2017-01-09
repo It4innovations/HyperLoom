@@ -27,13 +27,11 @@ public:
         return loop;
     }
 
-    void add_worker_connection(std::unique_ptr<WorkerConnection> conn);
+    void add_worker_connection(std::unique_ptr<WorkerConnection> &&conn);
     void remove_worker_connection(WorkerConnection &conn);
 
     void add_client_connection(std::unique_ptr<ClientConnection> conn);
     void remove_client_connection(ClientConnection &conn);
-
-    loom::base::Id translate_to_client_id(loom::base::Id id) const;
 
     DummyWorker& get_dummy_worker() {
         return dummy_worker;
@@ -61,7 +59,7 @@ public:
     void add_resend_task(loom::base::Id id);
 
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
-    void on_data_transfered(loom::base::Id id, WorkerConnection *wc);
+    void on_data_transferred(loom::base::Id id, WorkerConnection *wc);
 
     loom::base::Dictionary& get_dictionary() {
         return dictionary;
@@ -80,6 +78,10 @@ public:
     void report_event(std::unique_ptr<loomcomm::Event> event);
 
     void need_task_distribution();
+
+    const std::vector<std::unique_ptr<WorkerConnection>>& get_workers() const {
+        return connections;
+    }
 
 private:
 

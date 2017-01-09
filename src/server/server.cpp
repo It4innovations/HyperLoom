@@ -14,7 +14,7 @@ Server::Server(uv_loop_t *loop, int port)
     : loop(loop),      
       task_manager(*this),
       dummy_worker(*this),
-      id_counter(1),
+      id_counter(0),
       task_distribution_active(false)
 {
     /* Since the server do not implement fully resource management, we forces
@@ -37,9 +37,8 @@ Server::Server(uv_loop_t *loop, int port)
     distribution_idle.data = this;
 }
 
-void Server::add_worker_connection(std::unique_ptr<WorkerConnection> conn)
-{
-    task_manager.register_worker(conn.get());
+void Server::add_worker_connection(std::unique_ptr<WorkerConnection> &&conn)
+{    
     connections.push_back(std::move(conn));
 }
 
@@ -67,11 +66,6 @@ void Server::remove_client_connection(ClientConnection &conn)
     client_connection.reset();
 }
 
-loom::base::Id Server::translate_to_client_id(loom::base::Id id) const
-{
-    return task_manager.get_plan().get_node(id).get_client_id();
-}
-
 void Server::remove_freshconnection(FreshConnection &conn)
 {
     auto i = std::find_if(
@@ -87,9 +81,9 @@ void Server::on_task_finished(loom::base::Id id, size_t size, size_t length, Wor
     task_manager.on_task_finished(id, size, length, wc);
 }
 
-void Server::on_data_transfered(loom::base::Id id, WorkerConnection *wc)
+void Server::on_data_transferred(loom::base::Id id, WorkerConnection *wc)
 {
-    task_manager.on_data_transfered(id, wc);
+    task_manager.on_data_transferred(id, wc);
 }
 
 void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::string &error_msg)

@@ -4,8 +4,10 @@
 #include "libloom/socket.h"
 #include "libloom/types.h"
 
+#include <assert.h>
+
 class Server;
-class PlanNode;
+class TaskNode;
 
 
 /** Connection to worker */
@@ -21,7 +23,7 @@ public:
                      int worker_id);
     void on_message(const char *buffer, size_t size);
 
-    void send_task(const PlanNode &task);
+    void send_task(const TaskNode &task);
     void send_data(loom::base::Id id, const std::string &address);
     void remove_data(loom::base::Id id);
 
@@ -37,9 +39,24 @@ public:
         return worker_id;
     }
 
+    int get_free_cpus() const {
+        return free_cpus;
+    }
+
+    void add_free_cpus(int value) {
+        free_cpus += value;
+        assert(free_cpus >= 0);
+    }
+
+    void remove_free_cpus(int value) {
+        free_cpus -= value;
+        assert(free_cpus >= 0);
+    }
+
 private:
     Server &server;
     std::unique_ptr<loom::base::Socket> socket;
+    int free_cpus;
     int resource_cpus;
     std::string address;
 

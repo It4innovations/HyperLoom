@@ -53,7 +53,7 @@ void InterConnection::on_connect()
 void InterConnection::finish_receive()
 {
     logger->debug("Interconnect: Data id={} received", unpacking_data_id);
-    worker.data_transfered(unpacking_data_id);
+    worker.data_transferred(unpacking_data_id);
     worker.publish_data(unpacking_data_id, unpacker->finish());
     unpacking_data_id = -1;
     unpacker.reset();

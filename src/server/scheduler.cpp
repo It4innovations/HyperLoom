@@ -1,6 +1,7 @@
 
 #include "scheduler.h"
 #include "workerconn.h"
+#include "server.h"
 
 #include "libloom/compat.h"
 #include "libloom/log.h"
@@ -52,27 +53,30 @@ erase_duplicates(std::vector<T> &v)
 
 Scheduler::Scheduler(ComputationState &cstate)
 {
-   if (cstate.get_worker_info().size() == 0 ||
+   auto &worker_conns = cstate.get_server().get_workers();
+   if (worker_conns.size() == 0 ||
        cstate.get_pending_tasks().size() == 0) {
       return;
    }
 
+   loom::base::logger->debug("Scheduler: {} pending task(s)", cstate.get_pending_tasks().size());
+
    // Gather info about workers
-   workers.reserve(cstate.get_worker_info().size());
+   workers.reserve(worker_conns.size());
    std::unordered_map<WorkerConnection*, size_t> worker_map;
-   worker_map.reserve(cstate.get_worker_info().size());
+   worker_map.reserve(worker_conns.size());
 
    int max_free_cpus = 0;
-   for (auto pair : cstate.get_worker_info()) {
-      int free_cpus = pair.second.free_cpus;
+   for (auto &wc : worker_conns) {
+      int free_cpus = wc->get_free_cpus();
       if (free_cpus > max_free_cpus) {
          max_free_cpus = free_cpus;
       }
-      worker_map[pair.first] = workers.size();
+      worker_map[wc.get()] = workers.size();
       Worker w;
-      w.free_cpus = pair.second.free_cpus;
-      w.max_cpus = pair.first->get_resource_cpus();
-      w.wc = pair.first;
+      w.free_cpus = free_cpus;
+      w.max_cpus = wc->get_resource_cpus();
+      w.wc = wc.get();
       workers.push_back(std::move(w));
    }
 
@@ -85,7 +89,7 @@ Scheduler::Scheduler(ComputationState &cstate)
    s_units.reserve(cstate.get_pending_tasks().size() * 2);
 
    for (loom::base::Id id : cstate.get_pending_tasks()) {
-      const PlanNode &node = cstate.get_node(id);
+      const TaskNode &node = cstate.get_node(id);
 
       SUnit s_unit;
       s_unit.n_cpus = node.get_n_cpus();
@@ -109,10 +113,10 @@ Scheduler::Scheduler(ComputationState &cstate)
       }
 
       for (loom::base::Id id2 : node.get_nexts()) {
-         const PlanNode &node2 = cstate.get_node(id2);
+         const TaskNode &node2 = cstate.get_node(id2);
          for (loom::base::Id id3 : node2.get_inputs()) {
-            const TaskState *state = cstate.get_state_ptr(id3);
-            if (state) {
+            const TaskNode &node3 = cstate.get_node(id3);
+            if (node3.is_computed()) {
                   s_unit.nexts.push_back(id2);
                   auto it = inputs.find(id3);
                   if (it == inputs.end()) {
@@ -127,10 +131,8 @@ Scheduler::Scheduler(ComputationState &cstate)
 
       erase_duplicates(s_unit.inputs);
       erase_duplicates(s_unit.next_inputs);
-      erase_duplicates(s_unit.next_inputs);
+      erase_duplicates(s_unit.nexts);
       s_units.push_back(std::move(s_unit));
-
-
    }
 
 /*   for (auto &pair : nexts)
@@ -159,10 +161,10 @@ Scheduler::Scheduler(ComputationState &cstate)
 
    for (auto &pair : inputs)
    {
-      const TaskState &state = cstate.get_state(pair.first);
+      const TaskNode &node = cstate.get_node(pair.first);
       DataObj obj;
-      obj.size = state.get_size();
-      state.foreach_planned_owner([&obj, &worker_map](WorkerConnection *wc) {
+      obj.size = node.get_size();
+      node.foreach_worker([&obj, &worker_map](WorkerConnection *wc, TaskStatus) {
          obj.owners.push_back(worker_map[wc]);
       });
       data[pair.second] = std::move(obj);
@@ -193,7 +195,7 @@ TaskDistribution Scheduler::schedule()
       for (auto id : unit.ids) {
          s << " " << id;
       }
-      loom::logger->alert("PLANNED UNIT = {} / {}", s.str(), uw.worker_index);
+      loom::base::logger->alert("PLANNED UNIT = {} / {}", s.str(), uw.worker_index);
       */
 
       auto ids = unit.ids; // we need a copy
@@ -280,7 +282,8 @@ bool Scheduler::find_best(UW &uw)
          for (auto id : unit.ids) {
             s << " " << id;
          }
-         loom::logger->alert("SCORE {} / {} : {} [size={}, size_sum={}, {}]", s.str(), worker_i, score, sizes[worker_i], size_sum, n_workers);
+         loom::base::logger->alert("SCORE {} / {} : {} [size={}, size_sum={}, {}]",
+                                   s.str(), worker_i, score, sizes[worker_i], size_sum, n_workers);
          */
 
          if (best_score < score) {
