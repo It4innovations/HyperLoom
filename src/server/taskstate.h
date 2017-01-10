@@ -74,7 +74,13 @@ public:
         return i->second;
     }
 
-    WorkerConnection *get_first_owner() {
+
+    bool has_owner() const {
+        return get_first_owner() == nullptr;
+    }
+
+
+    WorkerConnection *get_first_owner() const {
         for (auto &p : workers) {
             if (p.second == WStatus::OWNER) {
                 return p.first;

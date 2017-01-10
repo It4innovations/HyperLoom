@@ -92,18 +92,13 @@ void Server::on_data_transfered(loom::base::Id id, WorkerConnection *wc)
     task_manager.on_data_transfered(id, wc);
 }
 
-void Server::inform_about_error(std::string &error_msg)
-{
-
-}
-
 void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::string &error_msg)
 {
     logger->error("Task id={} failed on worker {}: {}",
                 id, wconn.get_address(), error_msg);
 
-    loomcomm::ClientMessage msg;
-    msg.set_type(loomcomm::ClientMessage_Type_ERROR);
+    loomcomm::ClientResponse msg;
+    msg.set_type(loomcomm::ClientResponse_Type_ERROR);
     loomcomm::Error *error = msg.mutable_error();
 
     error->set_id(id);
@@ -150,8 +145,8 @@ void Server::report_event(std::unique_ptr<loomcomm::Event> event)
         return;
     }
 
-    loomcomm::ClientMessage cmsg;
-    cmsg.set_type(loomcomm::ClientMessage_Type_EVENT);
+    loomcomm::ClientResponse cmsg;
+    cmsg.set_type(loomcomm::ClientResponse_Type_EVENT);
     cmsg.set_allocated_event(event.release());
 
     client_connection->send_message(cmsg);

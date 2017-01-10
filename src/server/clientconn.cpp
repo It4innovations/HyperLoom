@@ -28,8 +28,8 @@ ClientConnection::ClientConnection(Server &server,
     logger->info("Client {} connected", this->socket->get_peername());
 
     // Send dictionary
-    loomcomm::ClientMessage cmsg;
-    cmsg.set_type(loomcomm::ClientMessage_Type_DICTIONARY);
+    loomcomm::ClientResponse cmsg;
+    cmsg.set_type(loomcomm::ClientResponse_Type_DICTIONARY);
 
     std::vector<std::string> symbols = server.get_dictionary().get_all_symbols();
     for (std::string &symbol : symbols) {
@@ -42,13 +42,27 @@ ClientConnection::ClientConnection(Server &server,
 
 void ClientConnection::on_message(const char *buffer, size_t size)
 {
-    logger->debug("Plan received");
-    loomcomm::ClientSubmit submit;
-    submit.ParseFromArray(buffer, size);
     auto& task_manager = server.get_task_manager();
+    loomcomm::ClientRequest request;
+    request.ParseFromArray(buffer, size);
 
-    const loomplan::Plan &plan = submit.plan();
-    loom::base::Id id_base = server.new_id(plan.tasks_size());
-    task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()), submit.report());
-    logger->info("Plan submitted tasks={} report={}", plan.tasks_size(), submit.report());
+    if (request.type() == loomcomm::ClientRequest_Type_PLAN) {
+        logger->debug("Plan received");
+        const loomplan::Plan &plan = request.plan();
+        loom::base::Id id_base = server.new_id(plan.tasks_size());
+        bool report = request.report();
+        task_manager.add_plan(Plan(plan, id_base, server.get_dictionary()), report);
+        logger->info("Plan submitted tasks={} report={}", plan.tasks_size(), report);
+    } else if (request.type() == loomcomm::ClientRequest_Type_STATS) {
+        logger->debug("Stats request");
+        loomcomm::ClientResponse cmsg;
+        cmsg.set_type(loomcomm::ClientResponse_Type_STATS);
+        loomcomm::Stats *stats = cmsg.mutable_stats();
+        stats->set_n_workers(server.get_connections().size());
+        stats->set_n_data_objects(server.get_task_manager().get_n_of_data_objects());
+        send_message(cmsg);
+    } else {
+        logger->critical("Invalid request type");
+        exit(1);
+    }
 }

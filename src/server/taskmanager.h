@@ -44,6 +44,10 @@ public:
         return cstate.is_finished();
     }
 
+    int get_n_of_data_objects() const {
+        return cstate.get_n_data_objects();
+    }
+
     void run_task_distribution();
 
 private:    

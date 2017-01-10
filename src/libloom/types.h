@@ -4,7 +4,7 @@
 namespace loom {
 namespace base {
 
-const int PROTOCOL_VERSION = 1;
+const int PROTOCOL_VERSION = 2;
 
 typedef int Id;
 }

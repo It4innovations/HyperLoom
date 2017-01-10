@@ -71,6 +71,8 @@ public:
         return workers;
     }
 
+    int get_n_data_objects() const;
+
 private:
     std::unordered_map<loom::base::Id, TaskState> states;
     std::unordered_map<WorkerConnection*, WorkerInfo> workers;

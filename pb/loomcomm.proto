@@ -94,21 +94,35 @@ message Error {
 	required string error_msg = 3;
 }
 
-message ClientMessage {
+message Stats {
+	optional int32 n_workers = 1;
+        optional int32 n_data_objects = 2;
+}
+
+message ClientResponse {
 	enum Type {
 		DATA = 1;
 		EVENT = 2;
 		ERROR = 3;
 		DICTIONARY = 4;
+		STATS = 5;
 	}
 	required Type type = 1;
 	optional DataHeader data = 2;
 	optional Event event = 3;
 	optional Error error = 4;
 	repeated string symbols = 5;
+        optional Stats stats = 6;
 }
 
-message ClientSubmit {
-	required loomplan.Plan plan = 1;
-	required bool report = 2;
+message ClientRequest {
+        enum Type {
+	        PLAN = 1;
+	        STATS = 2;
+        }
+
+        // PLAN
+        required Type type = 1;
+	optional loomplan.Plan plan = 2;
+	optional bool report = 3 [default=false];
 }

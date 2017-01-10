@@ -67,7 +67,6 @@ public:
         return dictionary;
     }
 
-    void inform_about_error(std::string &error_msg);
     void inform_about_task_error(loom::base::Id id, WorkerConnection &wconn, const std::string &error_msg);
 
     loom::base::Id new_id(int count = 1) {

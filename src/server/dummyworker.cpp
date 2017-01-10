@@ -101,8 +101,8 @@ void DWConnection::on_message(const char *buffer, size_t size)
    msg.set_id(client_id);
    logger->debug("DummyWorker: Capturing data for client data_id={} (messages={})", data_id, remaining_messages);
 
-   loomcomm::ClientMessage cmsg;
-   cmsg.set_type(loomcomm::ClientMessage_Type_DATA);
+   loomcomm::ClientResponse cmsg;
+   cmsg.set_type(loomcomm::ClientResponse_Type_DATA);
    *cmsg.mutable_data() = msg;
    send_buffer->add(base::message_to_item(cmsg));
 }

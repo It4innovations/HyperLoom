@@ -91,6 +91,17 @@ bool ComputationState::is_finished() const
     return states.empty();
 }
 
+int ComputationState::get_n_data_objects() const
+{
+    int count = 0;
+    for (auto& pair : states) {
+        if (pair.second.has_owner()) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
 void ComputationState::add_pending_task(loom::base::Id id)
 {
    logger->debug("Add pending task and creating state id={}", id);

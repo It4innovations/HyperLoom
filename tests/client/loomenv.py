@@ -50,6 +50,7 @@ class LoomEnv(Env):
     _client = None
 
     def start(self, workers_count, cpus=1):
+        self.workers_count = workers_count
         if self.processes:
             self._client = None
             self.kill_all()
@@ -86,16 +87,24 @@ class LoomEnv(Env):
         assert not server.poll()
         assert not any(w.poll() for w in workers)
 
+    def check_stats(self):
+        stats = self._client.get_stats()
+        assert stats["n_workers"] == self.workers_count
+        assert stats["n_data_objects"] == 0
+
     @property
     def client(self):
         if self._client is None:
             self._client = client.Client("localhost", self.PORT)
+            self.check_stats()
         return self._client
 
     def submit(self, results, report=None):
         if report:
             report = os.path.join(LOOM_TEST_BUILD_DIR, report)
-        return self.client.submit(results, report)
+        result = self.client.submit(results, report)
+        self.check_stats()
+        return result
 
     def make_dry_report(self, tasks, filename):
         filename = os.path.join(LOOM_TEST_BUILD_DIR, filename)

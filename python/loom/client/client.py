@@ -3,13 +3,14 @@ from .connection import Connection
 from .task import Task
 from .plan import Plan
 
-from ..pb.loomcomm_pb2 import Register, DataHeader, ClientMessage, ClientSubmit
+from ..pb.loomcomm_pb2 import Register, DataHeader
+from ..pb.loomcomm_pb2 import ClientRequest, ClientResponse
 from ..pb.loomreport_pb2 import Report
 
 import socket
 import struct
 
-LOOM_PROTOCOL_VERSION = 1
+LOOM_PROTOCOL_VERSION = 2
 
 
 class LoomException(Exception):
@@ -58,6 +59,20 @@ class Client(object):
         while self.symbols is None:
             self._read_symbols()
 
+    """Ask server for basic statistic informations"""
+    def get_stats(self):
+        msg = ClientRequest()
+        msg.type = ClientRequest.STATS
+        self._send_message(msg)
+        msg = self.connection.receive_message()
+        cmsg = ClientResponse()
+        cmsg.ParseFromString(msg)
+        assert cmsg.type == ClientResponse.STATS
+        return {
+            "n_workers": cmsg.stats.n_workers,
+            "n_data_objects": cmsg.stats.n_data_objects
+        }
+
     def submit(self, tasks, report=None):
         """Submits task(s) to the server and waits for results
 
@@ -89,7 +104,8 @@ class Client(object):
         for task in task_set:
             plan.add(task)
 
-        msg = ClientSubmit()
+        msg = ClientRequest()
+        msg.type = ClientRequest.PLAN
         msg.report = bool(report)
 
         msg.plan.result_ids.extend(plan.tasks[t] for t in task_set)
@@ -104,13 +120,13 @@ class Client(object):
         data = {}
         while expected != len(data):
             msg = self.connection.receive_message()
-            cmsg = ClientMessage()
+            cmsg = ClientResponse()
             cmsg.ParseFromString(msg)
-            if cmsg.type == ClientMessage.DATA:
+            if cmsg.type == ClientResponse.DATA:
                 data[cmsg.data.id] = self._receive_data(cmsg.data.type_id)
-            elif cmsg.type == ClientMessage.EVENT:
+            elif cmsg.type == ClientResponse.EVENT:
                 self.process_event(cmsg.event, report_data)
-            elif cmsg.type == ClientMessage.ERROR:
+            elif cmsg.type == ClientResponse.ERROR:
                 self.process_error(cmsg)
             else:
                 assert 0
@@ -137,9 +153,9 @@ class Client(object):
 
     def _read_symbols(self):
         msg = self.connection.receive_message()
-        cmsg = ClientMessage()
+        cmsg = ClientResponse()
         cmsg.ParseFromString(msg)
-        assert cmsg.type == ClientMessage.DICTIONARY
+        assert cmsg.type == ClientResponse.DICTIONARY
         self.symbols = {}
         for i, s in enumerate(cmsg.symbols):
             self.symbols[s] = i
