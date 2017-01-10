@@ -159,8 +159,8 @@ class Client(object):
         self.symbols = {}
         for i, s in enumerate(cmsg.symbols):
             self.symbols[s] = i
-        self.array_id = self.symbols["loom/array"]
-        self.rawdata_id = self.symbols["loom/data"]
+        self.array_id = self.symbols.get("loom/array")
+        self.rawdata_id = self.symbols.get("loom/data")
 
     def process_error(self, cmsg):
         assert cmsg.HasField("error")
