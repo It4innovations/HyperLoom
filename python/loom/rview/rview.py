@@ -16,7 +16,10 @@ def parse_args():
                         type=str,
                         help="Path to report")
 
-    parser.add_argument("--show-symbols",
+    parser.add_argument("--print-symbols",
+                        action="store_true")
+
+    parser.add_argument("--print-stats",
                         action="store_true")
 
     parser.add_argument("--show-graph",
@@ -36,7 +39,7 @@ def run_program(args, stdin=None):
     p.communicate(input=stdin)
 
 
-def show_symbols(report):
+def print_symbols(report):
     for i, symbol in enumerate(report.symbols):
         print("{}: {}".format(i, symbol))
 
@@ -65,14 +68,25 @@ def show_trace(report):
     plt.show(block=True)
 
 
+def print_stats(report):
+    print("Labels:")
+    result = report.label_counts()
+    for label in sorted(result):
+        print("{}: {}".format(label, result[label]))
+
+
 def main():
     args = parse_args()
     report = Report(args.report)
 
     empty = True
-    if args.show_symbols:
+    if args.print_symbols:
         empty = False
-        show_symbols(report)
+        print_symbols(report)
+
+    if args.print_stats:
+        empty = False
+        print_stats(report)
 
     if args.show_graph:
         empty = False

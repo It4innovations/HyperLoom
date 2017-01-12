@@ -35,6 +35,22 @@ class Report:
         self.symbols = [s.replace("loom", "L")
                         for s in self.report_msg.symbols]
 
+    def label_counts(self):
+        labels = {}
+        tasks = self.report_msg.plan.tasks
+        symbols = self.symbols
+        for task in tasks:
+            if task.label:
+                key = task.label
+                # if ":" in key:
+                #     key = key.split(":")[0].strip()
+            else:
+                key = symbols[task.task_type]
+            labels.setdefault(key, 0)
+            labels[key] += 1
+        return labels
+
+
     def collect_labels(self):
         labels = set()
         tasks = self.report_msg.plan.tasks
