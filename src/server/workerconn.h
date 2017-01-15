@@ -53,6 +53,23 @@ public:
         assert(free_cpus >= 0);
     }
 
+    void set_scheduler_free_cpus(int value)
+    {
+        scheduler_free_cpus = value;
+    }
+
+    int get_scheduler_free_cpus() const {
+        return scheduler_free_cpus;
+    }
+
+    void set_scheduler_index(int value) {
+        scheduler_index = value;
+    }
+
+    int get_scheduler_index() const {
+        return scheduler_index;
+    }
+
 private:
     Server &server;
     std::unique_ptr<loom::base::Socket> socket;
@@ -64,6 +81,9 @@ private:
     std::vector<int> data_types;
 
     int worker_id;
+
+    int scheduler_index;
+    int scheduler_free_cpus;
 };
 
 #endif // LOOM_SERVER_WORKERCONN

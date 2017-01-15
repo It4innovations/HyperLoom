@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <assert.h>
 
+class WorkerConnection;
+class TaskNode;
 
 enum class TaskPolicy {
   STANDARD = 1,
@@ -19,7 +21,7 @@ enum class TaskPolicy {
 struct TaskDef
 {    
     int n_cpus; // TODO: Replace by resource index
-    std::vector<loom::base::Id> inputs;
+    std::vector<TaskNode*> inputs;
     loom::base::Id task_type;
     std::string config;
     TaskPolicy policy;
@@ -38,8 +40,8 @@ inline bool is_planned_owner(TaskStatus status) {
            status == TaskStatus::TRANSFER;
 }
 
-class WorkerConnection;
 template<typename T> using WorkerMap = std::unordered_map<WorkerConnection*, T>;
+
 
 class TaskNode {
 
@@ -66,13 +68,13 @@ public:
         return state != nullptr;
     }
 
-    size_t get_size() const {
-        assert(state);
+    inline size_t get_size() const {
+        //assert(state);
         return state->size;
     }
 
-    size_t get_length() const {
-        assert(state);
+    inline size_t get_length() const {
+        //assert(state);
         return state->length;
     }
 
@@ -84,19 +86,19 @@ public:
         return task;
     }
 
-    const std::vector<loom::base::Id>& get_inputs() const {
+    const std::vector<TaskNode*>& get_inputs() const {
         return task.inputs;
     }
 
-    const std::vector<loom::base::Id>& get_nexts() const {
+    const std::vector<TaskNode*>& get_nexts() const {
         return nexts;
     }
 
     bool is_computed() const;
     WorkerConnection* get_random_owner();
 
-    void add_next(loom::base::Id id) {
-        nexts.push_back(id);
+    void add_next(TaskNode *node) {
+        nexts.push_back(node);
     }
 
     TaskStatus get_worker_status(WorkerConnection *wc) {
@@ -123,7 +125,7 @@ public:
 
     void create_state();
 
-    template<typename F> void foreach_owner(const F &f) const {
+    template<typename F> inline void foreach_owner(const F &f) const {
         if (!state) {
             return;
         }
@@ -134,7 +136,7 @@ public:
         }
     }
 
-    template<typename F> void foreach_worker(const F &f) const {
+    template<typename F> inline void foreach_worker(const F &f) const {
         if (!state) {
             return;
         }
@@ -143,6 +145,10 @@ public:
                 f(pair.first, pair.second);
             }
         }
+    }
+
+    const WorkerMap<TaskStatus>& get_workers() const {
+        return state->workers;
     }
 
     int get_ref_counter() const {
@@ -168,7 +174,7 @@ public:
 private:
     loom::base::Id id;
     TaskDef task;
-    std::vector<loom::base::Id> nexts;
+    std::vector<TaskNode*> nexts;
     loom::base::Id client_id;
     std::unique_ptr<DataState> state;
 };

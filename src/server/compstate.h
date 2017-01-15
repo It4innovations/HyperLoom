@@ -16,35 +16,26 @@ public:
 
     ComputationState(Server &server);
 
-    // NEW
-    void add_node(TaskNode &&node);
+    void add_node(std::unique_ptr<TaskNode> &&node);
     void set_final_node(loom::base::Id id);
     void add_worker(WorkerConnection* wc);
 
     void reserve_new_nodes(size_t size);
 
     TaskNode& get_node(loom::base::Id id);
+    const TaskNode& get_node(loom::base::Id id) const;
+
     void add_ready_nexts(const TaskNode &node);
 
     bool has_pending_nodes() const {
         return !pending_nodes.empty();
     }
 
-    const std::unordered_set<loom::base::Id>& get_pending_tasks() const {
+    const std::unordered_set<TaskNode*>& get_pending_tasks() const {
         return pending_nodes;
     }
 
     void activate_pending_node(TaskNode &node, WorkerConnection *wc);
-
-    // OLD
-
-
-
-    /*TaskDistribution compute_initial_distribution();
-    TaskDistribution compute_distribution();*/
-
-    //void set_task_finished(const PlanNode& node, size_t size, size_t length, WorkerConnection *wc);
-    //void set_data_transferred(loom::base::Id id, WorkerConnection *wc);
 
     void remove_node(TaskNode &node);
 
@@ -72,8 +63,8 @@ public:
 
 private:    
 
-    std::unordered_map<loom::base::Id, TaskNode> nodes;
-    std::unordered_set<loom::base::Id> pending_nodes;
+    std::unordered_map<loom::base::Id, std::unique_ptr<TaskNode>> nodes;
+    std::unordered_set<TaskNode*> pending_nodes;
     std::unordered_map<loom::base::Id, loom::base::Id> final_nodes; // task_id -> client_id
 
     Server &server;
@@ -96,7 +87,7 @@ private:
                                        const PlanNode &node,
                                        std::unordered_set<loom::base::Id> &nonlocals);*/
     int get_max_cpus();    
-    void add_pending_node(const TaskNode &node);
+    void add_pending_node(TaskNode &node);
 };
 
 

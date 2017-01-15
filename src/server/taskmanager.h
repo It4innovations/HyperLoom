@@ -21,9 +21,9 @@ public:
 
     TaskManager(Server &server);
 
-    void add_node(TaskNode &&node) {
+    /*void add_node(TaskNode &&node) {
         cstate.add_node(std::move(node));
-    }
+    }*/
 
     void set_final_node(loom::base::Id id) {
         cstate.set_final_node(id);
@@ -57,7 +57,7 @@ private:
     ComputationState cstate;
 
     void distribute_work(const TaskDistribution &distribution);
-    void start_task(WorkerConnection *wc, loom::base::Id task_id);
+    void start_task(WorkerConnection *wc, TaskNode &node);
     void remove_node(TaskNode &node);
 
     bool report;

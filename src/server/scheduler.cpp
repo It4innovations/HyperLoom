@@ -8,386 +8,338 @@
 
 #include <sstream>
 
-static constexpr size_t DEFAULT_EXPECTED_SIZE = 5 * 1024 * 1024; // 5 MB
 
+using Score = int64_t;
+static constexpr Score SCORE_MIN = INT64_MIN;
+static constexpr Score UNIT_RECOMPUTE = INT64_MAX;
 
-template< typename Iter1, typename Iter2 >
-static bool intersects(Iter1 iter1, Iter1 iter1_end, Iter2 iter2, Iter2 iter2_end)
+static constexpr size_t MAX_SCHEDULED_TASKS_LIMIT = 6000;
+
+static constexpr size_t INPUT_UPDATE_LIMIT = 32;
+
+static constexpr size_t DEFAULT_EXPECTED_SIZE = 5 << 20; // 5 MB
+static constexpr size_t NEXT_EXPLORE_LIMIT = 8;
+static constexpr size_t NEXT_UPDATE_LIMIT = 12;
+
+static constexpr Score NEXT_SIZE_FACTOR = 8;
+static constexpr Score NEXT_SIZE_LIMIT = 5 << 20; // 5 MB
+
+static constexpr Score BONUS_PER_EXTRA_CPU = 150 << 20; // 1MB
+static constexpr Score BONUS_PER_NEXT = 250000;
+
+struct Worker {
+    WorkerConnection *wc;
+    int free_cpus;
+};
+
+struct WSPair {
+    WorkerConnection *wc;
+    Score score;
+};
+
+struct SUnit {
+    TaskNode *node;
+    WorkerConnection *wc;
+    Score score;
+    int index;
+};
+
+struct SContext {
+    size_t worker_size;
+    std::vector<WorkerConnection*> workers;
+    std::unordered_map<loom::base::Id, SUnit> units;
+    std::unique_ptr<Score[]> score_table;
+};
+
+static inline WSPair find_best(int n_cpus, Score *table, SContext &context)
 {
-   while(iter1 != iter1_end && iter2 != iter2_end) {
-      if(*iter1 < *iter2) {
-         ++iter1;
-      } else if (*iter2 < *iter1) {
-         ++iter2;
-      } else {
-         return true;
-      }
-   }
-   return false;
+    WorkerConnection *wc = nullptr;
+    Score score = SCORE_MIN;
+    size_t worker_size = context.worker_size;
+    for (size_t i = 0; i < worker_size; i++) {
+        //loom::base::logger->alert("worker={} score={}", workers[i]->get_address(), table[i]);
+        if (table[i] > score && n_cpus <= context.workers[i]->get_scheduler_free_cpus()) {
+            score = table[i];
+            wc = context.workers[i];
+        }
+    }
+    WSPair p;
+    p.wc = wc;
+    p.score = score;
+    return p;
 }
 
-template< typename T>
-static bool intersects(const std::vector<T> &v2, const std::vector<T> &v1)
+static inline Score score_from_next_size(Score size)
 {
-   return intersects(v1.begin(), v1.end(), v2.begin(), v2.end());
+    Score score = size / NEXT_SIZE_FACTOR;
+    if (score > NEXT_SIZE_LIMIT) {
+        score = NEXT_SIZE_LIMIT;
+    }
+    return score;
 }
 
-template<typename T>
-static std::vector<T>
-merge_vectors(const std::vector<T> &in1, const std::vector<T> in2)
+static void compute_table(const TaskNode *node,
+                          Score *table,
+                          size_t worker_size)
 {
-   std::vector<T> out;
-   out.reserve(in1.size() + in2.size());
-   out.insert(out.end(), in1.begin(), in1.end());
-   out.insert(out.end(), in2.begin(), in2.end());
-   return out;
-}
+    // In this function we deliberately ignore a situation when a same id
+    // is used as input on more positions
+    // It is quite expensive to detect duplication, and since it is quite
+    // rare ... and moreover this is just an heuristic at the end.
 
-template<typename T>
-static void
-erase_duplicates(std::vector<T> &v)
-{
-   std::sort(v.begin(), v.end());
-   v.erase(std::unique(v.begin(), v.end()), v.end());
-}
+    // Init variables    
+    //Score input_size = 0;
+    std::fill(table, table + worker_size, 0);
+    Score total_size = 0;
 
-Scheduler::Scheduler(ComputationState &cstate)
-{
-   auto &worker_conns = cstate.get_server().get_workers();
-   if (worker_conns.size() == 0 ||
-       cstate.get_pending_tasks().size() == 0) {
-      return;
-   }
-
-   loom::base::logger->debug("Scheduler: {} pending task(s)", cstate.get_pending_tasks().size());
-
-   // Gather info about workers
-   workers.reserve(worker_conns.size());
-   std::unordered_map<WorkerConnection*, size_t> worker_map;
-   worker_map.reserve(worker_conns.size());
-
-   int max_free_cpus = 0;
-   for (auto &wc : worker_conns) {
-      int free_cpus = wc->get_free_cpus();
-      if (free_cpus > max_free_cpus) {
-         max_free_cpus = free_cpus;
-      }
-      worker_map[wc.get()] = workers.size();
-      Worker w;
-      w.free_cpus = free_cpus;
-      w.max_cpus = wc->get_resource_cpus();
-      w.wc = wc.get();
-      workers.push_back(std::move(w));
-   }
-
-   // Gather info about pending tasks
-   std::unordered_map<loom::base::Id, size_t> inputs;
-   std::unordered_map<loom::base::Id, size_t> nexts;
-   size_t input_i = 0;
-
-   // * 2 because units is expanded in solve()
-   s_units.reserve(cstate.get_pending_tasks().size() * 2);
-
-   for (loom::base::Id id : cstate.get_pending_tasks()) {
-      const TaskNode &node = cstate.get_node(id);
-
-      SUnit s_unit;
-      s_unit.n_cpus = node.get_n_cpus();
-
-      if (s_unit.n_cpus > max_free_cpus) {
-         continue;
-      }
-      s_unit.bonus_score = s_unit.n_cpus;
-      s_unit.expected_size = DEFAULT_EXPECTED_SIZE;
-
-      s_unit.ids.push_back(id);
-
-      for (loom::base::Id id2 : node.get_inputs()) {
-         auto it = inputs.find(id2);
-         if (it == inputs.end()) {
-            s_unit.inputs.push_back(input_i);
-            inputs[id2] = input_i++;
-         } else {
-            s_unit.inputs.push_back(it->second);
-         }
-      }
-
-      for (loom::base::Id id2 : node.get_nexts()) {
-         const TaskNode &node2 = cstate.get_node(id2);
-         for (loom::base::Id id3 : node2.get_inputs()) {
-            const TaskNode &node3 = cstate.get_node(id3);
-            if (node3.is_computed()) {
-                  s_unit.nexts.push_back(id2);
-                  auto it = inputs.find(id3);
-                  if (it == inputs.end()) {
-                     s_unit.next_inputs.push_back(input_i);
-                     inputs[id3] = input_i++;
-                  } else {
-                     s_unit.next_inputs.push_back(it->second);
-                  }
-            }
-         }
-      }
-
-      erase_duplicates(s_unit.inputs);
-      erase_duplicates(s_unit.next_inputs);
-      erase_duplicates(s_unit.nexts);
-      s_units.push_back(std::move(s_unit));
-   }
-
-/*   for (auto &pair : nexts)
-   {
-      const PlanNode &node = cstate.get_node(pair.first);
-      NUnit n_unit;
-      n_unit.n_cpus = node.get_n_cpus();
-      for (loom::base::Id id : node.get_inputs()) {
-         const TaskState *state = cstate.get_state_ptr(id);
-         if (state) {
-            state->foreach_source([&input_i, id, &n_unit, &inputs](WorkerConnection *wc) {
-               auto it = inputs.find(id);
-               if (it == inputs.end()) {
-                  n_unit.inputs.push_back(input_i);
-                  inputs[id] = input_i++;
-               } else {
-                  n_unit.inputs.push_back(it->second);
-               }
-            });
-         }
-      }
-      n_units[pair.second] = std::move(n_unit);
-   }*/
-   assert(input_i == inputs.size());
-   data.resize(inputs.size());
-
-   for (auto &pair : inputs)
-   {
-      const TaskNode &node = cstate.get_node(pair.first);
-      DataObj obj;
-      obj.size = node.get_size();
-      node.foreach_worker([&obj, &worker_map](WorkerConnection *wc, TaskStatus) {
-         obj.owners.push_back(worker_map[wc]);
-      });
-      data[pair.second] = std::move(obj);
-   }
-}
-
-TaskDistribution Scheduler::schedule()
-{
-   TaskDistribution result;
-
-   if (workers.size() == 0 || s_units.size() == 0) {
-      return result;
-   }
-
-   create_derived_units();
-
-   for (;;) {
-      UW uw;
-      if (!find_best(uw)) {
-         break;
-      }
-      apply_uw(uw);
-
-      auto &unit = s_units[uw.unit_index];
-
-      /* DEBUG
-      std::stringstream s;
-      for (auto id : unit.ids) {
-         s << " " << id;
-      }
-      loom::base::logger->alert("PLANNED UNIT = {} / {}", s.str(), uw.worker_index);
-      */
-
-      auto ids = unit.ids; // we need a copy
-      auto &v = result[workers[uw.worker_index].wc];
-      v.insert(v.end(), unit.ids.begin(), unit.ids.end());
-
-      s_units.erase(std::remove_if(s_units.begin(),
-                                   s_units.end(),
-                                   [&ids](const SUnit &u){return intersects(u.ids, ids);}),
-                    s_units.end());
-
-   };
-
-   return result;
-}
-
-bool Scheduler::find_best(UW &uw)
-{
-   bool found = false;
-   size_t best_unit_i, best_worker_i;
-   double best_score = INT64_MIN;
-   int64_t n_workers = workers.size();
-
-   std::vector<int64_t> sizes(workers.size(), 0);
-   std::vector<int64_t> next_sizes(workers.size(), 0);
-
-   for (size_t unit_i = 0; unit_i < s_units.size(); unit_i++) {
-      const SUnit &unit = s_units[unit_i];
-      int n_cpus = unit.n_cpus;
-      int64_t size_sum = 0;
-      int64_t next_sum = 0;
-
-      // Reset sizes
-      for (int64_t worker_i = 0; worker_i < n_workers; worker_i++) {
-         sizes[worker_i] = 0;
-      }
-
-      // Compose sizes
-      for (size_t input_i : unit.inputs) {
-         assert (input_i < data.size());
-         const DataObj &obj = data[input_i];
-         size_sum += obj.size;
-         for (size_t worker_i : obj.owners) {
-            sizes[worker_i] += obj.size;
-         }
-      }
-
-      // Reset next sizes
-      for (int64_t worker_i = 0; worker_i < n_workers; worker_i++) {
-         next_sizes[worker_i] = 0;
-      }
-
-      // Compose next sizes
-      for (size_t input_i : unit.next_inputs) {
-         const DataObj &obj = data[input_i];
-         for (size_t worker_i : obj.owners) {
-            next_sum += obj.size;
-            next_sizes[worker_i] += obj.size;
-         }
-      }
-
-
-      for (int64_t worker_i = 0; worker_i < n_workers; worker_i++) {
-         if (workers[worker_i].free_cpus < n_cpus) {
-            continue;
-         }
-
-         int64_t score2 = (next_sizes[worker_i] - next_sum / n_workers) / 10;
-         if (score2 > unit.expected_size) {
-            score2 = unit.expected_size;
-         } else if (score2 < -unit.expected_size) {
-            score2 = -unit.expected_size;
-         }
-
-         int n_cpus = unit.n_cpus;
-         if (n_cpus == 0) {
-            n_cpus = 1;
-         }
-         double score = (sizes[worker_i] - size_sum) / n_cpus;
-         score += score2 / 10.0 + unit.bonus_score;
-
-         /*DEBUG
-         std::stringstream s;
-         for (auto id : unit.ids) {
-            s << " " << id;
-         }
-         loom::base::logger->alert("SCORE {} / {} : {} [size={}, size_sum={}, {}]",
-                                   s.str(), worker_i, score, sizes[worker_i], size_sum, n_workers);
-         */
-
-         if (best_score < score) {
-            found = true;
-            best_score = score;
-            best_unit_i = unit_i;
-            best_worker_i = worker_i;
-         }
-      }
-   }
-
-   if (found) {
-      uw.unit_index = best_unit_i;
-      uw.worker_index = best_worker_i;
-      return true;
-   } else {
-      return false;
-   }
-}
-
-void Scheduler::apply_uw(const Scheduler::UW &uw)
-{
-   SUnit &unit = s_units[uw.unit_index];
-   size_t worker_index = uw.worker_index;
-
-   workers[worker_index].free_cpus -= unit.n_cpus;
-
-   for (size_t input_i : unit.inputs) {
-      DataObj &obj = data[input_i];
-      if (std::find(obj.owners.begin(), obj.owners.end(), worker_index) == obj.owners.end()) {
-         obj.owners.push_back(worker_index);
-      }
-   }
-}
-
-Scheduler::SUnit Scheduler::merge_units(const SUnit &u1, const SUnit &u2)
-{
-   SUnit unit;
-   unit.n_cpus = u1.n_cpus + u2.n_cpus;
-   unit.bonus_score = unit.n_cpus / (u1.ids.size() + u2.ids.size());
-
-   if (intersects(u1.nexts.begin(), u1.nexts.end(),
-                  u2.nexts.begin(), u2.nexts.end())) {
-      unit.bonus_score += std::min(u1.expected_size, u2.expected_size);
-   }
-   unit.expected_size = u1.expected_size + u2.expected_size;
-   unit.ids = merge_vectors(u1.ids, u2.ids);
-   unit.inputs = merge_vectors(u1.inputs, u2.inputs);
-   erase_duplicates(unit.inputs);
-
-   unit.nexts = merge_vectors(u1.nexts, u2.nexts);
-   // Do remove
-   return unit;
-}
-
-void Scheduler::create_derived_units()
-{
-   const size_t initial_size = s_units.size();
-
-   // Sort basic units by id
-   std::sort(s_units.begin(), s_units.end(),
-             [](const SUnit &u1, const SUnit &u2) -> bool {
-      return u1.ids[0] < u2.ids[0];
-   });
-
-   // Create pairs
-   for (size_t i = 0; i < initial_size; i++) {
-      for (size_t j = i + 1; j < initial_size; j++) {
-         const SUnit &u1 = s_units[i];
-         const SUnit &u2 = s_units[j];
-         if (intersects(u1.inputs.begin(), u1.inputs.end(),
-                        u2.inputs.begin(), u2.inputs.end())) {
-            s_units.push_back(merge_units(u1, u2));
-         } else if (intersects(u1.nexts.begin(), u1.nexts.end(),
-                        u2.nexts.begin(), u2.nexts.end())) {
-            s_units.push_back(merge_units(u1, u2));
-         }
-      }
-   }
-}
-
-
-/*TaskDistribution Scheduler::single_worker_schedule()
-{
-    assert(workers.size() == 1);
-
-    std::sort(units.begin(), units.end(),
-        [](const SUnit & a, const SUnit & b) -> bool
-    {
-        return a.n_cpus > b.n_cpus;
-    });
-
-    Worker w = workers[0];
-    std::vector<loom::base::Id> result;
-
-    for (auto &unit : units) {
-        if (unit.n_cpus <= w.free_cpus) {
-            w.free_cpus -= unit.n_cpus;
-            result.push_back(unit.ids[0]);
+    // Collect sizes
+    for (const TaskNode *input_node : node->get_inputs()) {
+        Score size = input_node->get_size();
+        //input_size += size;
+        for (const auto &pair : input_node->get_workers()) {
+            WorkerConnection *wc = pair.first;
+            table[wc->get_scheduler_index()] += size;
+            total_size += size;
         }
     }
 
-    TaskDistribution d;
-    d[w.wc] = std::move(result);
-    return d;
+    // Score bonus
+    Score score_bonus = -total_size / static_cast<Score>(worker_size);
+    score_bonus += node->get_nexts().size() * BONUS_PER_NEXT;
+    const int n_cpus = node->get_n_cpus();
+    if (n_cpus > 1) {
+        score_bonus += ((n_cpus - 1) * BONUS_PER_EXTRA_CPU);
+    }
+
+    for (size_t i = 0; i < worker_size; i++) {
+        table[i] += score_bonus;
+    }
+
+    // Compute next score
+    if (node->get_nexts().size() <= NEXT_EXPLORE_LIMIT) {
+        for (TaskNode *next_node : node->get_nexts()) {
+            if (next_node->get_inputs().size() > NEXT_EXPLORE_LIMIT) {
+                continue;
+            }
+            for (TaskNode *input_node : next_node->get_inputs()) {
+                if (node == input_node) {
+                    continue;
+                }
+                if (input_node->has_state()) {
+                    Score score = score_from_next_size(input_node->get_size());
+                    for (const auto &pair : input_node->get_workers()) {
+                        WorkerConnection *wc = pair.first;
+                        table[wc->get_scheduler_index()] += score;
+                    }
+                }
+            }
+        }
+    }
 }
-*/
+
+static inline void init_unit(int index,
+                             TaskNode *node,
+                             SContext &context)
+{
+    size_t worker_size = context.worker_size;
+    Score *table = context.score_table.get() + index * worker_size;
+    compute_table(node, table, worker_size);
+    /*loom::base::logger->alert("SUNIT {}", node->get_id());
+    for (size_t i = 0; i < worker_size; i++) {
+        loom::base::logger->alert("INIT id={} worker={} score={}", node->get_id(), context.workers[i]->get_address(), table[i]);
+    }*/
+    WSPair ws_pair = find_best(node->get_n_cpus(), table, context);
+    if (ws_pair.score != SCORE_MIN) {
+        SUnit unit;
+        unit.node = node;
+        unit.wc = ws_pair.wc;
+        unit.score = ws_pair.score;
+        unit.index = index;
+        context.units.emplace(std::make_pair(node->get_id(), std::move(unit)));
+    }
+}
+
+
+
+TaskDistribution schedule(const ComputationState &cstate)
+{   
+    TaskDistribution result;
+    //loom::base::logger->alert("START");
+
+    // Init workers
+    auto &worker_conns = cstate.get_server().get_workers();
+    size_t worker_size = worker_conns.size();
+    if (worker_size == 0 ||
+            cstate.get_pending_tasks().size() == 0) {
+        return result;
+    }
+
+    size_t total_free_cpus = 0;
+
+    SContext context;
+    context.worker_size = worker_size;
+    context.workers.reserve(worker_size);
+
+    int index = 0;
+    for (auto &wc : worker_conns) {        
+        int free_cpus = wc->get_free_cpus();
+        total_free_cpus += free_cpus;
+        wc->set_scheduler_index(index++);
+        wc->set_scheduler_free_cpus(free_cpus);
+        context.workers.push_back(wc.get());
+    }
+
+    size_t limit = MAX_SCHEDULED_TASKS_LIMIT;
+
+    if (total_free_cpus > limit) {
+        limit = total_free_cpus * 2;
+    }
+
+    std::vector<std::unordered_set<loom::base::Id>> scheduled_moves(worker_size);
+
+    loom::base::logger->debug("Scheduler: {} pending task(s) on {} worker(s) / free_cpus={}",
+                              cstate.get_pending_tasks().size(),
+                              worker_size, total_free_cpus);
+
+    // Init units
+
+    size_t ptasks_size = cstate.get_pending_tasks().size();
+    if (ptasks_size <= limit) {
+        context.units.reserve(ptasks_size);
+        context.score_table = std::make_unique<Score[]>(worker_size * ptasks_size);
+        index = 0;
+        for (TaskNode* node: cstate.get_pending_tasks()) {
+            init_unit(index, node, context);
+            index++;
+        }
+    } else { // pick limit number of tasks with lowest ids
+        std::vector<TaskNode*> nodes;
+        nodes.reserve(ptasks_size);
+        for (TaskNode *node : cstate.get_pending_tasks()) {
+            nodes.push_back(node);
+        }
+        std::nth_element(nodes.begin(), nodes.begin() + limit, nodes.end(),
+                         [](const TaskNode *a, const TaskNode *b) { return a->get_id() < b->get_id(); });
+
+        context.units.reserve(limit);
+        context.score_table = std::make_unique<Score[]>(worker_size * limit);
+        for (index = 0; index < static_cast<int>(limit); index++) {
+            init_unit(index, nodes[index], context);
+        }
+    }
+
+    // Just create an pointer that does not definitely point to a valid WorkerConnection
+    WorkerConnection *invalid_ptr = reinterpret_cast<WorkerConnection*>(&invalid_ptr);
+    WorkerConnection *last_changed = invalid_ptr;
+
+    for(;;) {
+        Score best_score = SCORE_MIN;
+        WorkerConnection *best_wc = nullptr;
+        TaskNode *best_node = nullptr;
+
+        for (auto &pair : context.units) {
+            SUnit &unit = pair.second;
+            TaskNode *node = unit.node;
+
+            if (unit.score == UNIT_RECOMPUTE ||
+                    (last_changed == unit.wc && unit.wc->get_scheduler_free_cpus() < node->get_n_cpus())) {
+                Score *table = context.score_table.get() + unit.index * worker_size;
+                WSPair ws_pair = find_best(node->get_n_cpus(), table, context);
+                unit.wc = ws_pair.wc;
+                unit.score = ws_pair.score;
+            }
+
+            //loom::base::logger->alert("UNIT id={} worker={} score={}", unit.node->get_id(), unit.wc?unit.wc->get_address():"none", unit.score);
+            if (unit.score > best_score) {
+                best_score = unit.score;
+                best_wc = unit.wc;
+                best_node = node;
+            }
+        }
+
+        if (best_score != SCORE_MIN) {
+            auto n_cpus = best_node->get_n_cpus();
+            auto id = best_node->get_id();
+
+            if (best_wc == nullptr) {
+                std::sort(context.workers.begin(), context.workers.end(),
+                          [](WorkerConnection *a, WorkerConnection *b)
+                            { return a->get_scheduler_free_cpus() > b->get_scheduler_free_cpus(); });
+                if (context.workers[0]->get_scheduler_free_cpus() < n_cpus) {
+                    auto it = context.units.find(id);
+                    assert(it != context.units.end());
+                    context.units.erase(it);
+                    continue;
+                }
+                best_wc = context.workers[0];
+            }
+            //loom::base::logger->alert(">> SELECTED id={} worker={} score={}", id, best_wc->get_address(), best_score);
+            result[best_wc].push_back(best_node);
+            best_wc->set_scheduler_free_cpus(best_wc->get_scheduler_free_cpus() - n_cpus);
+            if (n_cpus > 0) {
+                last_changed = best_wc;
+            } else {
+                last_changed = invalid_ptr;
+            }
+
+            if (best_node->get_inputs().size() <= INPUT_UPDATE_LIMIT)
+            {
+                for (TaskNode *input_node : best_node->get_inputs()) {
+                    if (// Check update limit
+                        input_node->get_nexts().size() > INPUT_UPDATE_LIMIT ||
+                        // Check that the input was ok
+                        input_node->get_worker_status(best_wc) != TaskStatus::NONE||
+                        // Check that we did not already planned the node
+                        scheduled_moves[best_wc->get_scheduler_index()].find(input_node->get_id()) \
+                            != scheduled_moves[best_wc->get_scheduler_index()].end()) {
+                        continue;
+                    }
+                    scheduled_moves[best_wc->get_scheduler_index()].insert(input_node->get_id());
+                    Score size = input_node->get_size();
+                    for (TaskNode *next_node : input_node->get_nexts()) {
+                        auto it = context.units.find(next_node->get_id());
+                        if (it == context.units.end()) {
+                            continue;
+                        }
+                        SUnit &unit = it->second;
+                        unit.score = UNIT_RECOMPUTE;
+                        Score *table = context.score_table.get() + unit.index * worker_size;
+                        //loom::base::logger->alert("BOOSTING id={} worker={}", unit.node->get_id(), best_wc->get_address());
+                        table[best_wc->get_scheduler_index()] += size;
+                    }
+                }
+            }
+
+
+            if (best_node->get_nexts().size() <= NEXT_UPDATE_LIMIT)
+            {
+                for (TaskNode *next_node : best_node->get_nexts()) {
+                    if (next_node->get_inputs().size() > NEXT_UPDATE_LIMIT) {
+                        continue;
+                    }
+                    for (TaskNode *input_node : next_node->get_inputs()) {
+                        if (input_node == best_node || input_node->has_state()) {
+                            continue;
+                        }
+                        auto it = context.units.find(input_node->get_id());
+                        if (it == context.units.end()) {
+                            continue;
+                        }
+                        SUnit &unit = it->second;
+                        unit.score = UNIT_RECOMPUTE;
+                        Score *table = context.score_table.get() + unit.index * worker_size;
+                        //loom::base::logger->alert("BOOSTING id={} worker={}", unit.node->get_id(), best_wc->get_address());
+                        table[best_wc->get_scheduler_index()] += NEXT_SIZE_LIMIT;
+                    }
+                }
+            }
+
+            auto it = context.units.find(id);
+            assert(it != context.units.end());
+            context.units.erase(it);
+        } else {
+            break;
+        }
+    }
+    return result;
+}

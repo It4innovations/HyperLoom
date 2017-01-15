@@ -43,7 +43,6 @@ void TaskNode::create_state()
 void TaskNode::set_as_finished(WorkerConnection *wc, size_t size, size_t length)
 {
     assert(get_worker_status(wc) == TaskStatus::RUNNING);
-    loom::base::logger->alert("{} FIN {} {} {}", id, get_n_cpus(), wc->get_address(), wc->get_free_cpus());
     wc->add_free_cpus(get_n_cpus());
     set_worker_status(wc, TaskStatus::OWNER);
     state->size = size;
@@ -62,7 +61,6 @@ void TaskNode::set_as_running(WorkerConnection *wc)
 {    
     assert(get_worker_status(wc) == TaskStatus::NONE);
     set_worker_status(wc, TaskStatus::RUNNING);
-    loom::base::logger->alert("{} RUN {} {} {}", id, get_n_cpus(), wc->get_address(), wc->get_free_cpus());
     wc->remove_free_cpus(get_n_cpus());
 }
 

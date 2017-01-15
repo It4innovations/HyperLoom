@@ -73,8 +73,8 @@ void WorkerConnection::send_task(const TaskNode &task)
     msg.set_task_type(task.get_task_def().task_type);
     msg.set_task_config(task.get_task_def().config);
 
-    for (loom::base::Id id : task.get_inputs()) {
-        msg.add_task_inputs(id);
+    for (TaskNode *input_node : task.get_inputs()) {
+        msg.add_task_inputs(input_node->get_id());
     }
     send_message(*socket, msg);
 }

@@ -23,20 +23,19 @@ ComputationState::ComputationState(Server &server) : server(server)
    }
 }
 
-void ComputationState::add_node(TaskNode &&node) {
-    auto id = node.get_id();
+void ComputationState::add_node(std::unique_ptr<TaskNode> &&node) {
+    auto id = node->get_id();
 
-    if (node.get_inputs().empty()) {
-        pending_nodes.insert(id);
+    if (node->get_inputs().empty()) {
+        pending_nodes.insert(node.get());
     }
 
-    auto inputs = node.get_inputs();
+    auto inputs = node->get_inputs();
     std::sort(inputs.begin(), inputs.end());
     inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
 
-    for (auto input_id : inputs) {
-        TaskNode& node = get_node(input_id);
-        node.add_next(id);
+    for (TaskNode* input_node : inputs) {
+        input_node->add_next(node.get());
     }
 
     nodes.insert(std::make_pair(id, std::move(node)));
@@ -67,12 +66,22 @@ TaskNode& ComputationState::get_node(Id id)
        logger->critical("Cannot find node for id={}", id);
        abort();
     }
-    return it->second;
+    return *it->second;
+}
+
+const TaskNode &ComputationState::get_node(Id id) const
+{
+   auto it = nodes.find(id);
+   if (it == nodes.end()) {
+      logger->critical("Cannot find node for id={}", id);
+      abort();
+   }
+   return *it->second;
 }
 
 void ComputationState::activate_pending_node(TaskNode &node, WorkerConnection *wc)
 {   
-   auto it = pending_nodes.find(node.get_id());
+   auto it = pending_nodes.find(&node);
    assert(it != pending_nodes.end());
    pending_nodes.erase(it);
    node.set_as_running(wc);
@@ -87,14 +96,13 @@ void ComputationState::remove_node(TaskNode &node)
 
 void ComputationState::add_ready_nexts(const TaskNode &node)
 {
-   for (loom::base::Id id : node.get_nexts()) {
-      const TaskNode &node = get_node(id);
-      if (is_ready(node)) {
-         if (node.get_task_def().policy == TaskPolicy::SCHEDULER) {
+   for (TaskNode *nn : node.get_nexts()) {
+      if (is_ready(*nn)) {
+         if (nn->get_task_def().policy == TaskPolicy::SCHEDULER) {
             assert(0);
             //expand_node(node);
          } else {            
-            add_pending_node(node);
+            add_pending_node(*nn);
          }
       }
    }
@@ -109,16 +117,16 @@ int ComputationState::get_n_data_objects() const
 {
     int count = 0;
     for (auto& pair : nodes) {
-        if (pair.second.is_computed()) {
+        if (pair.second->is_computed()) {
             count += 1;
         }
     }
     return count;
 }
 
-void ComputationState::add_pending_node(const TaskNode &node)
+void ComputationState::add_pending_node(TaskNode &node)
 {
-   pending_nodes.insert(node.get_id());
+   pending_nodes.insert(&node);
 }
 
 /*
@@ -266,9 +274,8 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
 
 bool ComputationState::is_ready(const TaskNode &node)
 {
-   for (loom::base::Id id : node.get_inputs()) {
-      const TaskNode &node = get_node(id);
-      if (!node.is_computed()) {
+   for (TaskNode *input_node : node.get_inputs()) {
+      if (!input_node->is_computed()) {
          return false;
       }
    }
@@ -317,7 +324,7 @@ void ComputationState::add_plan(const loomplan::Plan &plan)
 
         auto inputs_size = pt.input_ids_size();
         for (int j = 0; j < inputs_size; j++) {
-            def.inputs.push_back(id_base + pt.input_ids(j));
+            def.inputs.push_back(&get_node(id_base + pt.input_ids(j)));
         }
 
         int n_cpus = 0;
@@ -327,8 +334,7 @@ void ComputationState::add_plan(const loomplan::Plan &plan)
             n_cpus = resources[pt.resource_request_index()];
         }
         def.n_cpus = n_cpus;
-
-        add_node(TaskNode(id, i, std::move(def)));
+        add_node(std::make_unique<TaskNode>(id, i, std::move(def)));
     }
 
     final_nodes.reserve(final_nodes.size() + plan.result_ids_size());
@@ -343,7 +349,7 @@ void ComputationState::test_ready_nodes(std::vector<Id> ids)
 {
     pending_nodes.clear();
     for (auto id : ids) {
-        pending_nodes.insert(id);
+        pending_nodes.insert(&get_node(id));
     }
 }
 

@@ -20,7 +20,7 @@ TaskManager::TaskManager(Server &server)
 void TaskManager::add_plan(const loomplan::Plan &plan)
 {
     cstate.add_plan(plan);
-    distribute_work(Scheduler(cstate).schedule());
+    distribute_work(schedule(cstate));
 }
 
 void TaskManager::distribute_work(const TaskDistribution &distribution)
@@ -38,22 +38,20 @@ void TaskManager::distribute_work(const TaskDistribution &distribution)
     }
 
     for (auto& p : distribution) {
-        for (loom::base::Id id : p.second) {
-            start_task(p.first, id);
+        for (TaskNode *node : p.second) {
+            start_task(p.first, *node);
         }
     }
 }
 
-void TaskManager::start_task(WorkerConnection *wc, Id task_id)
+void TaskManager::start_task(WorkerConnection *wc, TaskNode &node)
 {
-    TaskNode &node = cstate.get_node(task_id);
-    for (loom::base::Id input_id : node.get_inputs()) {
-        TaskNode &n = cstate.get_node(input_id);
-        if (n.get_worker_status(wc) == TaskStatus::NONE) {
-            WorkerConnection *owner = n.get_random_owner();
+    for (TaskNode *input_node : node.get_inputs()) {
+        if (input_node->get_worker_status(wc) == TaskStatus::NONE) {
+            WorkerConnection *owner = input_node->get_random_owner();
             assert(owner);
-            owner->send_data(input_id, wc->get_address());
-            n.set_worker_status(wc, TaskStatus::TRANSFER);
+            owner->send_data(input_node->get_id(), wc->get_address());
+            input_node->set_worker_status(wc, TaskStatus::TRANSFER);
         }
     }
 
@@ -121,14 +119,13 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
     }
 
     // Remove duplicates
-    std::vector<loom::base::Id> inputs = node.get_inputs();
+    std::vector<TaskNode*> inputs = node.get_inputs();
     std::sort(inputs.begin(), inputs.end());
     inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
 
-    for (loom::base::Id id : inputs) {
-        TaskNode &node = cstate.get_node(id);
-        if (node.dec_ref_counter()) {
-            remove_node(node);
+    for (TaskNode *node : inputs) {
+        if (node->dec_ref_counter()) {
+            remove_node(*node);
         }
     }
 
@@ -151,5 +148,5 @@ void TaskManager::on_data_transferred(Id id, WorkerConnection *wc)
 
 void TaskManager::run_task_distribution()
 {
-    distribute_work(Scheduler(cstate).schedule());
+    distribute_work(schedule(cstate));
 }
