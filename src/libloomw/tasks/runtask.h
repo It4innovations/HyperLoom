@@ -12,12 +12,14 @@ public:
     ~RunTask();
     void start(loom::DataVector &inputs) override;
 
+    std::string get_run_dir() const;
 
 private:
 
     std::string get_path(const std::string &filename);
     bool rename_output(const std::string &output, const std::string &data_path);
     void read_stderr(std::stringstream &s);
+    void create_result();
 
     std::shared_ptr<loom::Data> input;
 

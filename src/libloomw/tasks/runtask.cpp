@@ -11,6 +11,9 @@
 #include <sstream>
 #include <fstream>
 
+#include <ftw.h>
+#include <unistd.h>
+
 using namespace loom;
 using namespace loom::base;
 
@@ -165,9 +168,14 @@ void RunTask::start(DataVector &inputs)
    }
 }
 
+std::string RunTask::get_run_dir() const
+{
+    return worker.get_run_dir(get_id());
+}
+
 std::string RunTask::get_path(const std::string &filename)
 {
-   return worker.get_run_dir(get_id()) + filename;
+   return get_run_dir() + filename;
 }
 
 void RunTask::_on_exit(uv_process_t *process, int64_t exit_status, int term_signal)
@@ -208,57 +216,85 @@ void RunTask::read_stderr(std::stringstream &s)
     }
 }
 
+
+void RunTask::create_result()
+{
+    logger->debug("Process id={} finished (exit_status={})", get_id(), exit_status);
+
+    if (exit_status) {
+        std::stringstream s;
+        s << "Program terminated with status " << exit_status;
+        s << "\nStderr:\n";
+        read_stderr(s);
+        fail(s.str());
+        return;
+    }
+
+    loomrun::Run msg;
+    msg.ParseFromString(task->get_config());
+    std::unique_ptr<Data> result;
+
+    int output_size = msg.map_outputs_size();
+
+    if (output_size == 0) {
+       *msg.add_map_outputs() = "+out";
+    }
+
+    if (output_size == 1) {
+       logger->debug("Returning file '{}'' as result", msg.map_outputs(0));
+       auto data = std::make_shared<RawData>();
+       data->assign_filename(worker.get_work_dir());
+       if (!rename_output(msg.map_outputs(0), data->get_filename())) {
+           return;
+       }
+       data->init_from_file(worker.get_work_dir());
+       finish(data);
+       return;
+    }
+
+
+    auto items = std::make_unique<DataPtr[]>(output_size);
+
+    for (int i = 0; i < output_size; i++) {
+       logger->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
+       auto data = std::make_shared<RawData>();
+       data->assign_filename(worker.get_work_dir());
+       if (!rename_output(msg.map_outputs(i), data->get_filename())) {
+             return;
+       }
+       data->init_from_file(worker.get_work_dir());
+       items[i] = std::move(data);
+    }
+    DataPtr output = std::make_shared<Array>(output_size, std::move(items));
+    finish(output);
+}
+
+
+static int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
+{
+    int rv = remove(fpath);
+    if (rv)
+        log_errno_abort("remove");
+    return rv;
+}
+
+static void remove_dir(const char *path)
+{
+    int rv = nftw(path, unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
+    if (rv) {
+        log_errno_abort("nftw");
+    }
+}
+
 void RunTask::_on_close(uv_handle_t *handle)
 {
    RunTask *task = static_cast<RunTask*>(handle->data);
-   logger->debug("Process id={} finished (exit_status={})", task->get_id(), task->exit_status);
 
-   if (task->exit_status) {
-       std::stringstream s;
-       s << "Program terminated with status " << task->exit_status;
-       s << "\nStderr:\n";
-       task->read_stderr(s);
-       task->fail(s.str());
-       return;
-   }
+   std::string run_dir = task->get_run_dir();
+   // We have to save run_dir since after create result, the task is no longer exists
 
-   loomrun::Run msg;
-   msg.ParseFromString(task->task->get_config());
-   std::unique_ptr<Data> result;
-
-   int output_size = msg.map_outputs_size();
-
-   if (output_size == 0) {
-      *msg.add_map_outputs() = "+out";
-   }
-
-   if (output_size == 1) {
-      logger->debug("Returning file '{}'' as result", msg.map_outputs(0));
-      auto data = std::make_shared<RawData>();
-      data->assign_filename(task->worker.get_work_dir());
-      if (!task->rename_output(msg.map_outputs(0), data->get_filename())) {
-          return;
-      }
-      data->init_from_file(task->worker.get_work_dir());
-      task->finish(data);
-      return;
-   }
-
-
-   auto items = std::make_unique<DataPtr[]>(output_size);
-
-   for (int i = 0; i < output_size; i++) {
-      logger->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
-      auto data = std::make_shared<RawData>();
-      data->assign_filename(task->worker.get_work_dir());
-      if (!task->rename_output(msg.map_outputs(i), data->get_filename())) {
-            return;
-      }
-      data->init_from_file(task->worker.get_work_dir());
-      items[i] = std::move(data);
-   }
-   DataPtr output = std::make_shared<Array>(output_size, std::move(items));
-   task->finish(output);
+   task->create_result();
+   remove_dir(run_dir.c_str());
 }
 
 /*
