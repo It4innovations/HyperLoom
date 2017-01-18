@@ -21,3 +21,11 @@ def test_program_failed(loom_env):
 
     with pytest.raises(client.TaskFailed):
         loom_env.submit(a)
+
+
+def test_output_failed(loom_env):
+    loom_env.start(1)
+    a = tasks.run("ls /", outputs=["xxx"])
+
+    with pytest.raises(client.TaskFailed):
+        loom_env.submit(a)

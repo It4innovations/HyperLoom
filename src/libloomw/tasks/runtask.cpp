@@ -177,6 +177,37 @@ void RunTask::_on_exit(uv_process_t *process, int64_t exit_status, int term_sign
    uv_close((uv_handle_t*) process, _on_close);
 }
 
+bool RunTask::rename_output(const std::string &output, const std::string &data_path)
+{
+    std::string path = get_path(output);
+    if (unlikely(rename(path.c_str(),
+                        data_path.c_str()))) {
+       logger->error("Cannot move {} to {}", path, data_path);
+       std::stringstream s;
+       s << "Output '" << output << "' error: " << strerror(errno);
+       s << "\nStderr:\n";
+       read_stderr(s);
+
+       fail(s.str());
+       return false;
+    }
+    return true;
+}
+
+void RunTask::read_stderr(std::stringstream &s)
+{
+    std::ifstream err(get_path("+err").c_str());
+    assert(err.is_open());
+
+    int max_buffer_size = 128 * 1024;
+    auto buffer = std::make_unique<char[]>(max_buffer_size);
+    err.read(buffer.get(), max_buffer_size);
+    s.write(buffer.get(), err.gcount());
+    if (err.gcount() == max_buffer_size) {
+        s << "\n ... stderr truncated by Loom";
+    }
+}
+
 void RunTask::_on_close(uv_handle_t *handle)
 {
    RunTask *task = static_cast<RunTask*>(handle->data);
@@ -186,16 +217,7 @@ void RunTask::_on_close(uv_handle_t *handle)
        std::stringstream s;
        s << "Program terminated with status " << task->exit_status;
        s << "\nStderr:\n";
-       std::ifstream err(task->get_path("+err").c_str());
-       assert(err.is_open());
-
-       int max_buffer_size = 128 * 1024;
-       auto buffer = std::make_unique<char[]>(max_buffer_size);
-       err.read(buffer.get(), max_buffer_size);
-       s.write(buffer.get(), err.gcount());
-       if (err.gcount() == max_buffer_size) {
-           s << "\n ... stderr truncated by Loom";
-       }
+       task->read_stderr(s);
        task->fail(s.str());
        return;
    }
@@ -211,21 +233,14 @@ void RunTask::_on_close(uv_handle_t *handle)
    }
 
    if (output_size == 1) {
-      auto data_ptr = std::make_shared<RawData>();
-      RawData& data = static_cast<RawData&>(*data_ptr);
-      data.assign_filename(task->worker.get_work_dir());
-
-      std::string path = task->get_path(msg.map_outputs(0));
-      std::string data_path = data.get_filename();
       logger->debug("Returning file '{}'' as result", msg.map_outputs(0));
-      if (unlikely(rename(path.c_str(),
-                          data_path.c_str()))) {
-         logger->critical("Cannot move {} to {}",
-                        path, data_path);
-         log_errno_abort("rename");
+      auto data = std::make_shared<RawData>();
+      data->assign_filename(task->worker.get_work_dir());
+      if (!task->rename_output(msg.map_outputs(0), data->get_filename())) {
+          return;
       }
-      data.init_from_file(task->worker.get_work_dir());
-      task->finish(data_ptr);
+      data->init_from_file(task->worker.get_work_dir());
+      task->finish(data);
       return;
    }
 
@@ -233,22 +248,15 @@ void RunTask::_on_close(uv_handle_t *handle)
    auto items = std::make_unique<DataPtr[]>(output_size);
 
    for (int i = 0; i < output_size; i++) {
+      logger->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
       auto data = std::make_shared<RawData>();
       data->assign_filename(task->worker.get_work_dir());
-      std::string path = task->get_path(msg.map_outputs(i));
-      std::string data_path = data->get_filename();
-      logger->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
-      //data->create(task->worker, 10);
-      if (unlikely(rename(path.c_str(),
-                          data_path.c_str()))) {
-         logger->critical("Cannot move {} to {}",
-                        path, data_path);
-         log_errno_abort("rename");
+      if (!task->rename_output(msg.map_outputs(i), data->get_filename())) {
+            return;
       }
       data->init_from_file(task->worker.get_work_dir());
       items[i] = std::move(data);
    }
-
    DataPtr output = std::make_shared<Array>(output_size, std::move(items));
    task->finish(output);
 }

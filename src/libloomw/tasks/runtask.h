@@ -16,6 +16,8 @@ public:
 private:
 
     std::string get_path(const std::string &filename);
+    bool rename_output(const std::string &output, const std::string &data_path);
+    void read_stderr(std::stringstream &s);
 
     std::shared_ptr<loom::Data> input;
 
