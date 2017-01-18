@@ -148,5 +148,27 @@ void TaskManager::on_data_transferred(Id id, WorkerConnection *wc)
 
 void TaskManager::run_task_distribution()
 {
-    distribute_work(schedule(cstate));
+    uv_loop_t *loop = server.get_loop();
+
+    // Update & get time
+    uv_update_time(loop);
+    auto start_scheduler = uv_now(loop);
+
+    // Schedule
+    auto distribute = schedule(cstate);
+
+    // Update & get time
+    uv_update_time(loop);
+    auto start_distribute = uv_now(loop);
+
+    // Distribute
+    distribute_work(distribute);
+
+    // Update & get time
+    uv_update_time(loop);
+    auto end = uv_now(loop);
+
+    logger->debug("Schuduling finished: sched_time={}, dist_time={})",
+                  start_distribute - start_scheduler,
+                  end - start_distribute);
 }
