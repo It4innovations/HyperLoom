@@ -49,7 +49,6 @@ public:
 
     struct DataState {
         WorkerMap<TaskStatus> workers;
-        int ref_counter;
         size_t size;
         size_t length;
     };
@@ -151,18 +150,7 @@ public:
         return state->workers;
     }
 
-    int get_ref_counter() const {
-        return state->ref_counter;
-    }
-
-    void inc_ref_counter(int value) {
-        state->ref_counter += value;
-    }
-
-    bool dec_ref_counter() {
-        state->ref_counter -= 1;
-        return state->ref_counter == 0;
-    }
+    bool next_finished(TaskNode &);
 
     void set_as_finished(WorkerConnection *wc, size_t size, size_t length);
     void set_as_running(WorkerConnection *wc);

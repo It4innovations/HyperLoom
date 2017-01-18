@@ -37,7 +37,20 @@ void TaskNode::create_state()
     state = std::make_unique<DataState>();
     state->size = 0;
     state->length = 0;
-    state->ref_counter = nexts.size();
+}
+
+bool TaskNode::next_finished(TaskNode &node)
+{
+    size_t index = 0;
+    for (TaskNode *next_node : nexts) {
+        if (next_node == &node) {
+            nexts[index] = nexts[nexts.size() - 1];
+            nexts.pop_back();
+            return nexts.empty();
+        }
+        index++;
+    }
+    assert(0);
 }
 
 void TaskNode::set_as_finished(WorkerConnection *wc, size_t size, size_t length)

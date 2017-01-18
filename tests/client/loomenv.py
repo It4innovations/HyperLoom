@@ -34,8 +34,10 @@ class Env():
     def start_process(self, name, args, env=None):
         fname = os.path.join(LOOM_TEST_BUILD_DIR, name)
         with open(fname + ".out", "w") as out:
-            with open(fname + ".err", "w") as err:
-                p = subprocess.Popen(args, stdout=out, stderr=err, env=env)
+            p = subprocess.Popen(args,
+                                 stdout=out,
+                                 stderr=subprocess.STDOUT,
+                                 env=env)
         self.processes.append((name, p))
         return p
 

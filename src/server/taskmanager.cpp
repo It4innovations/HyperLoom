@@ -86,7 +86,7 @@ void TaskManager::report_task_end(WorkerConnection *wc, const TaskNode &node)
 void TaskManager::remove_node(TaskNode &node)
 {
     logger->debug("Removing node id={}", node.get_id());
-    assert(node.get_ref_counter() == 0);
+    assert(node.get_nexts().size() == 0);
     loom::base::Id id = node.get_id();
 
     node.foreach_worker([id](WorkerConnection *wc, TaskStatus status) {
@@ -123,13 +123,13 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
     std::sort(inputs.begin(), inputs.end());
     inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
 
-    for (TaskNode *node : inputs) {
-        if (node->dec_ref_counter()) {
-            remove_node(*node);
+    for (TaskNode *input_node : inputs) {
+        if (input_node->next_finished(node)) {
+            remove_node(*input_node);
         }
     }
 
-    if (node.get_ref_counter() > 0) {
+    if (node.get_nexts().size() > 0) {
         cstate.add_ready_nexts(node);
     } else {
         remove_node(node);
