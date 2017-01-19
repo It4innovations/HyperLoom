@@ -131,6 +131,7 @@ DataPtr PyCallJob::run()
 
    // call "call"
    PyObject *result = PyObject_CallFunctionObjArgs(call_fn, config_data, py_inputs, NULL);
+   Py_DECREF(py_inputs);
    Py_DECREF(call_fn);
    Py_DECREF(config_data);
 
