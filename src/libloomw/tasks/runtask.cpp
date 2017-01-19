@@ -205,7 +205,10 @@ bool RunTask::rename_output(const std::string &output, const std::string &data_p
 void RunTask::read_stderr(std::stringstream &s)
 {
     std::ifstream err(get_path("+err").c_str());
-    assert(err.is_open());
+    if (!err.is_open()) {
+        s << "Loom: obtaining stderr failed: cannot open +err file";
+        return;
+    }
 
     int max_buffer_size = 128 * 1024;
     auto buffer = std::make_unique<char[]>(max_buffer_size);
