@@ -22,6 +22,7 @@ public:
 
     void reserve_new_nodes(size_t size);
 
+    TaskNode* get_node_ptr(loom::base::Id id);
     TaskNode& get_node(loom::base::Id id);
     const TaskNode& get_node(loom::base::Id id) const;
 
@@ -61,6 +62,15 @@ public:
         return server;
     }
 
+    template<typename F> void foreach_node(const F &f) {
+        for (auto &pair : nodes) {
+            f(pair.second);
+        }
+    }
+
+    std::unique_ptr<TaskNode> pop_node(loom::base::Id id);
+    void clear_all();
+
 private:    
 
     std::unordered_map<loom::base::Id, std::unique_ptr<TaskNode>> nodes;
@@ -86,7 +96,7 @@ private:
     /*void collect_requirements_for_node(WorkerConnection *wc,
                                        const PlanNode &node,
                                        std::unordered_set<loom::base::Id> &nonlocals);*/
-    int get_max_cpus();    
+    int get_max_cpus();
     void add_pending_node(TaskNode &node);
 };
 

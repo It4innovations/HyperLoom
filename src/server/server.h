@@ -66,6 +66,7 @@ public:
     }
 
     void inform_about_task_error(loom::base::Id id, WorkerConnection &wconn, const std::string &error_msg);
+    void on_task_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
 
     loom::base::Id new_id(int count = 1) {
         auto id = id_counter;

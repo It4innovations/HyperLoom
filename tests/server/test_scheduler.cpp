@@ -460,7 +460,7 @@ TEST_CASE("Plan2", "[scheduling]") {
    s.add_plan(make_plan2(server));
 
    SECTION("Two simple workers") {
-      auto w1 = simple_worker(server, "w1");      
+      auto w1 = simple_worker(server, "w1");
       auto w2 = simple_worker(server, "w2");
 
       SECTION("Each one has own") {

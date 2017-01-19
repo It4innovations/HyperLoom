@@ -83,8 +83,6 @@ def test_py_direct_args(loom_env):
     def t3(x, y):
         return x * y.read()
 
-
-
     loom_env.start(1)
 
     c = tasks.const("ABC")

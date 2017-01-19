@@ -86,6 +86,12 @@ void Server::on_data_transferred(loom::base::Id id, WorkerConnection *wc)
     task_manager.on_data_transferred(id, wc);
 }
 
+void Server::on_task_failed(Id id, WorkerConnection *wc, const std::string &error_msg)
+{
+    task_manager.on_task_failed(id, wc, error_msg);
+}
+
+
 void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::string &error_msg)
 {
     logger->error("Task id={} failed on worker {}: {}",
@@ -102,7 +108,6 @@ void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::
     if (client_connection) {
         client_connection->send_message(msg);
     }
-    exit(1);
 }
 
 void Server::send_dictionary(loom::base::Socket &socket)

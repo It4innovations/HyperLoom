@@ -39,6 +39,28 @@ void TaskNode::create_state()
     state->length = 0;
 }
 
+bool TaskNode::is_active() const
+{
+    if (!state) {
+        return false;
+    }
+    for (auto &pair : state->workers) {
+        if (pair.second == TaskStatus::RUNNING || pair.second == TaskStatus::TRANSFER) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void TaskNode::reset_owners()
+{
+    for (auto &pair : state->workers) {
+        if (pair.second == TaskStatus::OWNER) {
+            pair.second = TaskStatus::NONE;
+        }
+    }
+}
+
 bool TaskNode::next_finished(TaskNode &node)
 {
     size_t index = 0;
@@ -53,6 +75,15 @@ bool TaskNode::next_finished(TaskNode &node)
     assert(0);
 }
 
+void TaskNode::set_as_none(WorkerConnection *wc)
+{
+    auto status = get_worker_status(wc);
+    if (status == TaskStatus::RUNNING) {
+        wc->add_free_cpus(get_n_cpus());
+    }
+    set_worker_status(wc, TaskStatus::NONE);
+}
+
 void TaskNode::set_as_finished(WorkerConnection *wc, size_t size, size_t length)
 {
     assert(get_worker_status(wc) == TaskStatus::RUNNING);
@@ -60,7 +91,6 @@ void TaskNode::set_as_finished(WorkerConnection *wc, size_t size, size_t length)
     set_worker_status(wc, TaskStatus::OWNER);
     state->size = size;
     state->length = length;
-
 }
 
 void TaskNode::set_as_finished_no_check(WorkerConnection *wc, size_t size, size_t length)

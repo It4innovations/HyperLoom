@@ -59,6 +59,15 @@ void ComputationState::reserve_new_nodes(size_t size)
     nodes.reserve(nodes.size() + size);
 }
 
+TaskNode *ComputationState::get_node_ptr(Id id)
+{
+    auto it = nodes.find(id);
+    if (it == nodes.end()) {
+        return nullptr;
+    }
+    return it->second.get();
+}
+
 TaskNode& ComputationState::get_node(Id id)
 {
     auto it = nodes.find(id);
@@ -362,3 +371,21 @@ Id ComputationState::pop_result_client_id(Id id)
     final_nodes.erase(it);
     return client_id;
 }
+
+std::unique_ptr<TaskNode> ComputationState::pop_node(Id id)
+{
+    std::unique_ptr<TaskNode> result;
+    auto it = nodes.find(id);
+    assert(it != nodes.end());
+    result = std::move(it->second);
+    nodes.erase(it);
+    return result;
+}
+
+void ComputationState::clear_all()
+{
+    pending_nodes.clear();
+    final_nodes.clear();
+    nodes.clear();
+}
+

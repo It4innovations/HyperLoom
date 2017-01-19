@@ -34,11 +34,6 @@ enum class TaskStatus {
     OWNER,
 };
 
-inline bool is_planned_owner(TaskStatus status) {
-    return status == TaskStatus::OWNER || \
-           status == TaskStatus::RUNNING || \
-           status == TaskStatus::TRANSFER;
-}
 
 template<typename T> using WorkerMap = std::unordered_map<WorkerConnection*, T>;
 
@@ -94,6 +89,7 @@ public:
     }
 
     bool is_computed() const;
+    bool is_active() const;
     WorkerConnection* get_random_owner();
 
     void add_next(TaskNode *node) {
@@ -146,6 +142,8 @@ public:
         }
     }
 
+    void reset_owners();
+
     const WorkerMap<TaskStatus>& get_workers() const {
         return state->workers;
     }
@@ -155,9 +153,11 @@ public:
     void set_as_finished(WorkerConnection *wc, size_t size, size_t length);
     void set_as_running(WorkerConnection *wc);
     void set_as_transferred(WorkerConnection *wc);
+    void set_as_none(WorkerConnection *wc);
 
     // For unit testing
     void set_as_finished_no_check(WorkerConnection *wc, size_t size, size_t length);
+
 
 private:
     loom::base::Id id;

@@ -71,7 +71,7 @@ void Socket::connect(const std::string &host, int port)
                  } else {
                      socket->state = State::Open;
                      uv_read_start((uv_stream_t *)&socket->uv_socket, _buf_alloc, _on_read);
-                     socket->on_connect();                     
+                     socket->on_connect();
                  }                
              }));
 }

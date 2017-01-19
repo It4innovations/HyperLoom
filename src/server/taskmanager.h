@@ -37,6 +37,7 @@ public:
 
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
     void on_data_transferred(loom::base::Id id, WorkerConnection *wc);
+    void on_task_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
 
     bool is_plan_finished() const {
         return cstate.is_finished();
@@ -46,21 +47,26 @@ public:
         return cstate.get_n_data_objects();
     }
 
-    void run_task_distribution();   
+    void run_task_distribution();
 
     loom::base::Id pop_result_client_id(loom::base::Id id) {
         return cstate.pop_result_client_id(id);
     }
 
+    void trash_all_tasks();
+
+    bool check_trash(loom::base::Id id, WorkerConnection *wc, bool success);
+
 private:
     Server &server;
     ComputationState cstate;
+    std::unordered_map<loom::base::Id, std::unique_ptr<TaskNode>> trash;
+    bool report;
 
     void distribute_work(const TaskDistribution &distribution);
     void start_task(WorkerConnection *wc, TaskNode &node);
     void remove_node(TaskNode &node);
 
-    bool report;
     void report_task_start(WorkerConnection *wc, const TaskNode &node);
     void report_task_end(WorkerConnection *wc, const TaskNode &node);
 };

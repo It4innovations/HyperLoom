@@ -58,7 +58,8 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
 
     if (msg.type() == loomcomm::WorkerResponse_Type_FAILED) {
         assert(msg.has_error_msg());
-        server.inform_about_task_error(msg.id(), *this, msg.error_msg());
+        server.on_task_failed(msg.id(), this, msg.error_msg());
+        return;
     }
 }
 

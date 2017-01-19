@@ -409,6 +409,7 @@ void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
         send_message(server_conn, msg);
     }
     remove_task(task);
+    check_ready_tasks();
 }
 
 void Worker::task_redirect(TaskInstance &task,
