@@ -70,6 +70,8 @@ class SendBuffer {
 
 public:
 
+    SendBuffer();
+
     uv_write_t* get_request() {
         return &request;
     }
@@ -85,8 +87,6 @@ public:
     size_t get_size() const {
        return items.size();
     }
-
-
 
     std::vector<uv_buf_t> get_bufs();
 

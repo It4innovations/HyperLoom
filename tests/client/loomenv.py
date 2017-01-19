@@ -5,6 +5,7 @@ import sys
 import time
 import pytest
 import shutil
+import glob
 
 
 LOOM_TESTDIR = os.path.dirname(os.path.abspath(__file__))
@@ -94,6 +95,23 @@ class LoomEnv(Env):
         assert stats["n_workers"] == self.workers_count
         assert stats["n_data_objects"] == 0
 
+    def check_final_state(self):
+        time.sleep(0.15)
+        filenames = glob.glob(
+            os.path.join(LOOM_TEST_BUILD_DIR, "worker-*/**/*"), recursive=True)
+        runs = 0
+        data = 0
+        for filename in filenames:
+            if filename.endswith("run"):
+                runs += 1
+            elif filename.endswith("data"):
+                data += 1
+            else:
+                assert 0, "Invalid file/directory remains: " + filename
+
+        assert runs <= self.workers_count
+        assert data <= self.workers_count
+
     @property
     def client(self):
         if self._client is None:
@@ -106,6 +124,7 @@ class LoomEnv(Env):
             report = os.path.join(LOOM_TEST_BUILD_DIR, report)
         result = self.client.submit(results, report)
         self.check_stats()
+        self.check_final_state()
         return result
 
     def make_dry_report(self, tasks, filename):
@@ -113,8 +132,7 @@ class LoomEnv(Env):
         return client.make_dry_report(tasks, filename)
 
 
-@pytest.yield_fixture(autouse=True, scope="function")
-def loom_env():
+def cleanup():
     if os.path.isdir(LOOM_TEST_BUILD_DIR):
         for item in os.listdir(LOOM_TEST_BUILD_DIR):
             path = os.path.join(LOOM_TEST_BUILD_DIR, item)
@@ -124,6 +142,11 @@ def loom_env():
                 shutil.rmtree(path)
     else:
         os.makedirs(LOOM_TEST_BUILD_DIR)
+
+
+@pytest.yield_fixture(autouse=True, scope="function")
+def loom_env():
+    cleanup()
     env = LoomEnv()
     yield env
     env.kill_all()

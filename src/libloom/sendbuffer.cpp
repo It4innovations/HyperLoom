@@ -4,6 +4,11 @@
 
 using namespace loom::base;
 
+SendBuffer::SendBuffer()
+{
+    request.data = this;
+}
+
 std::vector<uv_buf_t> loom::base::SendBuffer::get_bufs()
 {
    std::vector<uv_buf_t> bufs;

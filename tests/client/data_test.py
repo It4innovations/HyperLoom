@@ -1,4 +1,4 @@
-from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
+from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR, cleanup  # noqa
 import loom.client.tasks as tasks  # noqa
 
 import struct
@@ -151,6 +151,7 @@ def test_run_double_lines(loom_env):
 
     for i in range(1, 4):
         #  print "Runnig for {}".format(i)
+        cleanup()
         loom_env.start(i)
         r = loom_env.submit(result)
         assert r == expect
@@ -245,6 +246,7 @@ def test_size_and_length(loom_env):
     u64 = struct.Struct("<Q")
     [25, 0, 50, 2] == map(lambda x: u64.unpack(x)[0],
                           loom_env.submit((b1, c1, b2, c2)))
+
 
 def test_hostname(loom_env):
     loom_env.start(1)
