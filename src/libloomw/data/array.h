@@ -18,7 +18,7 @@ public:
     DataPtr get_at_index(size_t index) const override;
     DataPtr get_slice(size_t from, size_t to) const override;
     std::string get_type_name() const override;
-    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const override;
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const override;
 
     DataPtr& get_ref_at_index(size_t index);
 

@@ -48,7 +48,7 @@ std::string loom::ExternFile::get_info() const
     return "<ExternFile '" + filename + "'>";
 }
 
-size_t ExternFile::serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const
+size_t ExternFile::serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const
 {
     assert(0); // TODO
 }

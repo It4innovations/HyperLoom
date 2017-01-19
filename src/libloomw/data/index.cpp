@@ -8,7 +8,7 @@
 using namespace loom;
 using namespace loom::base;
 
-Index::Index(Worker &worker, DataPtr &data, size_t length, std::unique_ptr<size_t[]> indices)
+Index::Index(Worker &worker, const DataPtr &data, size_t length, std::unique_ptr<size_t[]> &&indices)
     : worker(worker), data(data), length(length), indices(std::move(indices))
 {
 
@@ -81,86 +81,45 @@ DataPtr Index::get_slice(size_t from, size_t to) const
     return data;
 }
 
-size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const
+size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const
 {
-    logger->critical("Index::serialize_data");
-    abort();
+    size_t size = length * sizeof(size_t);
+    buffer.add(std::make_unique<base::SizeBufferItem>(size + sizeof(Id)));
+    buffer.add(std::make_unique<base::IdBufferItem>(data->get_type_id(worker)));
+    buffer.add(std::make_unique<DataBufferItem>(data_ptr, reinterpret_cast<char*>(indices.get()), size));
+    return 1 + data->serialize(worker, buffer, data);
 }
 
-/*bool IndexUnpacker::init(Worker &worker, Connection &connection, const loomcomm::Data &msg)
-{
-    this->worker = &worker;
-    length = msg.length();
-    indices = std::make_unique<size_t[]>(length + 1);
-    indices_ptr = (char*) &indices[0];
-    connection.set_raw_read((length + 1) * sizeof(size_t));
-    return false;
-}
-
-bool IndexUnpacker::on_message(Connection &connection, const char *data, size_t size)
-{
-    if (unpacker) {
-        if (unpacker->on_message(connection, data, size)) {
-            finish_data();
-            return true;
-        }
-        return false;
-    }
-    loomcomm::Data msg;
-    assert(msg.ParseFromArray(data, size));
-    unpacker = worker->unpack(msg.type_id());
-    if (unpacker->init(*worker, connection, msg)) {
-        finish_data();
-        return true;
-    } else {
-       return false;
-    }
-}
-
-void IndexUnpacker::on_data_chunk(const char *data, size_t size)
-{
-    if (unpacker) {
-        unpacker->on_data_chunk(data, size);
-        return;
-    }
-    memcpy(indices_ptr, data, size);
-    indices_ptr += size;
-}
-
-bool IndexUnpacker::on_data_finish(Connection &connection)
-{
-    if (unpacker) {
-        if (unpacker->on_data_finish(connection)) {
-            finish_data();
-            return true;
-        }
-    }
-    return false;
-}
-
-void IndexUnpacker::finish_data()
-{
-    DataPtr &inner_data = unpacker->get_data();
-    data = std::make_shared<Index>(*worker, inner_data, length, std::move(indices));
-}
-*/
-
-IndexUnpacker::IndexUnpacker()
-{
-   assert(0);
-}
-
-IndexUnpacker::~IndexUnpacker()
+IndexUnpacker::IndexUnpacker(Worker &worker) : worker(worker)
 {
 
 }
 
 DataUnpacker::Result IndexUnpacker::on_message(const char *data, size_t size)
 {
-   assert(0);
+   if (unpacker == nullptr) {
+       Id id = *(reinterpret_cast<const Id*>(data));
+       data += sizeof(Id);
+       size -= sizeof(Id);
+
+       length = size / sizeof(size_t);
+       indices = std::make_unique<size_t[]>(length);
+       memcpy(indices.get(), data, size);
+       unpacker = worker.get_unpacker(id);
+       return unpacker->get_initial_mode();
+   } else {
+       return unpacker->on_message(data, size);
+   }
 }
+
+DataUnpacker::Result IndexUnpacker::on_stream_data(const char *data, size_t size, size_t remaining)
+{
+    assert(unpacker);
+    return unpacker->on_message(data, size);
+}
+
 
 DataPtr IndexUnpacker::finish()
 {
-   assert(0);
+    return std::make_shared<Index>(worker, unpacker->finish(), length, std::move(indices));
 }

@@ -42,7 +42,7 @@ base::Id Data::get_type_id(Worker &worker) const
    return worker.get_dictionary().find_symbol(get_type_name());
 }
 
-DataBufferItem::DataBufferItem(DataPtr &data, const char *mem, size_t size)
+DataBufferItem::DataBufferItem(const DataPtr &data, const char *mem, size_t size)
    : mem(mem), size(size), data(data)
 {
 

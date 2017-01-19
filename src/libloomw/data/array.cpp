@@ -79,7 +79,7 @@ DataPtr Array::get_at_index(size_t index) const
    return items[index];
 }
 
-size_t Array::serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const
+size_t Array::serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const
 {
     auto types = std::make_unique<base::MemItemWithSz>(sizeof(loom::base::Id) * length);
     loom::base::Id *ts = reinterpret_cast<loom::base::Id*>(types->get_ptr());

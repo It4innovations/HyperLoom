@@ -1,6 +1,8 @@
 #ifndef LIBLOOM_SENDBUFFER_H
 #define LIBLOOM_SENDBUFFER_H
 
+#include "types.h"
+
 #include <uv.h>
 #include <memory>
 #include <vector>
@@ -64,6 +66,7 @@ protected:
 };
 
 using SizeBufferItem = PODItem<uint64_t>;
+using IdBufferItem = PODItem<Id>;
 
 
 class SendBuffer {
@@ -76,11 +79,11 @@ public:
         return &request;
     }
 
-    void add(std::unique_ptr<SendBufferItem> item) {
+    void add(std::unique_ptr<SendBufferItem> &&item) {
         items.push_back(std::move(item));
     }
 
-    void insert(size_t index, std::unique_ptr<SendBufferItem> item) {
+    void insert(size_t index, std::unique_ptr<SendBufferItem> &&item) {
         items.insert(items.begin() + index, std::move(item));
     }
 

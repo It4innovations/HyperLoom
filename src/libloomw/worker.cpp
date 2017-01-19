@@ -117,7 +117,9 @@ Worker::Worker(uv_loop_t *loop,
     add_unpacker("loom/array", [this]() {
        return std::make_unique<ArrayUnpacker>(*this);
     });
-    add_unpacker("loom/index", std::make_unique<IndexUnpacker>);
+    add_unpacker("loom/index", [this]() {
+       return std::make_unique<IndexUnpacker>(*this);
+    });
 }
 
 

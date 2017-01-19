@@ -23,7 +23,7 @@ public:
     bool has_raw_data() const override;
     std::string get_info() const override;
     std::string get_filename() const override;
-    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const override;
+    size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const override;
 
     char* init_empty(const std::string &work_dir, size_t size);
     void init_from_string(const std::string &work_dir, const std::string &str);

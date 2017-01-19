@@ -45,7 +45,7 @@ public:
     virtual DataPtr get_slice(size_t from, size_t to) const;
 
     /** Serialize object into send buffer */
-    virtual size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, DataPtr &data_ptr) const = 0;
+    virtual size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const = 0;
 
     /** Get pointer to raw data, returns nullptr when it is not possible */
     virtual const char *get_raw_data() const;
@@ -63,7 +63,7 @@ protected:
 
 class DataBufferItem : public loom::base::SendBufferItem {
 public:
-   DataBufferItem(DataPtr &data, const char *mem, size_t size);
+   DataBufferItem(const DataPtr &data, const char *mem, size_t size);
    uv_buf_t get_buf();
 
 protected:
