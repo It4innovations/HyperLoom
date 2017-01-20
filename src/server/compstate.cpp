@@ -298,7 +298,9 @@ static TaskPolicy read_task_policy(loomplan::Task_Policy policy) {
 
 void ComputationState::add_plan(const loomplan::Plan &plan)
 {
-    loom::base::Id id_base = server.new_id(plan.tasks_size());
+    auto task_size = plan.tasks_size();
+    loom::base::Id id_base = server.new_id(task_size);
+    loom::base::logger->debug("Plan id range from={}, size={}", id_base, task_size);
 
     std::vector<int> resources;
     loom::base::Id resource_ncpus = server.get_dictionary().find_or_create("loom/resource/cpus");
@@ -310,7 +312,6 @@ void ComputationState::add_plan(const loomplan::Plan &plan)
         resources.push_back(rr.resources(0).value());
     }
 
-    auto task_size = plan.tasks_size();
     reserve_new_nodes(task_size);
     for (int i = 0; i < task_size; i++) {
         const auto& pt = plan.tasks(i);

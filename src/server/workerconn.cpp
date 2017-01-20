@@ -65,7 +65,8 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
 void WorkerConnection::send_task(const TaskNode &task)
 {
     auto id = task.get_id();
-    logger->debug("Assigning task id={} to address={} cpus={}", id, address, task.get_n_cpus());
+    logger->debug("Assigning task id={} (client_id={}) to address={} cpus={}",
+                  id, task.get_client_id(), address, task.get_n_cpus());
 
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_TASK);
