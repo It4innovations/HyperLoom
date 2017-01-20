@@ -115,7 +115,7 @@ DataUnpacker::Result IndexUnpacker::on_message(const char *data, size_t size)
 DataUnpacker::Result IndexUnpacker::on_stream_data(const char *data, size_t size, size_t remaining)
 {
     assert(unpacker);
-    return unpacker->on_message(data, size);
+    return unpacker->on_stream_data(data, size, remaining);
 }
 
 
