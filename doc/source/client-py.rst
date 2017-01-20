@@ -185,6 +185,8 @@ This program prints the following:
    ls: cannot access '/non-existing-dictionary': No such file or directory
 
 
+.. _PyClient_pytasks:
+
 Python functions in plans
 -------------------------
 
@@ -257,7 +259,30 @@ then executes ``tasks.run`` with the bigger one::
             data = a
         else:
             data = b
-        return tasks.run("/some/program", stdin=data)
+    return tasks.run("/some/program", stdin=data)
+
+
+Task context
+------------
+
+Python task can configured to obtain a ``Context`` object as the first argument.
+It provides interface for interacting with the Loom worker.
+The following example demonstrates logging through context object::
+
+    from loom.client import tasks
+
+    @tasks.py_task(context=True)
+    def hello(ctx, a):
+        ctx.log_info("Hello was called")
+        return b"Hello " + a.read()
+
+The function is has the same behavior as the ``hello`` function in
+:ref:`PyClient_pytasks`. But not it writes a message into the worker log.
+``Context`` has five logging methods: ``log_debug``, ``log_info``, ``log_warn``,
+``log_error``, and ``log_critical``.
+
+Moreover ``Context`` has attribute ``task_id`` that holds the indentification
+number of the task.
 
 
 Reports

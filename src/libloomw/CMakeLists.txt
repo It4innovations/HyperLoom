@@ -18,6 +18,8 @@ add_library(libloomw
             tasks/runtask.h
             tasks/python_wrapper.cpp
             tasks/python_wrapper.h
+            tasks/python_module.cpp
+            tasks/python_module.h
             tasks/python.cpp
             tasks/python.h
             tasks/loomrun.pb.cc

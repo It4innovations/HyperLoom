@@ -45,6 +45,30 @@ def test_py_task(loom_env):
     assert result == b"1234ABC"
 
 
+def test_py_context_task(loom_env):
+
+    @tasks.py_task(context=True)
+    def t1(ctx):
+        ctx.log_debug("DEBUG")
+        ctx.log_info("INFO")
+        ctx.log_warn("WARN")
+        ctx.log_error("ERROR")
+        ctx.log_critical("CRITICAL")
+        return str(ctx.task_id)
+
+    @tasks.py_task(context=True)
+    def t2(ctx, a):
+        return a.read()
+
+    loom_env.start(1)
+    a = tasks.const("1234")
+    b = t1()
+    c = t2(a)
+    ra, rb = loom_env.submit((b, c), "report")
+    assert 0 <= int(ra)
+    assert rb == b"1234"
+
+
 def test_py_redirect1(loom_env):
 
     def f(a, b):

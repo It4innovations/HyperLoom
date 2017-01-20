@@ -7,6 +7,7 @@
 #include "../data/rawdata.h"
 
 #include "python_wrapper.h"
+#include "python_module.h"
 
 #include <Python.h>
 
@@ -21,6 +22,7 @@ static void ensure_py_init() {
       return;
    }
    python_inited = true;
+   PyImport_AppendInittab("loom_c", PyInit_loom_c);
    Py_Initialize();
    PyEval_InitThreads();
 
@@ -128,9 +130,12 @@ DataPtr PyCallJob::run()
    PyObject *py_inputs = data_vector_to_list(inputs);
    assert(py_inputs);
 
+   PyObject *task_id = PyLong_FromLong(task.get_id());
+   assert(task_id);
 
    // call "call"
-   PyObject *result = PyObject_CallFunctionObjArgs(call_fn, config_data, py_inputs, NULL);
+   PyObject *result = PyObject_CallFunctionObjArgs(call_fn, config_data, py_inputs, task_id, NULL);
+   Py_DECREF(task_id);
    Py_DECREF(py_inputs);
    Py_DECREF(call_fn);
    Py_DECREF(config_data);

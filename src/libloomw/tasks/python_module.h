@@ -1,0 +1,9 @@
+#ifndef LIBLOOM_TASKS_PYTHON_MODULE_H
+#define LIBLOOM_TASKS_PYTHON_MODULE_H
+
+#include <Python.h>
+
+PyMODINIT_FUNC
+PyInit_loom_c(void);
+
+#endif // LIBLOOM_TASKS_PYTHON_MODULE_H
