@@ -348,9 +348,9 @@ picking an element from array). The scheduler is allows to schedule
 simultenously more light weight tasks than cores available for the worker.
 
 .. Important::
-   All basic tasks defined module ``loom.tasks`` except ``loom.tasks.run`` do
-   not define any resource request;
-   ``loom.tasks.run`` by default defines resource request for 1 cpu core.
+   Basic tasks defined module ``loom.tasks`` do not define any resource request;
+   except ``loom.tasks.run``, ``loom.tasks.py_call``, and ``loom.tasks.py_task``
+   by default defines resource request for 1 cpu core.
 
 
 Dynamic slice & get

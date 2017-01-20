@@ -353,10 +353,11 @@ def py_call(obj, inputs=(), request=cpu1):
     task.task_type = PY_CALL
     task.inputs = inputs
     task.config = cloudpickle.dumps(obj)
+    task.resource_request = request
     return task
 
 
-def py_task(label=None):
+def py_task(label=None, request=cpu1):
     """Decorator that creates a task builder form a function
 
     Example:
@@ -372,7 +373,7 @@ def py_task(label=None):
 
     def make_py_call(fn):
         def py_task_builder(*args):
-            task = py_call(fn, args)
+            task = py_call(fn, args, request)
             if label is not None:
                 task.label = label
             else:
