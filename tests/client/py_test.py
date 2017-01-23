@@ -69,6 +69,39 @@ def test_py_context_task(loom_env):
     assert rb == b"1234"
 
 
+def test_py_direct_args(loom_env):
+
+    @tasks.py_task(n_direct_args=1)
+    def t1(p, a):
+        return p + a.read()
+
+    @tasks.py_task(n_direct_args=3)
+    def t2(*args):
+        return str(len(args))
+
+    @tasks.py_task(n_direct_args=1)
+    def t3(x, y):
+        return x * y.read()
+
+
+
+    loom_env.start(1)
+
+    c = tasks.const("ABC")
+    a1 = t1(b"123", c)
+    a2 = t2("123", "222", "1231231")
+    a3 = t2({"x": 10}, None, True, c, c, c, c)
+    a4 = t3(3, c)
+
+    r1, r2, r3, r4 = loom_env.submit((a1, a2, a3, a4))
+    assert r1 == b"123ABC"
+    assert r2 == b"3"
+    assert r3 == b"7"
+    assert r4 == b"ABCABCABC"
+
+
+
+
 def test_py_redirect1(loom_env):
 
     def f(a, b):
@@ -109,7 +142,6 @@ def test_py_redirect3(loom_env):
     a = tasks.py_call(f, (c,))
     result = loom_env.submit(a)
     assert b"DataData" in result
-
 
 
 def test_py_fail_too_many_args(loom_env):

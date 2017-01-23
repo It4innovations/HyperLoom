@@ -26,7 +26,9 @@ class Context:
 
 
 def unpack_and_execute(data, inputs, task_id):
-    obj, has_context = cloudpickle.loads(data)
+    obj, has_context, params = cloudpickle.loads(data)
+    if params:
+        inputs = tuple(params) + inputs
     if has_context:
         context = Context(task_id)
         return obj(context, *inputs)

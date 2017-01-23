@@ -336,7 +336,7 @@ def slice(input, start, end):
     return task
 
 
-def py_call(obj, inputs=(), request=cpu1, context=False):
+def py_call(obj, inputs=(), request=cpu1, context=False, direct_args=()):
     """Create a task that calls Python code
 
     Example:
@@ -352,12 +352,12 @@ def py_call(obj, inputs=(), request=cpu1, context=False):
     task = Task()
     task.task_type = PY_CALL
     task.inputs = inputs
-    task.config = cloudpickle.dumps((obj, context))
+    task.config = cloudpickle.dumps((obj, context, tuple(direct_args)))
     task.resource_request = request
     return task
 
 
-def py_task(label=None, request=cpu1, context=False):
+def py_task(label=None, request=cpu1, context=False, n_direct_args=0):
     """Decorator that creates a task builder form a function
 
     Example:
@@ -373,7 +373,9 @@ def py_task(label=None, request=cpu1, context=False):
 
     def make_py_call(fn):
         def py_task_builder(*args):
-            task = py_call(fn, args, request, context)
+            inputs = args[n_direct_args:]
+            direct_args = args[:n_direct_args]
+            task = py_call(fn, inputs, request, context, direct_args)
             if label is not None:
                 task.label = label
             else:

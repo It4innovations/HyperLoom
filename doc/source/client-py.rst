@@ -285,6 +285,52 @@ Moreover ``Context`` has attribute ``task_id`` that holds the indentification
 number of the task.
 
 
+Direct arguments
+----------------
+
+Direct arguments serve for the Python task configuration without necessity to
+create loom tasks. From the user perspective it works in a similar way as
+context -- they introduces extra parameters. The values for parameters are set
+when the task is called. They can be arbitrary serializable objects and they are
+passed to the function when the py_task is called. Direct arguments are always
+passed as the first n arguments of the function. They are specified only by a
+number, i.e. how many first n arguments are direct (the rest arguments are
+considered normal loom tasks).
+
+Let us consider the following example::
+
+    from loom.client import tasks
+
+    @tasks.py_task(n_direct_args=1)
+    def repeat(n, a):
+        return n * a.read()
+
+    c = tasks.const("ABC")
+    t1 = repeat(2, c)
+    t2 = repeat(3, c)
+
+    client.submit(t1)  # returns: b"ABCABC"
+    client.submit(t2)  # returns: b"ABCABCABC"
+
+
+.. Note::
+   When *context* and *direct arguments* are used together, then the context
+   is the first argument and them follows the direct arguments.
+
+
+For the completeness, the following code demonstrates the usage of direct
+arguments via ``py_call``::
+
+    from loom.client import tasks
+
+    def repeat(n, a):
+        return n * a.read()
+
+    c = tasks.const("ABC")
+    t1 = tasks.py_call(repeat, (c,), direct_args=(2,))
+    client.submit(t1)  # returns: b"ABCABC"
+
+
 Reports
 -------
 
