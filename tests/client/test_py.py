@@ -179,3 +179,18 @@ def test_py_fail_invalid_result(loom_env):
 
     with pytest.raises(TaskFailed):
         loom_env.submit(a)
+
+
+def test_py_multiple_return(loom_env):
+    loom_env.start(1)
+
+    @tasks.py_task()
+    def t1(a, b):
+        return a, "x", b, "yyy", [b, b, "z"]
+
+    a = tasks.const("A")
+    b = tasks.const("BBBB")
+    c = t1(a, b)
+
+    result = loom_env.submit(c)
+    assert result == [b"A", b"x", b"BBBB", b"yyy", [b"BBBB", b"BBBB", b"z"]]

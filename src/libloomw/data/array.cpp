@@ -13,6 +13,17 @@ Array::Array(size_t length, std::unique_ptr<DataPtr[]> items)
 
 }
 
+Array::Array(const DataVector &vector)
+    : length(vector.size())
+{
+    items = std::make_unique<DataPtr[]>(length);
+    size_t i = 0;
+    for (auto &data_ptr : vector) {
+        items[i] = data_ptr;
+        i++;
+    }
+}
+
 Array::~Array()
 {
     logger->debug("Disposing array");

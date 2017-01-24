@@ -9,7 +9,7 @@ namespace loom {
 class Array : public Data {
 public:    
     Array(size_t length, std::unique_ptr<DataPtr[]> items);
-    Array(const DataVector &items);
+    Array(const DataVector &vector);
     ~Array();
 
     size_t get_length() const override;

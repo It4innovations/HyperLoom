@@ -5,6 +5,7 @@
 
 #include "../worker.h"
 #include "../data/rawdata.h"
+#include "../data/array.h"
 
 #include "python_wrapper.h"
 #include "python_module.h"
@@ -50,26 +51,6 @@ static PyObject* data_vector_to_list(const DataVector &data)
     return list;
 }
 
-static DataVector list_to_data_vector(PyObject *obj)
-{
-    assert(PySequence_Check(obj));
-    size_t size = PySequence_Size(obj);
-    assert(PyErr_Occurred() == nullptr);
-
-    DataVector result;
-    result.reserve(size);
-
-    for (size_t i = 0; i < size; i++) {
-        PyObject *o = PySequence_GetItem(obj, i);
-        assert(o);
-        assert(is_data_wrapper(o));
-        DataWrapper *data = (DataWrapper*) o;
-        result.push_back(data->data);
-        Py_DecRef(o);
-    }
-    return result;
-}
-
 static bool is_task(PyObject *obj)
 {
     return (PyObject_HasAttrString(obj, "task_type") &&
@@ -96,6 +77,55 @@ static std::string get_attr_string(PyObject *obj, const char *name)
     std::string result(ptr, size);
     Py_DecRef(value);
     return result;
+}
+
+DataVector PyCallJob::list_to_data_vector(PyObject *obj)
+{
+    assert(PySequence_Check(obj));
+    size_t size = PySequence_Size(obj);
+    assert(PyErr_Occurred() == nullptr);
+
+    DataVector result;
+    result.reserve(size);
+
+    for (size_t i = 0; i < size; i++) {
+        PyObject *o = PySequence_GetItem(obj, i);
+        assert(o);
+        result.push_back(convert_py_object((o)));
+        Py_DecRef(o);
+    }
+    return result;
+}
+
+
+DataPtr PyCallJob::convert_py_object(PyObject *obj)
+{
+    assert(obj);
+    if (is_data_wrapper(obj)) {
+        DataWrapper *data = (DataWrapper*) obj;
+        return data->data;
+    } else if (PyUnicode_Check(obj)) {
+        // obj is string
+        Py_ssize_t size;
+        char *ptr = PyUnicode_AsUTF8AndSize(obj, &size);
+        assert(ptr);
+        auto output = std::make_shared<RawData>();
+        output->init_from_mem(work_dir, ptr, size);
+        return output;
+    } else if (PyBytes_Check(obj)) {
+        // obj is bytes
+        Py_ssize_t size = PyBytes_GET_SIZE(obj);
+        char *ptr = PyBytes_AsString(obj);
+        assert(ptr);
+
+        auto output = std::make_shared<RawData>();
+        output->init_from_mem(work_dir, ptr, size);
+        return output;
+    } else if (PySequence_Check(obj)) {
+        DataVector vector = list_to_data_vector(obj);
+        return std::make_shared<Array>(vector);
+    }
+    return nullptr;
 }
 
 DataPtr PyCallJob::run()
@@ -146,52 +176,32 @@ DataPtr PyCallJob::run()
       return nullptr;
    }
 
-   if (PyUnicode_Check(result)) {
-       // Result is string
-       Py_ssize_t size;
-       char *ptr = PyUnicode_AsUTF8AndSize(result, &size);
-       assert(ptr);
+   if (is_task(result)) {
+           // task redirection
+           auto task_desc = std::make_unique<TaskDescription>();
+           task_desc->task_type = get_attr_string(result, "task_type");
+           task_desc->config = get_attr_string(result, "config");
 
-       auto output = std::make_shared<RawData>();
-       output->init_from_mem(work_dir, ptr, size);
+           PyObject *value = PyObject_GetAttrString(result, "inputs");
+           assert(value);
+           task_desc->inputs = list_to_data_vector(value);
+           Py_DECREF(value);
 
-       Py_DECREF(result);
-       PyGILState_Release(gstate);
-       return output;
-   } else if (PyBytes_Check(result)) {
-       // Result is bytes
-       Py_ssize_t size = PyBytes_GET_SIZE(result);
-       char *ptr = PyBytes_AsString(result);
-       assert(ptr);
-
-       auto output = std::make_shared<RawData>();
-       output->init_from_mem(work_dir, ptr, size);
-
-       Py_DECREF(result);
-       PyGILState_Release(gstate);
-       return output;
-   } else if (is_task(result)) {
-       // Result is task
-       auto task_desc = std::make_unique<TaskDescription>();
-       task_desc->task_type = get_attr_string(result, "task_type");
-       task_desc->config = get_attr_string(result, "config");
-
-       PyObject *value = PyObject_GetAttrString(result, "inputs");
-       assert(value);
-       task_desc->inputs = list_to_data_vector(value);
-       Py_DECREF(value);
-
-       set_redirect(std::move(task_desc));
-       Py_DECREF(result);
-       PyGILState_Release(gstate);
-       return nullptr;
-   } else {
-       set_error("Invalid result from python code");
-
-       Py_DECREF(result);
-       PyGILState_Release(gstate);
-       return nullptr;
+           set_redirect(std::move(task_desc));
+           Py_DECREF(result);
+           PyGILState_Release(gstate);
+           return nullptr;
    }
+
+   DataPtr data = convert_py_object(result);
+   Py_DECREF(result);
+   PyGILState_Release(gstate);
+
+   if (data == nullptr) {
+        set_error("Invalid result from python code");
+        return nullptr;
+   }
+   return data;
 }
 
 void PyCallJob::set_python_error()
