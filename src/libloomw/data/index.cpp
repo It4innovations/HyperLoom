@@ -102,8 +102,9 @@ DataUnpacker::Result IndexUnpacker::on_message(const char *data, size_t size)
        data += sizeof(Id);
        size -= sizeof(Id);
 
-       length = size / sizeof(size_t);
-       indices = std::make_unique<size_t[]>(length);
+        // Items are 0-1, 1-2, ... (length-1) .. length, hence there are length - 1 items
+       length = size / sizeof(size_t) - 1;
+       indices = std::make_unique<size_t[]>(size / sizeof(size_t));
        memcpy(indices.get(), data, size);
        unpacker = worker.get_unpacker(id);
        return unpacker->get_initial_mode();
