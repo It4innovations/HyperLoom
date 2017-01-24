@@ -83,7 +83,7 @@ DataPtr Index::get_slice(size_t from, size_t to) const
 
 size_t Index::serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const
 {
-    size_t size = length * sizeof(size_t);
+    size_t size = (length + 1) * sizeof(size_t);
     buffer.add(std::make_unique<base::SizeBufferItem>(size + sizeof(Id)));
     buffer.add(std::make_unique<base::IdBufferItem>(data->get_type_id(worker)));
     buffer.add(std::make_unique<DataBufferItem>(data_ptr, reinterpret_cast<char*>(indices.get()), size));
