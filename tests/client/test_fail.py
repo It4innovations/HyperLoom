@@ -31,6 +31,17 @@ def test_output_failed(loom_env):
         loom_env.submit(a)
 
 
+def test_get_failed(loom_env):
+    loom_env.start(1)
+    a = tasks.const("A")
+    b = tasks.const("BB")
+    c = tasks.const("CCC")
+    array = tasks.array_make((a, b, c))
+    x = tasks.get(array, 3)
+    with pytest.raises(client.TaskFailed):
+        loom_env.submit(x)
+
+
 def test_recover1(loom_env):
     loom_env.start(1)
     for i in range(10):

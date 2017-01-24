@@ -3,6 +3,8 @@
 #include "../data/rawdata.h"
 #include "../worker.h"
 
+#include <sstream>
+
 //#include "libloom/log.h"
 
 using namespace loom;
@@ -11,9 +13,17 @@ void GetTask::start(DataVector &inputs)
 {
    assert(inputs.size() == 1);
    assert(task->get_config().size() == sizeof(size_t));
-   const size_t *index = reinterpret_cast<const size_t*>(task->get_config().data());
+   size_t index = *reinterpret_cast<const size_t*>(task->get_config().data());
    DataPtr &input = inputs[0];
-   auto result = input->get_at_index(*index);
+   if (index >= input->get_length()) {
+       std::stringstream s;
+       s << "loom/data/get on " << input->get_info();
+       s << ": index " << index << " is out of range (length=";
+       s << input->get_length() << ")";
+       fail(s.str());
+       return;
+   }
+   auto result = input->get_at_index(index);
    finish(result);
 }
 
