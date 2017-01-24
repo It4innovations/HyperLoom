@@ -1,4 +1,5 @@
 #include "python_wrapper.h"
+using namespace loom;
 
 static void
 data_wrapper_dealloc(DataWrapper* self)
@@ -36,6 +37,29 @@ data_wrapper_read(DataWrapper* self)
     return PyBytes_FromStringAndSize(ptr, size);
 }
 
+static Py_ssize_t
+data_wrapper_len(DataWrapper* self)
+{
+    assert(self->data);
+    return self->data->get_length();
+}
+
+#include <libloom/log.h>
+
+static PyObject*
+data_wrapper_get_item(DataWrapper *self, Py_ssize_t index)
+{
+    assert(self->data);
+
+    if (index < 0 || index >= static_cast<Py_ssize_t>(self->data->get_length())) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        return nullptr;
+    }
+    DataPtr data = self->data->get_at_index(index);
+    assert(data);
+    return (PyObject*) data_wrapper_create(data);
+}
+
 static PyMethodDef data_wrapper_methods[] = {
     {"size", (PyCFunction)data_wrapper_size, METH_NOARGS,
      "Return the size of the data object"
@@ -44,6 +68,13 @@ static PyMethodDef data_wrapper_methods[] = {
      "Return byte representation of data object"
     },
     {NULL}  /* Sentinel */
+};
+
+static PySequenceMethods data_wrapper_sequence_methods = {
+    (lenfunc) data_wrapper_len,
+    0,
+    0,
+    (ssizeargfunc) data_wrapper_get_item,
 };
 
 static PyTypeObject data_wrapper_type = {
@@ -58,7 +89,7 @@ static PyTypeObject data_wrapper_type = {
     0,                         /* tp_reserved */
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
+    &data_wrapper_sequence_methods, /* tp_as_sequence */
     0,                         /* tp_as_mapping */
     0,                         /* tp_hash  */
     0,                         /* tp_call */

@@ -194,3 +194,30 @@ def test_py_multiple_return(loom_env):
 
     result = loom_env.submit(c)
     assert result == [b"A", b"x", b"BBBB", b"yyy", [b"BBBB", b"BBBB", b"z"]]
+
+
+def test_py_array(loom_env):
+    loom_env.start(1)
+
+    @tasks.py_task()
+    def t1(array):
+        # len
+        assert len(array) == 3
+
+        # indexing
+        s = array[1].read()
+
+        # iteration
+        for x in array:
+            s += x.read()
+
+        return s
+
+    a = tasks.const("A")
+    b = tasks.const("BBBB")
+    c = tasks.const("CCCCCCC")
+    array = tasks.array_make((a, b, c))
+    x = t1(array)
+
+    result = loom_env.submit(x)
+    assert result == b"BBBBABBBBCCCCCCC"
