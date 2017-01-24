@@ -30,21 +30,6 @@ def str2datetime(data):
     return dt.replace(microsecond=int(parts[1]))
 
 
-def test_single_result(loom_env):
-    loom_env.start(1)
-    a = tasks.const("ABCDE")
-    b = tasks.const("123")
-    c = tasks.merge((a, b))
-    assert b"ABCDE123" == loom_env.submit(c)
-
-
-def test_more_results(loom_env):
-    loom_env.start(1)
-    a = tasks.const("ABCDE")
-    b = tasks.const("123")
-    c = tasks.merge((a, b))
-    assert [b"ABCDE123"] * 2 == loom_env.submit([c, c])
-
 
 def test_merge_w3(loom_env):
     loom_env.start(3)

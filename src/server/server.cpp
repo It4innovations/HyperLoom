@@ -38,7 +38,7 @@ Server::Server(uv_loop_t *loop, int port)
 }
 
 void Server::add_worker_connection(std::unique_ptr<WorkerConnection> &&conn)
-{    
+{
     connections.push_back(std::move(conn));
 }
 
@@ -64,6 +64,7 @@ void Server::remove_client_connection(ClientConnection &conn)
 {
     assert(&conn == client_connection.get());
     client_connection.reset();
+    task_manager.trash_all_tasks();
 }
 
 void Server::remove_freshconnection(FreshConnection &conn)

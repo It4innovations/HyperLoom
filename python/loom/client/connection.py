@@ -10,6 +10,9 @@ class Connection(object):
         self.socket = socket
         self.data = bytes()
 
+    def close(self):
+        self.socket.close()
+
     def receive_message(self):
         while True:
             size = len(self.data)

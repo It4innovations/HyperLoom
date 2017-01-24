@@ -31,18 +31,26 @@ class Env():
 
     def __init__(self):
         self.processes = []
+        self.cleanups = []
 
-    def start_process(self, name, args, env=None):
+    def start_process(self, name, args, env=None, catch_io=True):
         fname = os.path.join(LOOM_TEST_BUILD_DIR, name)
-        with open(fname + ".out", "w") as out:
+        if catch_io:
+            with open(fname + ".out", "w") as out:
+                p = subprocess.Popen(args,
+                                     stdout=out,
+                                     stderr=subprocess.STDOUT,
+                                     env=env)
+        else:
             p = subprocess.Popen(args,
-                                 stdout=out,
-                                 stderr=subprocess.STDOUT,
                                  env=env)
+
         self.processes.append((name, p))
         return p
 
     def kill_all(self):
+        for fn in self.cleanups:
+            fn()
         for n, p in self.processes:
             p.kill()
 
@@ -127,9 +135,20 @@ class LoomEnv(Env):
         self.check_final_state()
         return result
 
+    def independent_python(self, code):
+        return self.start_process("python",
+                                  (sys.executable, "-c", code),
+                                  catch_io=False)
+
     def make_dry_report(self, tasks, filename):
         filename = os.path.join(LOOM_TEST_BUILD_DIR, filename)
         return client.make_dry_report(tasks, filename)
+
+    def timeout(self, sleep_time, fn):
+        import threading
+        thread = threading.Timer(sleep_time, fn)
+        thread.start()
+        self.cleanups.append(lambda: thread.cancel())
 
 
 def cleanup():

@@ -78,6 +78,13 @@ void FreshConnection::on_message(const char *buffer, size_t size)
         return;
     }
     if (msg.type() == loomcomm::Register_Type_REGISTER_CLIENT) {
+        if (server.has_client_connection()) {
+            logger->error("New client connection while there still exists a client connection.");
+            logger->error("The new connection is rejected.");
+            logger->error("The current version now supports only one clien tconnection");
+            socket->close_and_discard_remaining_data();
+            return;
+        }
         auto cconn = std::make_unique<ClientConnection>(server,
                                                         std::move(socket));
         server.add_client_connection(std::move(cconn));
