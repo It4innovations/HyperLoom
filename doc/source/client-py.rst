@@ -331,6 +331,66 @@ arguments via ``py_call``::
     client.submit(t1)  # returns: b"ABCABC"
 
 
+Python objects
+--------------
+
+Data objects in loom can be directly a Python objects. A constant value can be created
+by ``tasks.py_value``::
+
+    from loom.client import tasks
+
+    my_dict = tasks.py_value({"A": "B"})
+
+It is similar to ``tasks.const``, but it creates PyObj instead of Plain object.
+
+PyObj can be used in ``py_task``. It has to be unwrapped from the wrapping object first::
+
+    @py_task()
+    def f(a):
+        d = a.unwrap()
+        return "Value of 'A' is " + d["A"]
+
+    t = f(my_dict)
+    client.submit(t)  # returns b"Value of 'A' is B"
+
+If we want to return a PyObj from py_task we have wrap it to avoid implicit conversion to
+Data objects::
+
+    @py_task()
+    def example_1():
+        return "Hello"
+
+    @py_task(context=True)
+    def example_2(ctx):
+        return ctx.wrap("Hello")
+
+    @py_task(context=True)
+    def example_3(ctx):
+        return [ctx.wrap({"A", (1,2,3)}), "Hello"]
+
+The first example returns a plain object. The second example returns PyObj. The third one returns
+Loom array with PyObj and plain object.
+
+.. Important:: Loom always assumes that all data objects are immutable.
+               Therefore, modyfing unwrapped objects from PyObj leads to highly
+               undefined behavior. It is recommended to store only immutable
+               objects (strings, tuples, frozensets, ...) in PyObj to prevent
+               problems. If you store a mutable object in PyObj, be extra
+               carefull to not modify it. ::
+
+                  # THIS EXAMPLE CONTAINS ERROR
+                  @py_task()
+                  def modify_arg(a):
+                      my_obj = a.unwrap()
+                      my_obj[0] = 321  # HERE IS ERROR, we are modyfing unwrapped object
+
+                  value = tasks.py_value([1,2,3,4])
+                  modify_arg(value)
+
+
+
+.. Note:: Applying ``wrap`` on Data wrapper returns the argument without wrapping.
+
 Reports
 -------
 

@@ -43,6 +43,7 @@ SCHEDULER_DSLICE = "loom/scheduler/dslice"
 SCHEDULER_DGET = "loom/scheduler/dget"
 
 PY_CALL = "loom/py/call"
+PY_VALUE = "loom/py/value"
 
 
 u64 = struct.Struct("<Q")
@@ -374,6 +375,16 @@ def py_call(obj, inputs=(), request=cpu1, context=False, direct_args=()):
     task.inputs = inputs
     task.config = cloudpickle.dumps((obj, context, tuple(direct_args)))
     task.resource_request = request
+    return task
+
+
+def py_value(obj):
+    """Task that creates a constant Python value"""
+
+    task = Task()
+    task.task_type = PY_VALUE
+    task.config = cloudpickle.dumps(obj)
+    task.resource_request = cpu1
     return task
 
 

@@ -24,6 +24,9 @@ class Context:
     def log_critical(self, message):
         loom_c.log_critical(self.MESSAGE_FORMAT.format(self.task_id, message))
 
+    def wrap(self, obj):
+        return loom_c.wrap(obj)
+
 
 def unpack_and_execute(data, inputs, task_id):
     obj, has_context, params = cloudpickle.loads(data)

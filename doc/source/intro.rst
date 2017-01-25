@@ -70,9 +70,11 @@ of data objects:
   new-line character to extract lines). It behaves like an array without
   explicit storing of each entry.
 
+* **PyObj** -- Contains an arbitrary Python object
+
 We call objects that are able to provide a content as continous
 chunk of memory as **D-Objects**. Plain object and File object are D-Objects;
-Array and Index are *not* D-Objects.
+Array, Index, and PyObj are *not* D-Objects.
 
 Each data object
 
@@ -81,6 +83,9 @@ Each data object
   inner structure. Plain objects and files have always zero length; an array has length
   equal to number of lements in the array.
 
+.. Note:: **size** is an approximation. For a plain object, it is the length of
+          data itself without any metada. The size of an array is a sum of sizes
+          of elements. The size of PyObj is obtained by ``sys.getsizeof``.
 
 Tasks
 +++++

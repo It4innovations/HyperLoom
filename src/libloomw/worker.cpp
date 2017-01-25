@@ -6,6 +6,7 @@
 #include "data/rawdata.h"
 #include "data/array.h"
 #include "data/index.h"
+#include "data/pyobj.h"
 
 #include "tasks/basetasks.h"
 #include "tasks/rawdatatasks.h"
@@ -124,6 +125,7 @@ Worker::Worker(uv_loop_t *loop,
     add_unpacker("loom/index", [this]() {
        return std::make_unique<IndexUnpacker>(*this);
     });
+    add_unpacker("loom/pyobj", std::make_unique<PyObjUnpacker>);
 }
 
 
@@ -150,6 +152,7 @@ void Worker::register_basic_tasks()
 
     // Python
     add_task_factory<ThreadTaskInstance<PyCallJob>>("loom/py/call");
+    add_task_factory<ThreadTaskInstance<PyValueJob>>("loom/py/value");
 }
 
 

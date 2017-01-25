@@ -7,37 +7,12 @@
 #include "../data/rawdata.h"
 #include "../data/array.h"
 
-#include "python_wrapper.h"
-#include "python_module.h"
+#include "../python/core.h"
+#include "../python/data_wrapper.h"
 
-#include <Python.h>
 
 using namespace loom;
 using namespace loom::base;
-
-/** Ensures that python is initialized,
- *  if already initialized, then does nothing */
-static void ensure_py_init() {
-   static bool python_inited = false;
-   if (python_inited) {
-      return;
-   }
-   python_inited = true;
-   PyImport_AppendInittab("loom_c", PyInit_loom_c);
-   Py_Initialize();
-   PyEval_InitThreads();
-
-   data_wrapper_init();
-
-   PyEval_ReleaseLock();
-}
-
-
-PyCallJob::PyCallJob(Worker &worker, Task &task)
-    : ThreadJob(worker, task)
-{
-    ensure_py_init();
-}
 
 static PyObject* data_vector_to_list(const DataVector &data)
 {
@@ -204,7 +179,13 @@ DataPtr PyCallJob::run()
    return data;
 }
 
-void PyCallJob::set_python_error()
+PyBaseJob::PyBaseJob(Worker &worker, Task &task)
+   : ThreadJob(worker, task)
+{
+   ensure_py_init();
+}
+
+void PyBaseJob::set_python_error()
 {
    logger->error("Python error in task id={}", task.get_id());
    PyObject *excType, *excValue, *excTraceback;
@@ -235,4 +216,22 @@ void PyCallJob::set_python_error()
 
    Py_DECREF(str_obj);
    PyErr_Clear();
+}
+
+DataPtr PyValueJob::run()
+{
+   PyGILState_STATE gstate;
+   gstate = PyGILState_Ensure();
+
+   auto &config = task.get_config();
+   DataPtr data = deserialize_pyobj(config.c_str(), config.size());
+
+   if (data == nullptr)  {
+      set_python_error();
+      PyGILState_Release(gstate);
+      return nullptr;
+   }
+
+   PyGILState_Release(gstate);
+   return data;
 }

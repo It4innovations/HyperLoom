@@ -6,16 +6,30 @@
 
 namespace loom {
 
-class PyCallJob : public loom::ThreadJob
+class PyBaseJob : public loom::ThreadJob
 {
 public:
-    PyCallJob(Worker &worker, Task &task);
+   PyBaseJob(Worker &worker, Task &task);
+protected:
+   void set_python_error();
+};
 
+class PyCallJob : public PyBaseJob
+{
+public:
+    using PyBaseJob::PyBaseJob;
     DataPtr run() override;
-private:
-    void set_python_error();
+private:    
     DataPtr convert_py_object(PyObject *obj);
     DataVector list_to_data_vector(PyObject *obj);
+};
+
+
+class PyValueJob : public PyBaseJob
+{
+public:
+    using PyBaseJob::PyBaseJob;
+    DataPtr run() override;
 };
 
 }

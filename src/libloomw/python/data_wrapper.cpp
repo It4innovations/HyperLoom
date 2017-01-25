@@ -1,4 +1,7 @@
-#include "python_wrapper.h"
+#include "data_wrapper.h"
+
+#include "../data/pyobj.h"
+
 using namespace loom;
 
 static void
@@ -25,7 +28,7 @@ static PyObject *
 data_wrapper_size(DataWrapper* self)
 {
     assert(self->data);
-    return PyLong_FromUnsignedLong(self->data->get_size());
+    return PyLong_FromSize_t(self->data->get_size());
 }
 
 static PyObject *
@@ -35,6 +38,18 @@ data_wrapper_read(DataWrapper* self)
     size_t size = self->data->get_size();
     const char *ptr = self->data->get_raw_data();
     return PyBytes_FromStringAndSize(ptr, size);
+}
+
+static PyObject *
+data_wrapper_unwrap(DataWrapper* self)
+{
+    assert(self->data);
+    if (self->data->get_type_name() != "loom/pyobj") {
+        Py_IncRef(Py_None);
+        return Py_None;
+    }
+    const std::shared_ptr<const PyObj> &pyobj = std::static_pointer_cast<const PyObj>(self->data);
+    return pyobj->unwrap();
 }
 
 static Py_ssize_t
@@ -63,6 +78,9 @@ data_wrapper_get_item(DataWrapper *self, Py_ssize_t index)
 static PyMethodDef data_wrapper_methods[] = {
     {"size", (PyCFunction)data_wrapper_size, METH_NOARGS,
      "Return the size of the data object"
+    },
+    {"unwrap", (PyCFunction)data_wrapper_unwrap, METH_NOARGS,
+     "Return wrapped Python object or NULL"
     },
     {"read", (PyCFunction)data_wrapper_read, METH_NOARGS,
      "Return byte representation of data object"

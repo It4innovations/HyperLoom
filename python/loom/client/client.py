@@ -9,6 +9,7 @@ from ..pb.loomreport_pb2 import Report
 
 import socket
 import struct
+import cloudpickle
 from datetime import datetime
 
 LOOM_PROTOCOL_VERSION = 2
@@ -181,6 +182,7 @@ class Client(object):
             self.symbols[s] = i
         self.array_id = self.symbols.get("loom/array")
         self.rawdata_id = self.symbols.get("loom/data")
+        self.pyobj_id = self.symbols.get("loom/pyobj")
 
     def process_error(self, cmsg):
         assert cmsg.HasField("error")
@@ -202,7 +204,8 @@ class Client(object):
                 type_id = struct.unpack_from("I", types, i)[0]
                 result.append(self._receive_data(type_id))
             return result
-        print(type_id, self.array_id, self.rawdata_id)
+        if type_id == self.pyobj_id:
+            return cloudpickle.loads(self.connection.receive_message())
         assert 0
 
     def _send_message(self, message):

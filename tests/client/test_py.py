@@ -1,5 +1,6 @@
 from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
 import loom.client.tasks as tasks  # noqa
+from loom.client.tasks import cpu1  # noqa
 from loom.client import TaskFailed
 import pytest
 
@@ -221,3 +222,50 @@ def test_py_array(loom_env):
 
     result = loom_env.submit(x)
     assert result == b"BBBBABBBBCCCCCCC"
+
+
+def test_py_value(loom_env):
+
+    @tasks.py_task()
+    def to_str(a):
+        return str(a.unwrap())
+
+    @tasks.py_task(context=True)
+    def to_tuple(ctx, a):
+        b = tuple(a.unwrap())
+        return ctx.wrap(b)
+
+    @tasks.py_task()
+    def join(a, b):
+        return [a, b]
+
+    loom_env.start(2)
+    v = tasks.py_value([(1, 2)])
+    v2 = tasks.py_value(("30", None))
+
+    t = to_str(v)
+    result = loom_env.submit(t)
+    assert result == b"[(1, 2)]"
+
+    t = to_tuple(v)
+    result = loom_env.submit(t)
+    assert result == ((1, 2),)
+
+    v.resource_request = cpu1
+    v2.resource_request = cpu1
+    t = join(v, v2)
+    result = loom_env.submit(t, report="rep")
+    assert result == [[(1, 2)], ("30", None)]
+
+
+def test_py_wrap_wrapped(loom_env):
+
+    @tasks.py_task(context=True)
+    def task(ctx, a):
+        return ctx.wrap(a)
+
+    loom_env.start(2)
+    v = tasks.py_value("ABC")
+    t = task(v)
+    result = loom_env.submit(t)
+    assert result == "ABC"

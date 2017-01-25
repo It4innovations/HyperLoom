@@ -8,6 +8,8 @@ add_library(libloomw
             data/array.cpp
             data/index.h
             data/index.cpp
+            data/pyobj.h
+            data/pyobj.cpp
             tasks/basetasks.cpp
             tasks/basetasks.h
             tasks/rawdatatasks.cpp
@@ -16,14 +18,16 @@ add_library(libloomw
             tasks/arraytasks.h
             tasks/runtask.cpp
             tasks/runtask.h
-            tasks/python_wrapper.cpp
-            tasks/python_wrapper.h
-            tasks/python_module.cpp
-            tasks/python_module.h
             tasks/python.cpp
             tasks/python.h
             tasks/loomrun.pb.cc
             tasks/loomrun.pb.h
+            python/core.cpp
+            python/core.h
+            python/data_wrapper.cpp
+            python/data_wrapper.h
+            python/module.cpp
+            python/module.h
             worker.cpp
             worker.h
             taskinstance.cpp
