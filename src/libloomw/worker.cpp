@@ -43,6 +43,10 @@ Worker::Worker(uv_loop_t *loop,
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+    start_tasks = false;
+    UV_CHECK(uv_idle_init(loop, &start_tasks_idle));
+    start_tasks_idle.data = this;
+
     listener.start(loop, 0, [this]() {
         auto connection = std::make_unique<InterConnection>(*this);
         connection->accept(listener);
@@ -219,7 +223,7 @@ void Worker::start_task(std::unique_ptr<Task> task)
     }
 
     t->start(input_data);
-    resource_cpus -= 1;
+    task_slots -= 1;
 }
 
 void Worker:: publish_data(Id id, const DataPtr &data)
@@ -312,12 +316,51 @@ std::string Worker::get_run_dir(Id id)
     return s.str();
 }
 
+void Worker::_start_tasks_callback(uv_idle_t *idle)
+{
+    // How many tasks may be started in one callback at once
+    const int TASK_START_LIMIT = 250;
+
+    UV_CHECK(uv_idle_stop(idle));
+    Worker *worker = static_cast<Worker*>(idle->data);
+    worker->start_tasks = false;
+    int start_limit = TASK_START_LIMIT;
+    while (worker->task_slots > 0 && !worker->ready_tasks.empty()) {
+        if (--start_limit == 0) {
+            worker->check_ready_tasks();
+            return;
+        }
+        auto task = std::move(worker->ready_tasks[0]);
+        worker->ready_tasks.pop_front();
+        worker->start_task(std::move(task));
+    }
+}
+
 void Worker::check_ready_tasks()
 {
-    while (resource_cpus > 0 && ready_tasks.size()) {
-        auto task = std::move(ready_tasks[0]);
-        ready_tasks.erase(ready_tasks.begin());
-        start_task(std::move(task));
+    if (start_tasks || task_slots == 0 || ready_tasks.empty()) {
+        return;
+    }
+    start_tasks = true;
+    UV_CHECK(uv_idle_start(&start_tasks_idle, _start_tasks_callback));
+}
+
+void Worker::check_waiting_tasks()
+{
+    bool something_new = false;
+    auto i = waiting_tasks.begin();
+    while (i != waiting_tasks.end()) {
+        auto& task_ptr = *i;
+        if (task_ptr->is_ready(*this)) {
+            ready_tasks.push_back(std::move(task_ptr));
+            i = waiting_tasks.erase(i);
+            something_new = true;
+        } else {
+            ++i;
+        }
+    }
+    if (something_new) {
+        check_ready_tasks();
     }
 }
 
@@ -333,6 +376,7 @@ void Worker::set_cpus(int value)
     }
 
     resource_cpus = value;
+    task_slots = value * 2 + 1;
     logger->info("Number of CPUs for worker: {}", value);
 }
 
@@ -365,29 +409,10 @@ void Worker::on_dictionary_updated()
     unregistered_unpack_ffs.clear();
 }
 
-void Worker::check_waiting_tasks()
-{
-    bool something_new = false;
-    auto i = waiting_tasks.begin();
-    while (i != waiting_tasks.end()) {
-        auto& task_ptr = *i;
-        if (task_ptr->is_ready(*this)) {
-            ready_tasks.push_back(std::move(task_ptr));
-            i = waiting_tasks.erase(i);
-            something_new = true;
-        } else {
-            ++i;
-        }
-    }
-    if (something_new) {
-        check_ready_tasks();
-    }
-}
-
 void Worker::remove_task(TaskInstance &task, bool free_resources)
 {
     if (free_resources) {
-        resource_cpus += 1;
+        task_slots += 1;
     }
     for (auto i = active_tasks.begin(); i != active_tasks.end(); i++) {
         if ((*i)->get_id() == task.get_id()) {

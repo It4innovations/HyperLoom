@@ -13,6 +13,7 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 #include <unordered_map>
 #include <memory>
 
@@ -130,9 +131,10 @@ private:
     uv_loop_t *loop;
 
     int resource_cpus;
-    std::vector<std::unique_ptr<TaskInstance>> active_tasks;
-    std::vector<std::unique_ptr<Task>> ready_tasks;
-    std::vector<std::unique_ptr<Task>> waiting_tasks;
+    int task_slots;
+    std::deque<std::unique_ptr<TaskInstance>> active_tasks;
+    std::deque<std::unique_ptr<Task>> ready_tasks;
+    std::deque<std::unique_ptr<Task>> waiting_tasks;
     std::unordered_map<base::Id, std::unique_ptr<TaskFactory>> task_factories;
 
     std::unordered_map<int, DataPtr> public_data;
@@ -154,7 +156,11 @@ private:
     std::vector<std::unique_ptr<TaskFactory>> unregistered_task_factories;
     std::unordered_map<std::string, UnpackFactoryFn> unregistered_unpack_ffs;
 
+    bool start_tasks;
+    uv_idle_t start_tasks_idle;
+
     static void _on_getaddrinfo(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);
+    static void _start_tasks_callback(uv_idle_t *idle);
 };
 
 }
