@@ -9,6 +9,7 @@ from ..pb.loomreport_pb2 import Report
 
 import socket
 import struct
+from datetime import datetime
 
 LOOM_PROTOCOL_VERSION = 2
 
@@ -73,7 +74,7 @@ class Client(object):
             "n_data_objects": cmsg.stats.n_data_objects
         }
 
-    def submit(self, tasks, report=None):
+    def submit(self, tasks, report=None, report_save_period=None):
         """Submits task(s) to the server and waits for results
 
         Args:
@@ -81,6 +82,12 @@ class Client(object):
             report (str or None): If it is not None than reporting is enabled
                                   report is saved to file defined by this
                                   argument
+            report_save_period (timedelta or None):
+                  Debugging option when client crases or is killed.
+                  How often should be report saved during computation.
+                  It is always also saved at the end of the computation
+                  If None then it is saved only at the end of computation.
+
         Raises:
             loom.client.TaskFailed: When an execution of a task failes
 
@@ -116,8 +123,14 @@ class Client(object):
 
         if report:
             report_data = self._create_report(plan)
+        else:
+            report_save_period = None
 
         data = {}
+
+        if report_save_period is not None:
+            last_save = datetime.now()
+
         try:
             while expected != len(data):
                 msg = self.connection.receive_message()
@@ -127,6 +140,11 @@ class Client(object):
                     data[cmsg.data.id] = self._receive_data(cmsg.data.type_id)
                 elif cmsg.type == ClientResponse.EVENT:
                     self.process_event(cmsg.event, report_data)
+                    if report_save_period is not None:
+                        now = datetime.now()
+                        if now - last_save >= report_save_period:
+                            last_save = now
+                            write_report(report_data, report+"-"+str(now))
                 elif cmsg.type == ClientResponse.ERROR:
                     self.process_error(cmsg)
                 else:

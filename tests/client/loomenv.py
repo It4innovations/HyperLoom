@@ -40,11 +40,12 @@ class Env():
                 p = subprocess.Popen(args,
                                      stdout=out,
                                      stderr=subprocess.STDOUT,
+                                     cwd=LOOM_TEST_BUILD_DIR,
                                      env=env)
         else:
             p = subprocess.Popen(args,
+                                 cwd=LOOM_TEST_BUILD_DIR,
                                  env=env)
-
         self.processes.append((name, p))
         return p
 
@@ -97,6 +98,10 @@ class LoomEnv(Env):
             time.sleep(4)
         assert not server.poll()
         assert not any(w.poll() for w in workers)
+
+    def check_files(self, pattern):
+        return glob.glob(os.path.join(LOOM_TEST_BUILD_DIR, pattern),
+                         recursive=True)
 
     def check_stats(self):
         stats = self._client.get_stats()
