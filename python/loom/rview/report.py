@@ -50,7 +50,6 @@ class Report:
             labels[key] += 1
         return labels
 
-
     def collect_labels(self):
         labels = set()
         tasks = self.report_msg.plan.tasks
@@ -189,3 +188,24 @@ class Report:
                 y_labels,
                 [(l, color_list[i])
                  for i, l in enumerate(group_names)])
+
+    def get_cumulative_data(self):
+        TASK_START = loomcomm.Event.TASK_START
+        tasks = self.report_msg.plan.tasks
+        symbols = self.symbols
+        data = {}
+        for event in self.report_msg.events:
+            if event.type == TASK_START:
+                task = tasks[event.id]
+                if task.label:
+                    label = task.label.split(":")[0]
+                else:
+                    label = symbols[task.task_type]
+                if label not in data:
+                    data[label] = [[], []]
+                data[label][0].append(event.time)
+                if data[label][1]:
+                    data[label][1].append(data[label][1][-1] + 1)
+                else:
+                    data[label][1].append(1)
+        return data

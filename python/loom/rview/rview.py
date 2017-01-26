@@ -5,6 +5,7 @@ import subprocess
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import sys
+from itertools import cycle
 
 
 def parse_args():
@@ -31,6 +32,9 @@ def parse_args():
     parser.add_argument("--show-trace",
                         action="store_true")
 
+    parser.add_argument("--show-cumulative",
+                        action="store_true")
+
     return parser.parse_args()
 
 
@@ -53,6 +57,19 @@ def write_graph(report, filename):
     dot = report.create_graph().make_dot("Plan")
     with open(filename, "w") as f:
         f.write(dot)
+
+
+def show_cumulative(report):
+    data = report.get_cumulative_data()
+    lines = ["o", "s", "D", "<", "p", "8"]
+    linecycler = cycle(lines)
+    handles = []
+    for k in data.keys():
+        handles.append(plt.plot(data[k][0], data[k][1],
+                       next(linecycler), ls="-", label=k,
+                       markevery=0.1)[0])
+    plt.legend(loc='upper left', handles=handles)
+    plt.show()
 
 
 def show_trace(report):
@@ -107,6 +124,10 @@ def main():
     if args.show_trace:
         empty = False
         show_trace(report)
+
+    if args.show_cumulative:
+        empty = False
+        show_cumulative(report)
 
     if empty:
         sys.stderr.write("No operation specified (use --help)\n")
