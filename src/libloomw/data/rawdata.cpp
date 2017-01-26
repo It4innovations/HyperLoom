@@ -31,7 +31,7 @@ RawData::~RawData()
     if (filename.empty()) {
         assert(data == nullptr);
     } else {
-        if (size > 0 && munmap(data, size)) {
+        if (data != nullptr && munmap(data, size)) {
             log_errno_abort("munmap");
         }
         if (unlink(filename.c_str())) {

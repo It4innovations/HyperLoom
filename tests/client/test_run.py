@@ -145,7 +145,7 @@ def test_run_variable2(loom_env):
     assert result == b"123 xyz $ab 456\n"
 
 
-def test_hostname(loom_env):
+def test_run_hostname(loom_env):
     loom_env.start(1)
 
     TASKS_COUNT = 100
@@ -154,3 +154,19 @@ def test_hostname(loom_env):
     array = tasks.array_make(ts)
 
     loom_env.submit(array)
+
+
+def test_run_chain(loom_env):
+    const = b"ABC" * 10000000
+    a = tasks.const(const)
+
+    b1 = tasks.run(pytestprog(0.01, file_out="test"), stdin=a, outputs=["test"])
+    b2 = tasks.run(pytestprog(0.01, file_in="in", file_out="test"),
+                   inputs=[(b1, "in")], outputs=["test"])
+    b3 = tasks.run(pytestprog(0.01, file_in="in", file_out="test"),
+                   inputs=[(b2, "in")], outputs=["test"])
+    b4 = tasks.run(pytestprog(0.01, file_in="in", file_out="test"),
+                   inputs=[(b3, "in")], outputs=["test"])
+    loom_env.start(1)
+    result = loom_env.submit(b4)
+    assert result == const
