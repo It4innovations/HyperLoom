@@ -99,3 +99,24 @@ def test_recover2_2(loom_env):
 
 def test_recover2_3(loom_env):
     recover2(loom_env, 3)
+
+
+def test_fail_and_report(loom_env):
+
+    @tasks.py_task()
+    def sleep():
+        import time
+        time.sleep(1)
+        return b""
+
+    @tasks.py_task()
+    def fail(a):
+        import time
+        time.sleep(0.1)
+        raise Exception("FAIL")
+
+    loom_env.start(4)
+    a = tasks.const("ABC")
+    with pytest.raises(client.TaskFailed):
+        loom_env.submit((sleep(), sleep(), sleep(), fail(a)),
+                        report="fail.report")

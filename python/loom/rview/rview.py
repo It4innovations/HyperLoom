@@ -58,10 +58,18 @@ def write_graph(report, filename):
 def show_trace(report):
     plt.ion()
     plt.gca().invert_yaxis()
-    y, xmin, xmax, colors, labels, symbols = report.get_events_hline_data()
+    data, data_unfinished, labels, symbols = report.get_events_hline_data()
+    y, xmin, xmax, colors = data
+    y_uf, xmin_uf, xmax_uf, colors_uf = data_unfinished
+
     plt.hlines(y, xmin, xmax, colors, linewidth=2)
     plt.scatter(xmin, y, marker='|', s=100, c=colors)
     plt.scatter(xmax, y, marker='|', s=100, c=colors)
+
+    plt.hlines(y_uf, xmin_uf, xmax_uf, colors_uf, linewidth=2)
+    plt.scatter(xmin_uf, y_uf, marker='|', s=100, c=colors_uf)
+    plt.scatter(xmax_uf, y_uf, marker='>', s=100, c=colors_uf)
+
     plt.yticks(range(len(labels)), labels)
     plt.legend(handles=[mpatches.Patch(color=c, label=s)
                         for s, c in symbols])

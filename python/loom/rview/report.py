@@ -136,11 +136,18 @@ class Report:
                 else:
                     lst.append([event])
 
+        end_time = self.report_msg.events[-1].time
+
         y = []
         xmin = []
         xmax = []
         colors = []
         y_labels = []
+
+        y_unfinished = []
+        xmin_unfinished = []
+        xmax_unfinished = []
+        colors_unfinished = []
 
         color_list = generate_colors(len(group_names))
         tasks = self.report_msg.plan.tasks
@@ -150,23 +157,35 @@ class Report:
             y_labels.append("Worker {}".format(w_index))
             y_labels.extend([""] * len(lst))
             for lst2 in lst:
-                for i in range(0, len(lst2), 2):
-                    y.append(index)
-                    xmin.append(lst2[i].time)
-                    xmax.append(lst2[i + 1].time)
+                count = len(lst2)
+                if count % 2 == 1:
+                    count -= 1
+                    task = tasks[lst2[-1].id]
+                    if task.label:
+                        label = task.label
+                    else:
+                        label = symbols[task.task_type]
+                    y_unfinished.append(index)
+                    xmin_unfinished.append(lst2[-1].time)
+                    xmax_unfinished.append(end_time)
+                    colors_unfinished.append(color_list[label_groups[label]])
+
+                for i in range(0, count, 2):
                     task = tasks[lst2[i].id]
                     if task.label:
                         label = task.label
                     else:
                         label = symbols[task.task_type]
+                    y.append(index)
+                    xmin.append(lst2[i].time)
+                    xmax.append(lst2[i + 1].time)
                     colors.append(color_list[label_groups[label]])
                 index += 1
             index += 1
 
-        return (y,
-                xmin,
-                xmax,
-                colors,
+        return ((y, xmin, xmax, colors),
+                (y_unfinished, xmin_unfinished, xmax_unfinished,
+                 colors_unfinished),
                 y_labels,
                 [(l, color_list[i])
                  for i, l in enumerate(group_names)])

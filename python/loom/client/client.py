@@ -118,21 +118,22 @@ class Client(object):
             report_data = self._create_report(plan)
 
         data = {}
-        while expected != len(data):
-            msg = self.connection.receive_message()
-            cmsg = ClientResponse()
-            cmsg.ParseFromString(msg)
-            if cmsg.type == ClientResponse.DATA:
-                data[cmsg.data.id] = self._receive_data(cmsg.data.type_id)
-            elif cmsg.type == ClientResponse.EVENT:
-                self.process_event(cmsg.event, report_data)
-            elif cmsg.type == ClientResponse.ERROR:
-                self.process_error(cmsg)
-            else:
-                assert 0
-
-        if report:
-            write_report(report_data, report)
+        try:
+            while expected != len(data):
+                msg = self.connection.receive_message()
+                cmsg = ClientResponse()
+                cmsg.ParseFromString(msg)
+                if cmsg.type == ClientResponse.DATA:
+                    data[cmsg.data.id] = self._receive_data(cmsg.data.type_id)
+                elif cmsg.type == ClientResponse.EVENT:
+                    self.process_event(cmsg.event, report_data)
+                elif cmsg.type == ClientResponse.ERROR:
+                    self.process_error(cmsg)
+                else:
+                    assert 0
+        finally:
+            if report:
+                write_report(report_data, report)
 
         if single_result:
             return data[plan.tasks[tasks[0]]]

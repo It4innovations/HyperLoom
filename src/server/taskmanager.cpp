@@ -173,8 +173,12 @@ void TaskManager::on_task_failed(Id id, WorkerConnection *wc, const std::string 
         }
         return;
     }
-    server.inform_about_task_error(id, *wc, error_msg);
+
     TaskNode &node = cstate.get_node(id);
+    if (report) {
+        report_task_end(wc, node);
+    }
+    server.inform_about_task_error(id, *wc, error_msg);
     node.set_as_none(wc);
     trash_all_tasks();
 
