@@ -241,25 +241,41 @@ class Report:
                 task_start_ts.pop(event.id)
         return data
 
-    def get_ctransfer_data(self):
+    def get_ctransfer_data(self, intra):
         SEND_START = loomcomm.Event.SEND_START
         TASK_END = loomcomm.Event.TASK_END
-        intra = ([0], [0])
-        results = ([0], [0])
         sizes = {}
+        label_groups, group_names = self.collect_labels()
+        symbols = self.symbols
+
+        group_names.append("SUM")
+        results = []
+        for name in group_names:
+            results.append(([0], [0], name))
+
+        total = results[-1]
 
         for event in self.report_msg.events:
             if event.type == TASK_END:
                 sizes[event.id] = event.size
             elif event.type == SEND_START:
-                if event.target_worker_id == -1:
-                    data = results
+                if (intra and event.target_worker_id == -1) or \
+                   (not intra and event.target_worker_id != -1):
+                    continue
+                task_id = event.id
+                total[0].append(event.time)
+                total[1].append(total[1][-1] + sizes[task_id])
+
+                task = self.report_msg.plan.tasks[task_id]
+                if task.label:
+                    label = task.label
                 else:
-                    data = intra
+                    label = symbols[task.task_type]
+                group = label_groups[label]
+                data = results[group]
                 data[0].append(event.time)
                 data[1].append(data[1][-1] + sizes[event.id])
-
-        return intra, results
+        return results
 
     def get_btime_data(self):
         TASK_START = loomcomm.Event.TASK_START

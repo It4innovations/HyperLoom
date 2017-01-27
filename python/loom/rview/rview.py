@@ -120,10 +120,28 @@ def show_trace(report):
 
 
 def show_ctransfer(report):
-    intra, results = report.get_ctransfer_data()
-    plt.plot(intra[0], intra[1], label="Intra worker")
-    plt.plot(results[0], results[1], label="Results")
-    plt.legend(loc='upper left')
+    results1 = report.get_ctransfer_data(True)
+    results2 = report.get_ctransfer_data(False)
+
+    f, (c1, c2, c3) = plt.subplots(3, sharex=True)
+    assert f  # silence nonused f
+
+    c1.set_title("Total transfers")
+    c1.plot(results1[-1][0], results1[-1][1], label="Intra")
+    c1.plot(results2[-1][0], results2[-1][1], label="Results")
+
+    c2.set_title("Intra transfers per label")
+    for data0, data1, label in results1[:-1]:
+        c2.plot(data0, data1, label=label)
+
+    c3.set_title("Result transfers per label")
+    for data0, data1, label in results2[:-1]:
+        c3.plot(data0, data1, label=label)
+
+    c1.legend(loc='upper left')
+    c2.legend(loc='upper left')
+
+
     plt.show(block=True)
 
 
