@@ -38,6 +38,9 @@ def parse_args():
     parser.add_argument("--show-ctasks",
                         action="store_true")
 
+    parser.add_argument("--show-ctime",
+                        action="store_true")
+
     return parser.parse_args()
 
 
@@ -64,6 +67,17 @@ def write_graph(report, filename):
 
 def show_ctasks(report):
     data = report.get_ctasks_data()
+    lines = ["o", "s", "D", "<", "p", "8"]
+    handles = []
+    for k, line in zip(data.keys(), cycle(lines)):
+        handles.append(plt.plot(data[k][0], data[k][1],
+                       line, ls="-", label=k, markevery=0.1)[0])
+    plt.legend(loc='upper left', handles=handles)
+    plt.show()
+
+
+def show_ctime(report):
+    data = report.get_ctime_data()
     lines = ["o", "s", "D", "<", "p", "8"]
     handles = []
     for k, line in zip(data.keys(), cycle(lines)):
@@ -141,6 +155,10 @@ def main():
     if args.show_ctasks:
         empty = False
         show_ctasks(report)
+
+    if args.show_ctime:
+        empty = False
+        show_ctime(report)
 
     if empty:
         sys.stderr.write("No operation specified (use --help)\n")

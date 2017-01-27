@@ -201,13 +201,44 @@ class Report:
                     label = task.label.split(":")[0]
                 else:
                     label = symbols[task.task_type]
-                if label not in data:
-                    data[label] = [[], []]
-                data[label][0].append(event.time)
-                if data[label][1]:
-                    data[label][1].append(data[label][1][-1] + 1)
+                d = data.get(label)
+                if d is None:
+                    d = [[], []]
+                    data[label] = d
+                d[0].append(event.time)
+                if d[1]:
+                    d[1].append(d[1][-1] + 1)
                 else:
-                    data[label][1].append(1)
+                    d[1].append(1)
+        return data
+
+    def get_ctime_data(self):
+        TASK_START = loomcomm.Event.TASK_START
+        TASK_END = loomcomm.Event.TASK_END
+        tasks = self.report_msg.plan.tasks
+        symbols = self.symbols
+        data = {}
+        task_start_ts = {}
+        for event in self.report_msg.events:
+            if event.type == TASK_START:
+                task_start_ts[event.id] = event.time
+            if event.type == TASK_END:
+                task = tasks[event.id]
+                if task.label:
+                    label = task.label.split(":")[0]
+                else:
+                    label = symbols[task.task_type]
+                d = data.get(label)
+                if d is None:
+                    d = [[], []]
+                    data[label] = d
+                d[0].append(event.time)
+                duration = event.time - task_start_ts[event.id]
+                if d[1]:
+                    d[1].append(d[1][-1] + duration)
+                else:
+                    d[1].append(duration)
+                task_start_ts.pop(event.id)
         return data
 
     def get_ctransfer_data(self):
