@@ -144,7 +144,8 @@ class Client(object):
                         now = datetime.now()
                         if now - last_save >= report_save_period:
                             last_save = now
-                            write_report(report_data, report+"-"+str(now))
+                            now_str = now.strftime("-%Y-%m-%dT%H:%M:%S")
+                            write_report(report_data, report + now_str)
                 elif cmsg.type == ClientResponse.ERROR:
                     self.process_error(cmsg)
                 else:
