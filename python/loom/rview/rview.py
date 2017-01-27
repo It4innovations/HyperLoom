@@ -32,7 +32,7 @@ def parse_args():
     parser.add_argument("--show-trace",
                         action="store_true")
 
-    parser.add_argument("--show-cumulative",
+    parser.add_argument("--show-ctasks",
                         action="store_true")
 
     return parser.parse_args()
@@ -59,15 +59,13 @@ def write_graph(report, filename):
         f.write(dot)
 
 
-def show_cumulative(report):
-    data = report.get_cumulative_data()
+def show_ctasks(report):
+    data = report.get_ctasks_data()
     lines = ["o", "s", "D", "<", "p", "8"]
-    linecycler = cycle(lines)
     handles = []
-    for k in data.keys():
+    for k, line in zip(data.keys(), cycle(lines)):
         handles.append(plt.plot(data[k][0], data[k][1],
-                       next(linecycler), ls="-", label=k,
-                       markevery=0.1)[0])
+                       line, ls="-", label=k, markevery=0.1)[0])
     plt.legend(loc='upper left', handles=handles)
     plt.show()
 
@@ -125,9 +123,9 @@ def main():
         empty = False
         show_trace(report)
 
-    if args.show_cumulative:
+    if args.show_ctasks:
         empty = False
-        show_cumulative(report)
+        show_ctasks(report)
 
     if empty:
         sys.stderr.write("No operation specified (use --help)\n")

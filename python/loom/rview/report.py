@@ -189,7 +189,7 @@ class Report:
                 [(l, color_list[i])
                  for i, l in enumerate(group_names)])
 
-    def get_cumulative_data(self):
+    def get_ctasks_data(self):
         TASK_START = loomcomm.Event.TASK_START
         tasks = self.report_msg.plan.tasks
         symbols = self.symbols
