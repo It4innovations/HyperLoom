@@ -260,3 +260,28 @@ class Report:
                 data[1].append(data[1][-1] + sizes[event.id])
 
         return intra, results
+
+    def get_btime_data(self):
+        TASK_START = loomcomm.Event.TASK_START
+        TASK_END = loomcomm.Event.TASK_END
+        tasks = self.report_msg.plan.tasks
+        symbols = self.symbols
+        data = {}
+        task_start_ts = {}
+        for event in self.report_msg.events:
+            if event.type == TASK_START:
+                task_start_ts[event.id] = event.time
+            if event.type == TASK_END:
+                task = tasks[event.id]
+                if task.label:
+                    label = task.label.split(":")[0]
+                else:
+                    label = symbols[task.task_type]
+                d = data.get(label)
+                if d is None:
+                    d = []
+                    data[label] = d
+                duration = event.time - task_start_ts[event.id]
+                d.append(duration)
+                task_start_ts.pop(event.id)
+        return data

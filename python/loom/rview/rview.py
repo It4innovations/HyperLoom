@@ -41,6 +41,9 @@ def parse_args():
     parser.add_argument("--show-ctime",
                         action="store_true")
 
+    parser.add_argument("--show-btime",
+                        action="store_true")
+
     return parser.parse_args()
 
 
@@ -84,6 +87,14 @@ def show_ctime(report):
         handles.append(plt.plot(data[k][0], data[k][1],
                        line, ls="-", label=k, markevery=0.1)[0])
     plt.legend(loc='upper left', handles=handles)
+    plt.show()
+
+
+def show_btime(report):
+    data = report.get_btime_data()
+    plt.boxplot(list(data.values()))
+    plt.xticks(range(1, len(data.keys()) + 1), list(data.keys()),
+               rotation="vertical")
     plt.show()
 
 
@@ -159,6 +170,10 @@ def main():
     if args.show_ctime:
         empty = False
         show_ctime(report)
+
+    if args.show_btime:
+        empty = False
+        show_btime(report)
 
     if empty:
         sys.stderr.write("No operation specified (use --help)\n")
