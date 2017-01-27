@@ -32,6 +32,9 @@ def parse_args():
     parser.add_argument("--show-trace",
                         action="store_true")
 
+    parser.add_argument("--show-ctransfer",
+                        action="store_true")
+
     parser.add_argument("--show-ctasks",
                         action="store_true")
 
@@ -91,6 +94,14 @@ def show_trace(report):
     plt.show(block=True)
 
 
+def show_ctransfer(report):
+    intra, results = report.get_ctransfer_data()
+    plt.plot(intra[0], intra[1], label="Intra worker")
+    plt.plot(results[0], results[1], label="Results")
+    plt.legend(loc='upper left')
+    plt.show(block=True)
+
+
 def print_stats(report):
     print("Labels:")
     result = report.label_counts()
@@ -122,6 +133,10 @@ def main():
     if args.show_trace:
         empty = False
         show_trace(report)
+
+    if args.show_ctransfer:
+        empty = False
+        show_ctransfer(report)
 
     if args.show_ctasks:
         empty = False

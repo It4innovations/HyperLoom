@@ -1020,6 +1020,20 @@ class Event : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 worker_id() const;
   inline void set_worker_id(::google::protobuf::int32 value);
 
+  // optional uint64 size = 5;
+  inline bool has_size() const;
+  inline void clear_size();
+  static const int kSizeFieldNumber = 5;
+  inline ::google::protobuf::uint64 size() const;
+  inline void set_size(::google::protobuf::uint64 value);
+
+  // optional int32 target_worker_id = 6;
+  inline bool has_target_worker_id() const;
+  inline void clear_target_worker_id();
+  static const int kTargetWorkerIdFieldNumber = 6;
+  inline ::google::protobuf::int32 target_worker_id() const;
+  inline void set_target_worker_id(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:loomcomm.Event)
  private:
   inline void set_has_time();
@@ -1030,6 +1044,10 @@ class Event : public ::google::protobuf::MessageLite {
   inline void clear_has_id();
   inline void set_has_worker_id();
   inline void clear_has_worker_id();
+  inline void set_has_size();
+  inline void clear_has_size();
+  inline void set_has_target_worker_id();
+  inline void clear_has_target_worker_id();
 
   ::std::string _unknown_fields_;
 
@@ -1038,7 +1056,9 @@ class Event : public ::google::protobuf::MessageLite {
   ::google::protobuf::uint64 time_;
   int type_;
   ::google::protobuf::int32 id_;
+  ::google::protobuf::uint64 size_;
   ::google::protobuf::int32 worker_id_;
+  ::google::protobuf::int32 target_worker_id_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -2479,6 +2499,54 @@ inline void Event::set_worker_id(::google::protobuf::int32 value) {
   set_has_worker_id();
   worker_id_ = value;
   // @@protoc_insertion_point(field_set:loomcomm.Event.worker_id)
+}
+
+// optional uint64 size = 5;
+inline bool Event::has_size() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void Event::set_has_size() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void Event::clear_has_size() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void Event::clear_size() {
+  size_ = GOOGLE_ULONGLONG(0);
+  clear_has_size();
+}
+inline ::google::protobuf::uint64 Event::size() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Event.size)
+  return size_;
+}
+inline void Event::set_size(::google::protobuf::uint64 value) {
+  set_has_size();
+  size_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Event.size)
+}
+
+// optional int32 target_worker_id = 6;
+inline bool Event::has_target_worker_id() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void Event::set_has_target_worker_id() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void Event::clear_has_target_worker_id() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void Event::clear_target_worker_id() {
+  target_worker_id_ = 0;
+  clear_has_target_worker_id();
+}
+inline ::google::protobuf::int32 Event::target_worker_id() const {
+  // @@protoc_insertion_point(field_get:loomcomm.Event.target_worker_id)
+  return target_worker_id_;
+}
+inline void Event::set_target_worker_id(::google::protobuf::int32 value) {
+  set_has_target_worker_id();
+  target_worker_id_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.Event.target_worker_id)
 }
 
 // -------------------------------------------------------------------

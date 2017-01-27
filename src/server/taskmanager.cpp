@@ -52,6 +52,12 @@ void TaskManager::start_task(WorkerConnection *wc, TaskNode &node)
             assert(owner);
             owner->send_data(input_node->get_id(), wc->get_address());
             input_node->set_worker_status(wc, TaskStatus::TRANSFER);
+
+            if (report) {
+                report_send_start(owner->get_worker_id(),
+                                  wc->get_worker_id(),
+                                  *input_node);
+            }
         }
     }
 
@@ -62,6 +68,21 @@ void TaskManager::start_task(WorkerConnection *wc, TaskNode &node)
     wc->send_task(node);
     cstate.activate_pending_node(node, wc);
 }
+
+
+void TaskManager::report_send_start(loom::base::Id source_id, loom::base::Id target_id, const TaskNode &node)
+{
+    auto event = std::make_unique<loomcomm::Event>();
+    event->set_type(loomcomm::Event_Type_SEND_START);
+    event->set_time(uv_now(server.get_loop()) - cstate.get_base_time());
+
+    assert(node.has_state());
+    event->set_id(node.get_client_id());
+    event->set_worker_id(source_id);
+    event->set_target_worker_id(target_id);
+    server.report_event(std::move(event));
+}
+
 
 void TaskManager::report_task_start(WorkerConnection *wc, const TaskNode &node)
 {
@@ -79,6 +100,7 @@ void TaskManager::report_task_end(WorkerConnection *wc, const TaskNode &node)
     event->set_type(loomcomm::Event_Type_TASK_END);
     event->set_time(uv_now(server.get_loop()) - cstate.get_base_time());
     event->set_id(node.get_client_id());
+    event->set_size(node.get_size());
     event->set_worker_id(wc->get_worker_id());
     server.report_event(std::move(event));
 }
@@ -123,6 +145,9 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
         owner->send_data(id, server.get_dummy_worker().get_address());
         if (cstate.is_finished()) {
             logger->debug("Plan is finished");
+        }
+        if (report) {
+            report_send_start(wc->get_worker_id(), -1, *node);
         }
     } else {
         assert(!node->get_nexts().empty());

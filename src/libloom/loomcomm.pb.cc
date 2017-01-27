@@ -1946,6 +1946,8 @@ const int Event::kTimeFieldNumber;
 const int Event::kTypeFieldNumber;
 const int Event::kIdFieldNumber;
 const int Event::kWorkerIdFieldNumber;
+const int Event::kSizeFieldNumber;
+const int Event::kTargetWorkerIdFieldNumber;
 #endif  // !_MSC_VER
 
 Event::Event()
@@ -1970,6 +1972,8 @@ void Event::SharedCtor() {
   type_ = 1;
   id_ = 0;
   worker_id_ = 0;
+  size_ = GOOGLE_ULONGLONG(0);
+  target_worker_id_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -2018,8 +2022,8 @@ void Event::Clear() {
     ::memset(&first, 0, n);                                \
   } while (0)
 
-  if (_has_bits_[0 / 32] & 15) {
-    ZR_(id_, worker_id_);
+  if (_has_bits_[0 / 32] & 63) {
+    ZR_(id_, target_worker_id_);
     time_ = GOOGLE_ULONGLONG(0);
     type_ = 1;
   }
@@ -2106,6 +2110,36 @@ bool Event::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(40)) goto parse_size;
+        break;
+      }
+
+      // optional uint64 size = 5;
+      case 5: {
+        if (tag == 40) {
+         parse_size:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &size_)));
+          set_has_size();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(48)) goto parse_target_worker_id;
+        break;
+      }
+
+      // optional int32 target_worker_id = 6;
+      case 6: {
+        if (tag == 48) {
+         parse_target_worker_id:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &target_worker_id_)));
+          set_has_target_worker_id();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -2156,6 +2190,16 @@ void Event::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->worker_id(), output);
   }
 
+  // optional uint64 size = 5;
+  if (has_size()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->size(), output);
+  }
+
+  // optional int32 target_worker_id = 6;
+  if (has_target_worker_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->target_worker_id(), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomcomm.Event)
@@ -2192,6 +2236,20 @@ int Event::ByteSize() const {
           this->worker_id());
     }
 
+    // optional uint64 size = 5;
+    if (has_size()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->size());
+    }
+
+    // optional int32 target_worker_id = 6;
+    if (has_target_worker_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->target_worker_id());
+    }
+
   }
   total_size += unknown_fields().size();
 
@@ -2221,6 +2279,12 @@ void Event::MergeFrom(const Event& from) {
     if (from.has_worker_id()) {
       set_worker_id(from.worker_id());
     }
+    if (from.has_size()) {
+      set_size(from.size());
+    }
+    if (from.has_target_worker_id()) {
+      set_target_worker_id(from.target_worker_id());
+    }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
 }
@@ -2243,6 +2307,8 @@ void Event::Swap(Event* other) {
     std::swap(type_, other->type_);
     std::swap(id_, other->id_);
     std::swap(worker_id_, other->worker_id_);
+    std::swap(size_, other->size_);
+    std::swap(target_worker_id_, other->target_worker_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

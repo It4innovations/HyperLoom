@@ -127,7 +127,7 @@ class Report:
                         break
                 else:
                     assert 0
-            else:
+            elif event.type == TASK_START:
                 for lst2 in lst:
                     if lst2[-1].type == TASK_END:
                         lst2.append(event)
@@ -209,3 +209,23 @@ class Report:
                 else:
                     data[label][1].append(1)
         return data
+
+    def get_ctransfer_data(self):
+        SEND_START = loomcomm.Event.SEND_START
+        TASK_END = loomcomm.Event.TASK_END
+        intra = ([0], [0])
+        results = ([0], [0])
+        sizes = {}
+
+        for event in self.report_msg.events:
+            if event.type == TASK_END:
+                sizes[event.id] = event.size
+            elif event.type == SEND_START:
+                if event.target_worker_id == -1:
+                    data = results
+                else:
+                    data = intra
+                data[0].append(event.time)
+                data[1].append(data[1][-1] + sizes[event.id])
+
+        return intra, results

@@ -69,6 +69,7 @@ private:
 
     void report_task_start(WorkerConnection *wc, const TaskNode &node);
     void report_task_end(WorkerConnection *wc, const TaskNode &node);
+    void report_send_start(loom::base::Id source_id, loom::base::Id target_id, const TaskNode &node);
 };
 
 
