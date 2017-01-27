@@ -33,6 +33,7 @@ DATA_CONST = "loom/data/const"
 DATA_MERGE = "loom/data/merge"
 DATA_OPEN = "loom/data/open"
 DATA_SPLIT = "loom/data/split"
+DATA_SAVE = "loom/data/save"
 
 ARRAY_MAKE = "loom/array/make"
 
@@ -333,6 +334,25 @@ def slice(input, start, end):
     task.inputs = (input,)
     task.config = u64u64.pack(start, end)
     task.policy = POLICY_SIMPLE
+    return task
+
+
+def save(input, filename):
+    """Save D-object into file.
+
+    Args:
+       input (Task): D-object
+       filename (str): An absolute filename where D-object is saved.
+
+    Returns:
+       Empty data object
+    """
+
+    task = Task()
+    task.task_type = DATA_SAVE
+    task.inputs = (input,)
+    task.config = filename
+    task.resource_request = cpu1
     return task
 
 

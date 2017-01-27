@@ -8,6 +8,7 @@
 #include "libloomw/worker.h"
 
 #include <string.h>
+#include <fstream>
 
 using namespace loom;
 
@@ -112,3 +113,28 @@ void SplitTask::start(DataVector &inputs)
     finish(result);
 }
 
+
+DataPtr SaveJob::run()
+{
+    assert(inputs.size() == 1);
+    auto &config = task.get_config();
+    if (config.empty() || config[0] != '/') {
+        set_error("Path '" + config + "' is not absolute path");
+        return nullptr;
+    }
+    loom::base::logger->debug("Saving data id={} to path: {}", task.get_id(), config);
+
+    std::ofstream fout(config.c_str());
+
+    if (!fout.is_open()) {
+        set_error("Openning '" + config + "' failed: " + strerror(errno));
+        return nullptr;
+    }
+
+    fout.write(inputs[0]->get_raw_data(), inputs[0]->get_size());
+    fout.close();
+
+    auto output = std::make_shared<RawData>();
+    output->init_empty(work_dir, 0);
+    return output;
+}

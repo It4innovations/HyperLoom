@@ -140,6 +140,7 @@ void Worker::register_basic_tasks()
     add_task_factory<ThreadTaskInstance<MergeJob>>("loom/data/merge");
     add_task_factory<OpenTask>("loom/data/open");
     add_task_factory<SplitTask>("loom/data/split");
+    add_task_factory<ThreadTaskInstance<SaveJob>>("loom/data/save");
 
     // Arrays
     add_task_factory<ArrayMakeTask>("loom/array/make");

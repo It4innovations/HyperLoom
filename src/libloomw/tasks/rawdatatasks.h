@@ -39,6 +39,15 @@ public:
     void start(loom::DataVector &inputs) override;
 };
 
+
+class SaveJob : public loom::ThreadJob
+{
+public:
+    using ThreadJob::ThreadJob;
+    DataPtr run() override;
+};
+
+
 }
 
 #endif // LIBLOOM_TASKS_RAWDATATASKS_H

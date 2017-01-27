@@ -99,6 +99,9 @@ class LoomEnv(Env):
         assert not server.poll()
         assert not any(w.poll() for w in workers)
 
+    def get_filename(self, filename):
+        return os.path.join(LOOM_TEST_BUILD_DIR, filename)
+
     def check_files(self, pattern):
         return glob.glob(os.path.join(LOOM_TEST_BUILD_DIR, pattern),
                          recursive=True)

@@ -4,6 +4,8 @@ import loom.client.tasks as tasks  # noqa
 import struct
 from datetime import datetime
 import os
+import pytest
+from loom import client
 
 FILE1 = os.path.join(LOOM_TEST_DATA_DIR, "file1")
 FILE2 = os.path.join(LOOM_TEST_DATA_DIR, "file2")
@@ -114,3 +116,37 @@ def test_size_and_length(loom_env):
     u64 = struct.Struct("<Q")
     [25, 0, 50, 2] == map(lambda x: u64.unpack(x)[0],
                           loom_env.submit((b1, c1, b2, c2)))
+
+
+def test_data_save(loom_env):
+    loom_env.start(1)
+
+    a1 = tasks.const("ABC" * 10000)
+    a2 = tasks.const(b"")
+    a3 = tasks.run("ls")
+
+    with pytest.raises(client.TaskFailed):
+        b = tasks.save(a1, "test-file")
+        loom_env.submit(b)
+
+    with pytest.raises(client.TaskFailed):
+        b = tasks.save(a1, "/etc/xxx")
+        loom_env.submit(b)
+
+    b1 = tasks.save(a1, loom_env.get_filename("file1"))
+    b2 = tasks.save(a2, loom_env.get_filename("file2"))
+    b3 = tasks.save(a3, loom_env.get_filename("file3"))
+
+    result = loom_env.submit((b1, b2, b3))
+    assert result == [b"", b"", b""]
+
+    with open(loom_env.get_filename("file1")) as f:
+        assert f.read() == "ABC" * 10000
+
+    with open(loom_env.get_filename("file2")) as f:
+        assert f.read() == ""
+
+    with open(loom_env.get_filename("file3")) as f:
+        content = f.read().split("\n")
+        assert "+err" in content
+        assert "+out" in content
