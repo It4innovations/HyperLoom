@@ -100,8 +100,15 @@ void Socket::send(std::unique_ptr<SendBuffer> buffer)
 
 void Socket::_buf_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf)
 {
-    buf->base = new char[suggested_size];
-    buf->len = suggested_size;
+    size_t size;
+    Socket *socket = static_cast<Socket*>(handle->data);
+    if (socket->stream_mode) {
+        size = 8 << 20; // 8 MB
+    } else {
+        size = suggested_size;
+    }
+    buf->base = new char[size];
+    buf->len = size;
 }
 
 
