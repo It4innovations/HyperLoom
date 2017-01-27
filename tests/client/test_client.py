@@ -57,7 +57,7 @@ print(client.submit((a, b, c, d)))
     b = tasks.const("xyz")
     c = tasks.const("123")
     d = tasks.merge((a, b, c))
-    result = loom_env.submit(d)
+    result = loom_env.submit(d, check_timeout=0.9)
     assert result == b"abcxyz123"
 
 

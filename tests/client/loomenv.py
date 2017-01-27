@@ -135,11 +135,13 @@ class LoomEnv(Env):
             self.check_stats()
         return self._client
 
-    def submit(self, results, report=None):
+    def submit(self, results, report=None, check_timeout=None):
         if report:
             report = os.path.join(LOOM_TEST_BUILD_DIR, report)
         result = self.client.submit(results, report)
         self.check_stats()
+        if check_timeout:
+            time.sleep(check_timeout)
         self.check_final_state()
         return result
 
