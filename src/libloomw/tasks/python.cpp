@@ -119,8 +119,8 @@ DataPtr PyCallJob::run()
    PyGILState_STATE gstate;
    gstate = PyGILState_Ensure();
 
-   // Get loom.wep
-   PyObject *loom_wep_call = PyImport_ImportModule("loom.wep.call");
+   // Get loom.wside
+   PyObject *loom_wep_call = PyImport_ImportModule("loom.wside.core");
    if(!loom_wep_call) {
       set_python_error();
       PyGILState_Release(gstate);
