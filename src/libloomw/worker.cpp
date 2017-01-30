@@ -14,6 +14,8 @@
 #include "tasks/runtask.h"
 #include "tasks/python.h"
 
+#include "python/core.h"
+
 #include "libloom/loomcomm.pb.h"
 #include "libloom/types.h"
 #include "libloom/log.h"
@@ -43,6 +45,7 @@ Worker::Worker(uv_loop_t *loop,
     logger->info("New worker; listening on port {}", config.get_port());
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
+    ensure_py_init();
 
     start_tasks = false;
     UV_CHECK(uv_idle_init(loop, &start_tasks_idle));

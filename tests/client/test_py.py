@@ -267,3 +267,15 @@ def test_py_wrap_wrapped(loom_env):
     t = task(v)
     result = loom_env.submit(t)
     assert result == "ABC"
+
+
+def test_py_task_deserialization(loom_env):
+
+    @tasks.py_task()
+    def f():
+        return b""
+
+    loom_env.start(2)
+    ts = [f(), tasks.run("ls"), f(), f(), f()]
+    result = loom_env.submit(ts)
+    assert len(result) == 5

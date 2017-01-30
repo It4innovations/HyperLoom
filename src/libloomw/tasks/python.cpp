@@ -195,7 +195,7 @@ DataPtr PyCallJob::run()
 PyBaseJob::PyBaseJob(Worker &worker, Task &task)
    : ThreadJob(worker, task)
 {
-   ensure_py_init();
+
 }
 
 void PyBaseJob::set_python_error()

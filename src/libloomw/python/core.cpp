@@ -23,7 +23,12 @@ void loom::ensure_py_init() {
 
    data_wrapper_init();
 
-   PyEval_ReleaseLock();   
+   // Force the bootstrap sequence in MAIN thread
+   PyObject *loom_wside = PyImport_ImportModule("loom.wside.core");
+   Py_DecRef(loom_wside);
+
+   PyEval_ReleaseLock();
+   logger->debug("Python interpreter initialized");
 }
 
 PyObject* loom::deserialize_pyobject(const void *mem, size_t size)
@@ -40,6 +45,7 @@ PyObject* loom::deserialize_pyobject(const void *mem, size_t size)
    if(!loads) {
       return nullptr;
    }
+
    assert(PyCallable_Check(loads));
 
    PyObject *data = PyBytes_FromStringAndSize(static_cast<const char*>(mem), size);
