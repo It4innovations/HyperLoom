@@ -83,6 +83,7 @@ loom::PyObjUnpacker::PyObjUnpacker()
 
 loom::DataUnpacker::Result loom::PyObjUnpacker::on_message(const char *data, size_t size)
 {
+    ensure_py_init();
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
     result = deserialize_pyobj(data, size);
