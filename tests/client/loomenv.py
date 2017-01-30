@@ -93,7 +93,7 @@ class LoomEnv(Env):
         for i in range(workers_count):
             w = self.start_process("worker{}".format(i), worker_args, env)
             workers.append(w)
-        time.sleep(0.1)
+        time.sleep(0.15)
         if VALGRIND:
             time.sleep(4)
         assert not server.poll()
