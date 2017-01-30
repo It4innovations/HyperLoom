@@ -14,13 +14,14 @@
 using namespace loom;
 using namespace loom::base;
 
-static PyObject* data_vector_to_list(const DataVector &data)
+static PyObject* data_vector_to_list(DataVector::const_iterator begin,
+                                     DataVector::const_iterator end)
 {
-    PyObject *list = PyTuple_New(data.size());
+    PyObject *list = PyTuple_New(end - begin);
     assert(list);
     size_t i = 0;
-    for (auto& item : data) {
-        PyTuple_SET_ITEM(list, i, (PyObject*) data_wrapper_create(item));
+    for (auto it = begin; it != end; it++) {
+        PyTuple_SET_ITEM(list, i, (PyObject*) data_wrapper_create(*it));
         i++;
     }
     return list;
@@ -105,6 +106,15 @@ DataPtr PyCallJob::convert_py_object(PyObject *obj)
 
 DataPtr PyCallJob::run()
 {
+   assert(!inputs.empty());
+   DataPtr fn = std::move(inputs[0]);
+   inputs.erase(inputs.begin());
+
+   if (fn->get_type_name() != "loom/pyobj") {
+        set_error("The first argument is not PyObj");
+        return nullptr;
+   }
+
    // Obtain GIL
    PyGILState_STATE gstate;
    gstate = PyGILState_Ensure();
@@ -117,7 +127,7 @@ DataPtr PyCallJob::run()
       return nullptr;
    }
 
-   PyObject *call_fn = PyObject_GetAttrString(loom_wep_call, "unpack_and_execute");
+   PyObject *call_fn = PyObject_GetAttrString(loom_wep_call, "execute");
    Py_DECREF(loom_wep_call);
 
    if(!call_fn) {
@@ -132,14 +142,17 @@ DataPtr PyCallJob::run()
                task.get_config().size());
    assert(config_data);
 
-   PyObject *py_inputs = data_vector_to_list(inputs);
+   PyObject *py_inputs = data_vector_to_list(inputs.begin(), inputs.end());
    assert(py_inputs);
 
    PyObject *task_id = PyLong_FromLong(task.get_id());
    assert(task_id);
 
-   // call "call"
-   PyObject *result = PyObject_CallFunctionObjArgs(call_fn, config_data, py_inputs, task_id, NULL);
+   PyObject *fn_obj = std::static_pointer_cast<const PyObj>(fn)->unwrap();
+   assert(fn_obj);
+
+   PyObject *result = PyObject_CallFunctionObjArgs(call_fn, fn_obj, config_data, py_inputs, task_id, NULL);
+   Py_DECREF(fn_obj);
    Py_DECREF(task_id);
    Py_DECREF(py_inputs);
    Py_DECREF(call_fn);

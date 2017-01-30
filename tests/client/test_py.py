@@ -20,8 +20,8 @@ def test_py_call(loom_env):
     loom_env.start(1)
     c = tasks.const("ABC")
     d = tasks.const("12345")
-    p = tasks.py_call(f, (c, d))
-    q = tasks.py_call(g)
+    p = tasks.py_call(tasks.py_value(f), (c, d))
+    q = tasks.py_call(tasks.py_value(g))
     result1, result2 = loom_env.submit((p, q))
 
     assert result1 == b"ABC, 3, 12345, 5"
@@ -99,8 +99,6 @@ def test_py_direct_args(loom_env):
     assert r4 == b"ABCABCABC"
 
 
-
-
 def test_py_redirect1(loom_env):
 
     def f(a, b):
@@ -110,7 +108,7 @@ def test_py_redirect1(loom_env):
 
     c = tasks.const("ABC")
     d = tasks.const("12345")
-    a = tasks.py_call(f, (c, d))
+    a = tasks.py_call(tasks.py_value(f), (c, d))
     result = loom_env.submit(a)
     assert result == b"ABC12345"
 
@@ -124,7 +122,7 @@ def test_py_redirect2(loom_env):
 
     c = tasks.const("abcdef")
     d = tasks.const("/")
-    a = tasks.py_call(f, (c, d))
+    a = tasks.py_call(tasks.py_value(f), (c, d))
     result = loom_env.submit(a)
     assert b"bin\n" in result
     assert b"usr\n" in result
@@ -138,7 +136,7 @@ def test_py_redirect3(loom_env):
     loom_env.start(1)
 
     c = tasks.const("DataData")
-    a = tasks.py_call(f, (c,))
+    a = tasks.py_call(tasks.py_value(f), (c,))
     result = loom_env.submit(a)
     assert b"DataData" in result
 
@@ -150,7 +148,7 @@ def test_py_fail_too_many_args(loom_env):
 
     loom_env.start(1)
     c = tasks.const("ABC")
-    a = tasks.py_call(g, (c,))
+    a = tasks.py_call(tasks.py_value(g), (c,))
 
     with pytest.raises(TaskFailed):
         loom_env.submit(a)
@@ -163,7 +161,7 @@ def test_py_fail_too_few_args(loom_env):
 
     loom_env.start(1)
 
-    a = tasks.py_call(f, ())
+    a = tasks.py_call(tasks.py_value(f), ())
 
     with pytest.raises(TaskFailed):
         loom_env.submit(a)
@@ -176,7 +174,7 @@ def test_py_fail_invalid_result(loom_env):
 
     loom_env.start(1)
 
-    a = tasks.py_call(f, ())
+    a = tasks.py_call(tasks.py_value(f), ())
 
     with pytest.raises(TaskFailed):
         loom_env.submit(a)

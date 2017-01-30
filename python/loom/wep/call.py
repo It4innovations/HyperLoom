@@ -28,12 +28,16 @@ class Context:
         return loom_c.wrap(obj)
 
 
-def unpack_and_execute(data, inputs, task_id):
-    obj, has_context, params = cloudpickle.loads(data)
+def execute(fn_obj, data, inputs, task_id):
+    params = cloudpickle.loads(data)
     if params:
         inputs = tuple(params) + inputs
+    if isinstance(fn_obj, tuple):
+        fn_obj, has_context = fn_obj
+    else:
+        has_context = False
     if has_context:
         context = Context(task_id)
-        return obj(context, *inputs)
+        return fn_obj(context, *inputs)
     else:
-        return obj(*inputs)
+        return fn_obj(*inputs)

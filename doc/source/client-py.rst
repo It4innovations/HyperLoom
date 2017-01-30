@@ -232,7 +232,7 @@ hence the code above can be written also as: ::
         return b"Hello " + a.read()
 
     task1 = tasks.cont("world")
-    task2 = tasks.py_call(hello, (task1,))
+    task2 = tasks.py_call(tasks.py_value(hello), (task1,))
     task2.label = "hello"
 
     client.submit(task2)  # returns b"Hello world"
@@ -327,7 +327,7 @@ arguments via ``py_call``::
         return n * a.read()
 
     c = tasks.const("ABC")
-    t1 = tasks.py_call(repeat, (c,), direct_args=(2,))
+    t1 = tasks.py_call(tasks.py_value(repeat), (c,), direct_args=(2,))
     client.submit(t1)  # returns: b"ABCABC"
 
 
@@ -478,10 +478,10 @@ a light weight one and it is executed very fast without resource demands (e.g.
 picking an element from array). The scheduler is allows to schedule
 simultenously more light weight tasks than cores available for the worker.
 
-.. Important::
-   Basic tasks defined module ``loom.tasks`` do not define any resource request;
-   except ``loom.tasks.run``, ``loom.tasks.py_call``, and ``loom.tasks.py_task``
-   by default defines resource request for 1 cpu core.
+.. Important:: Basic tasks defined module ``loom.tasks`` do not define any
+   resource request; except ``loom.tasks.run``, ``loom.tasks.py_call``,
+   ``loom.tasks.py_value``, and ``loom.tasks.py_task`` by default defines
+   resource request for 1 cpu core.
 
 
 Dynamic slice & get

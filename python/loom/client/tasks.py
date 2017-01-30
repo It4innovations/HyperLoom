@@ -357,7 +357,7 @@ def save(input, filename):
     return task
 
 
-def py_call(obj, inputs=(), request=cpu1, context=False, direct_args=()):
+def py_call(obj, inputs=(), direct_args=()):
     """Create a task that calls Python code
 
     Example:
@@ -372,9 +372,9 @@ def py_call(obj, inputs=(), request=cpu1, context=False, direct_args=()):
 
     task = Task()
     task.task_type = PY_CALL
-    task.inputs = inputs
-    task.config = cloudpickle.dumps((obj, context, tuple(direct_args)))
-    task.resource_request = request
+    task.inputs = (obj,) + tuple(inputs)
+    task.config = cloudpickle.dumps(tuple(direct_args))
+    task.resource_request = cpu1
     return task
 
 
@@ -403,10 +403,14 @@ def py_task(label=None, request=cpu1, context=False, n_direct_args=0):
     """
 
     def make_py_call(fn):
+        fn_obj = py_value((fn, bool(context)))
+        fn_obj.label = "_loom:" + fn.__name__
+
         def py_task_builder(*args):
             inputs = args[n_direct_args:]
             direct_args = args[:n_direct_args]
-            task = py_call(fn, inputs, request, context, direct_args)
+            task = py_call(fn_obj, inputs, direct_args)
+            task.resource_request = request
             if label is not None:
                 task.label = label
             else:
