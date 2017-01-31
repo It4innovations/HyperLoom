@@ -44,6 +44,9 @@ def parse_args():
     parser.add_argument("--show-btime",
                         action="store_true")
 
+    parser.add_argument("--show-evrate",
+                        action="store_true")
+
     return parser.parse_args()
 
 
@@ -141,8 +144,16 @@ def show_ctransfer(report):
     c1.legend(loc='upper left')
     c2.legend(loc='upper left')
 
-
     plt.show(block=True)
+
+
+def show_evrate(report):
+    r1, r2 = report.get_event_rate_data(1000)
+    plt.plot(r1, r2, label="# of events per second")
+    r1, r2 = report.get_event_rate_data(60000)
+    plt.plot(r1, r2, label="# of events per minute")
+    plt.legend(loc='upper right')
+    plt.show()
 
 
 def print_stats(report):
@@ -192,6 +203,10 @@ def main():
     if args.show_btime:
         empty = False
         show_btime(report)
+
+    if args.show_evrate:
+        empty = False
+        show_evrate(report)
 
     if empty:
         sys.stderr.write("No operation specified (use --help)\n")

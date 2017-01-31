@@ -107,6 +107,18 @@ class Report:
                 graph.node(j).add_arc(node)
         return graph
 
+    def get_event_rate_data(self, time_interval):
+        counts = {}
+        half = time_interval / 2
+        for event in self.report_msg.events:
+            time = (event.time // time_interval) * time_interval
+            if time not in counts:
+                counts[time] = 1
+            else:
+                counts[time] += 1
+        result = sorted(counts.items())
+        return [x[0] + half for x in result], [x[1] for x in result]
+
     def get_events_hline_data(self):
         TASK_START = loomcomm.Event.TASK_START
         TASK_END = loomcomm.Event.TASK_END
