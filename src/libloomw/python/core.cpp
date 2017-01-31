@@ -27,7 +27,7 @@ void loom::ensure_py_init() {
    PyObject *loom_wside = PyImport_ImportModule("loom.wside.core");
    Py_DecRef(loom_wside);
 
-   PyEval_ReleaseLock();
+   PyEval_SaveThread();
    logger->debug("Python interpreter initialized");
 }
 
