@@ -404,7 +404,7 @@ def py_task(label=None, request=cpu1, context=False, n_direct_args=0):
 
     def make_py_call(fn):
         fn_obj = py_value((fn, bool(context)))
-        fn_obj.label = "_loom:" + fn.__name__
+        fn_obj.label = "#L:" + fn.__name__
 
         def py_task_builder(*args):
             inputs = args[n_direct_args:]
