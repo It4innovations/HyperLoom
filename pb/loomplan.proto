@@ -16,6 +16,7 @@ message Task {
 	optional int32 resource_request_index = 5 [default = -1];
 
 	optional string label = 12;
+        optional string metadata = 13;
 }
 
 message Resource {

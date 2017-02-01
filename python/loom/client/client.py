@@ -169,7 +169,7 @@ class Client(object):
     def _create_report(self, plan):
         report_msg = Report()
         report_msg.symbols.extend(self._symbol_list())
-        plan.set_message(report_msg.plan, self.symbols)
+        plan.set_message(report_msg.plan, self.symbols, True)
         return report_msg
 
     def _read_symbols(self):

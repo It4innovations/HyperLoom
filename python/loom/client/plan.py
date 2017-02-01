@@ -1,3 +1,5 @@
+import pickle
+
 
 class Plan(object):
 
@@ -20,7 +22,7 @@ class Plan(object):
             symbols.add(task.task_type)
         return symbols
 
-    def set_message(self, msg, symbols):
+    def set_message(self, msg, symbols, include_metadata=False):
         requests = set()
 
         # Linearize tasks
@@ -55,4 +57,7 @@ class Plan(object):
                     requests.index(task.resource_request)
             if task.label:
                 msg_t.label = task.label
+            if include_metadata:
+                msg_t.metadata = pickle.dumps(task.metadata)
+
         return msg
