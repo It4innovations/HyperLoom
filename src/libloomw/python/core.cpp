@@ -8,6 +8,10 @@
 using namespace loom;
 using namespace loom::base;
 
+namespace loom {
+    static PyThreadState *main_thread;
+}
+
 /** Ensures that python is initialized,
  *  if already initialized, then does nothing */
 void loom::ensure_py_init() {
@@ -27,7 +31,7 @@ void loom::ensure_py_init() {
    PyObject *loom_wside = PyImport_ImportModule("loom.wside.core");
    Py_DecRef(loom_wside);
 
-   PyEval_SaveThread();
+   main_thread = PyEval_SaveThread();
    logger->debug("Python interpreter initialized");
 }
 
@@ -87,4 +91,14 @@ size_t loom::get_sizeof(PyObject *obj)
     size_t size = PyLong_AsSize_t(result);
     Py_DecRef(result);
     return size;
+}
+
+void loom::lock_gil_in_main_thread()
+{
+    PyEval_RestoreThread(main_thread);
+}
+
+void loom::release_gil_in_main_thread()
+{
+    assert(main_thread == PyEval_SaveThread());
 }

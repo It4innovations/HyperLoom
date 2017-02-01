@@ -45,8 +45,7 @@ std::string loom::PyObj::get_info() const
 
 size_t loom::PyObj::serialize(loom::Worker &worker, loom::base::SendBuffer &buffer, const loom::DataPtr &data_ptr) const
 {
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
+    lock_gil_in_main_thread();
 
     // Get cloudpickle
     PyObject *cloudpickle = PyImport_ImportModule("cloudpickle");
@@ -72,7 +71,8 @@ size_t loom::PyObj::serialize(loom::Worker &worker, loom::base::SendBuffer &buff
     buffer.add(std::move(item));
 
     Py_DECREF(result);
-    PyGILState_Release(gstate);
+
+    release_gil_in_main_thread();
     return 1;
 }
 
@@ -83,10 +83,9 @@ loom::PyObjUnpacker::PyObjUnpacker()
 
 loom::DataUnpacker::Result loom::PyObjUnpacker::on_message(const char *data, size_t size)
 {
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
+    lock_gil_in_main_thread();
     result = deserialize_pyobj(data, size);
-    PyGILState_Release(gstate);
+    release_gil_in_main_thread();
     return Result::FINISHED;
 }
 
