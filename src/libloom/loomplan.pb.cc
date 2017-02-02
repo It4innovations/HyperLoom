@@ -88,6 +88,7 @@ const int Task::kInputIdsFieldNumber;
 const int Task::kPolicyFieldNumber;
 const int Task::kResourceRequestIndexFieldNumber;
 const int Task::kLabelFieldNumber;
+const int Task::kMetadataFieldNumber;
 #endif  // !_MSC_VER
 
 Task::Task()
@@ -114,6 +115,7 @@ void Task::SharedCtor() {
   policy_ = 1;
   resource_request_index_ = -1;
   label_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  metadata_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -128,6 +130,9 @@ void Task::SharedDtor() {
   }
   if (label_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete label_;
+  }
+  if (metadata_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete metadata_;
   }
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   if (this != &default_instance()) {
@@ -158,7 +163,7 @@ Task* Task::New() const {
 }
 
 void Task::Clear() {
-  if (_has_bits_[0 / 32] & 59) {
+  if (_has_bits_[0 / 32] & 123) {
     task_type_ = 0;
     if (has_config()) {
       if (config_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
@@ -170,6 +175,11 @@ void Task::Clear() {
     if (has_label()) {
       if (label_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         label_->clear();
+      }
+    }
+    if (has_metadata()) {
+      if (metadata_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        metadata_->clear();
       }
     }
   }
@@ -283,6 +293,19 @@ bool Task::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(106)) goto parse_metadata;
+        break;
+      }
+
+      // optional string metadata = 13;
+      case 13: {
+        if (tag == 106) {
+         parse_metadata:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_metadata()));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -346,6 +369,12 @@ void Task::SerializeWithCachedSizes(
       12, this->label(), output);
   }
 
+  // optional string metadata = 13;
+  if (has_metadata()) {
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      13, this->metadata(), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomplan.Task)
@@ -387,6 +416,13 @@ int Task::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->label());
+    }
+
+    // optional string metadata = 13;
+    if (has_metadata()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->metadata());
     }
 
   }
@@ -432,6 +468,9 @@ void Task::MergeFrom(const Task& from) {
     if (from.has_label()) {
       set_label(from.label());
     }
+    if (from.has_metadata()) {
+      set_metadata(from.metadata());
+    }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
 }
@@ -456,6 +495,7 @@ void Task::Swap(Task* other) {
     std::swap(policy_, other->policy_);
     std::swap(resource_request_index_, other->resource_request_index_);
     std::swap(label_, other->label_);
+    std::swap(metadata_, other->metadata_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

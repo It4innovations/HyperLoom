@@ -15,7 +15,7 @@ class Task(object):
     policy = POLICY_STANDARD
     resource_request = None
     label = None
-    metadata = {}
+    metadata = None
 
     def __repr__(self):
         if self.label:

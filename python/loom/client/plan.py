@@ -55,9 +55,9 @@ class Plan(object):
             if task.resource_request:
                 msg_t.resource_request_index = \
                     requests.index(task.resource_request)
-            if task.label:
+            if include_metadata and task.label:
                 msg_t.label = task.label
-            if include_metadata:
+            if include_metadata and task.metadata is not None:
                 msg_t.metadata = pickle.dumps(task.metadata)
 
         return msg

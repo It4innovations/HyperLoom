@@ -181,6 +181,18 @@ class Task : public ::google::protobuf::MessageLite {
   inline ::std::string* release_label();
   inline void set_allocated_label(::std::string* label);
 
+  // optional string metadata = 13;
+  inline bool has_metadata() const;
+  inline void clear_metadata();
+  static const int kMetadataFieldNumber = 13;
+  inline const ::std::string& metadata() const;
+  inline void set_metadata(const ::std::string& value);
+  inline void set_metadata(const char* value);
+  inline void set_metadata(const char* value, size_t size);
+  inline ::std::string* mutable_metadata();
+  inline ::std::string* release_metadata();
+  inline void set_allocated_metadata(::std::string* metadata);
+
   // @@protoc_insertion_point(class_scope:loomplan.Task)
  private:
   inline void set_has_task_type();
@@ -193,6 +205,8 @@ class Task : public ::google::protobuf::MessageLite {
   inline void clear_has_resource_request_index();
   inline void set_has_label();
   inline void clear_has_label();
+  inline void set_has_metadata();
+  inline void clear_has_metadata();
 
   ::std::string _unknown_fields_;
 
@@ -203,6 +217,7 @@ class Task : public ::google::protobuf::MessageLite {
   int policy_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > input_ids_;
   ::std::string* label_;
+  ::std::string* metadata_;
   ::google::protobuf::int32 resource_request_index_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomplan_2eproto_impl();
@@ -790,6 +805,82 @@ inline void Task::set_allocated_label(::std::string* label) {
     label_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:loomplan.Task.label)
+}
+
+// optional string metadata = 13;
+inline bool Task::has_metadata() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void Task::set_has_metadata() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void Task::clear_has_metadata() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void Task::clear_metadata() {
+  if (metadata_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    metadata_->clear();
+  }
+  clear_has_metadata();
+}
+inline const ::std::string& Task::metadata() const {
+  // @@protoc_insertion_point(field_get:loomplan.Task.metadata)
+  return *metadata_;
+}
+inline void Task::set_metadata(const ::std::string& value) {
+  set_has_metadata();
+  if (metadata_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    metadata_ = new ::std::string;
+  }
+  metadata_->assign(value);
+  // @@protoc_insertion_point(field_set:loomplan.Task.metadata)
+}
+inline void Task::set_metadata(const char* value) {
+  set_has_metadata();
+  if (metadata_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    metadata_ = new ::std::string;
+  }
+  metadata_->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomplan.Task.metadata)
+}
+inline void Task::set_metadata(const char* value, size_t size) {
+  set_has_metadata();
+  if (metadata_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    metadata_ = new ::std::string;
+  }
+  metadata_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomplan.Task.metadata)
+}
+inline ::std::string* Task::mutable_metadata() {
+  set_has_metadata();
+  if (metadata_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    metadata_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:loomplan.Task.metadata)
+  return metadata_;
+}
+inline ::std::string* Task::release_metadata() {
+  clear_has_metadata();
+  if (metadata_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = metadata_;
+    metadata_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void Task::set_allocated_metadata(::std::string* metadata) {
+  if (metadata_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete metadata_;
+  }
+  if (metadata) {
+    set_has_metadata();
+    metadata_ = metadata;
+  } else {
+    clear_has_metadata();
+    metadata_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:loomplan.Task.metadata)
 }
 
 // -------------------------------------------------------------------

@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='loomplan.proto',
   package='loomplan',
-  serialized_pb=_b('\n\x0eloomplan.proto\x12\x08loomplan\"\xef\x01\n\x04Task\x12\x11\n\ttask_type\x18\x01 \x02(\x05\x12\x0e\n\x06\x63onfig\x18\x02 \x02(\x0c\x12\x11\n\tinput_ids\x18\x03 \x03(\x05\x12\x36\n\x06policy\x18\x04 \x01(\x0e\x32\x15.loomplan.Task.Policy:\x0fPOLICY_STANDARD\x12\"\n\x16resource_request_index\x18\x05 \x01(\x05:\x02-1\x12\r\n\x05label\x18\x0c \x01(\t\"F\n\x06Policy\x12\x13\n\x0fPOLICY_STANDARD\x10\x01\x12\x11\n\rPOLICY_SIMPLE\x10\x02\x12\x14\n\x10POLICY_SCHEDULER\x10\x03\"0\n\x08Resource\x12\x15\n\rresource_type\x18\x01 \x02(\x05\x12\r\n\x05value\x18\x02 \x02(\x05\"8\n\x0fResourceRequest\x12%\n\tresources\x18\x01 \x03(\x0b\x32\x12.loomplan.Resource\"o\n\x04Plan\x12\x34\n\x11resource_requests\x18\x01 \x03(\x0b\x32\x19.loomplan.ResourceRequest\x12\x1d\n\x05tasks\x18\x02 \x03(\x0b\x32\x0e.loomplan.Task\x12\x12\n\nresult_ids\x18\x03 \x03(\x05\x42\x02H\x03')
+  serialized_pb=_b('\n\x0eloomplan.proto\x12\x08loomplan\"\x81\x02\n\x04Task\x12\x11\n\ttask_type\x18\x01 \x02(\x05\x12\x0e\n\x06\x63onfig\x18\x02 \x02(\x0c\x12\x11\n\tinput_ids\x18\x03 \x03(\x05\x12\x36\n\x06policy\x18\x04 \x01(\x0e\x32\x15.loomplan.Task.Policy:\x0fPOLICY_STANDARD\x12\"\n\x16resource_request_index\x18\x05 \x01(\x05:\x02-1\x12\r\n\x05label\x18\x0c \x01(\t\x12\x10\n\x08metadata\x18\r \x01(\t\"F\n\x06Policy\x12\x13\n\x0fPOLICY_STANDARD\x10\x01\x12\x11\n\rPOLICY_SIMPLE\x10\x02\x12\x14\n\x10POLICY_SCHEDULER\x10\x03\"0\n\x08Resource\x12\x15\n\rresource_type\x18\x01 \x02(\x05\x12\r\n\x05value\x18\x02 \x02(\x05\"8\n\x0fResourceRequest\x12%\n\tresources\x18\x01 \x03(\x0b\x32\x12.loomplan.Resource\"o\n\x04Plan\x12\x34\n\x11resource_requests\x18\x01 \x03(\x0b\x32\x19.loomplan.ResourceRequest\x12\x1d\n\x05tasks\x18\x02 \x03(\x0b\x32\x0e.loomplan.Task\x12\x12\n\nresult_ids\x18\x03 \x03(\x05\x42\x02H\x03')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -45,8 +45,8 @@ _TASK_POLICY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=198,
-  serialized_end=268,
+  serialized_start=216,
+  serialized_end=286,
 )
 _sym_db.RegisterEnumDescriptor(_TASK_POLICY)
 
@@ -100,6 +100,13 @@ _TASK = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='loomplan.Task.metadata', index=6,
+      number=13, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -113,7 +120,7 @@ _TASK = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=29,
-  serialized_end=268,
+  serialized_end=286,
 )
 
 
@@ -149,8 +156,8 @@ _RESOURCE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=270,
-  serialized_end=318,
+  serialized_start=288,
+  serialized_end=336,
 )
 
 
@@ -179,8 +186,8 @@ _RESOURCEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=320,
-  serialized_end=376,
+  serialized_start=338,
+  serialized_end=394,
 )
 
 
@@ -223,8 +230,8 @@ _PLAN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=378,
-  serialized_end=489,
+  serialized_start=396,
+  serialized_end=507,
 )
 
 _TASK.fields_by_name['policy'].enum_type = _TASK_POLICY
