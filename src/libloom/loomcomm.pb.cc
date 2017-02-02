@@ -669,6 +669,7 @@ const int WorkerCommand::kIdFieldNumber;
 const int WorkerCommand::kTaskTypeFieldNumber;
 const int WorkerCommand::kTaskConfigFieldNumber;
 const int WorkerCommand::kTaskInputsFieldNumber;
+const int WorkerCommand::kNCpusFieldNumber;
 const int WorkerCommand::kAddressFieldNumber;
 const int WorkerCommand::kSymbolsFieldNumber;
 #endif  // !_MSC_VER
@@ -696,6 +697,7 @@ void WorkerCommand::SharedCtor() {
   id_ = 0;
   task_type_ = 0;
   task_config_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  n_cpus_ = 0;
   address_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -741,10 +743,20 @@ WorkerCommand* WorkerCommand::New() const {
 }
 
 void WorkerCommand::Clear() {
-  if (_has_bits_[0 / 32] & 47) {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<WorkerCommand*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  if (_has_bits_[0 / 32] & 111) {
+    ZR_(task_type_, n_cpus_);
     type_ = 1;
     id_ = 0;
-    task_type_ = 0;
     if (has_task_config()) {
       if (task_config_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         task_config_->clear();
@@ -756,6 +768,10 @@ void WorkerCommand::Clear() {
       }
     }
   }
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
   task_inputs_.Clear();
   symbols_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -854,6 +870,21 @@ bool WorkerCommand::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(40)) goto parse_task_inputs;
+        if (input->ExpectTag(48)) goto parse_n_cpus;
+        break;
+      }
+
+      // optional int32 n_cpus = 6;
+      case 6: {
+        if (tag == 48) {
+         parse_n_cpus:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &n_cpus_)));
+          set_has_n_cpus();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectTag(82)) goto parse_address;
         break;
       }
@@ -938,6 +969,11 @@ void WorkerCommand::SerializeWithCachedSizes(
       5, this->task_inputs(i), output);
   }
 
+  // optional int32 n_cpus = 6;
+  if (has_n_cpus()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->n_cpus(), output);
+  }
+
   // optional string address = 10;
   if (has_address()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -984,6 +1020,13 @@ int WorkerCommand::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->task_config());
+    }
+
+    // optional int32 n_cpus = 6;
+    if (has_n_cpus()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->n_cpus());
     }
 
     // optional string address = 10;
@@ -1041,6 +1084,9 @@ void WorkerCommand::MergeFrom(const WorkerCommand& from) {
     if (from.has_task_config()) {
       set_task_config(from.task_config());
     }
+    if (from.has_n_cpus()) {
+      set_n_cpus(from.n_cpus());
+    }
     if (from.has_address()) {
       set_address(from.address());
     }
@@ -1067,6 +1113,7 @@ void WorkerCommand::Swap(WorkerCommand* other) {
     std::swap(task_type_, other->task_type_);
     std::swap(task_config_, other->task_config_);
     task_inputs_.Swap(&other->task_inputs_);
+    std::swap(n_cpus_, other->n_cpus_);
     std::swap(address_, other->address_);
     symbols_.Swap(&other->symbols_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);

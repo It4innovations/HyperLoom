@@ -14,6 +14,7 @@ namespace loom {
 
 class Worker;
 class TaskInstance;
+class ResourceAllocation;
 
 /** Abstract class for creating task instances */
 class TaskFactory
@@ -23,7 +24,9 @@ public:
         : name(name) {}
     virtual ~TaskFactory() {}
 
-    virtual std::unique_ptr<TaskInstance> make_instance(Worker &worker, std::unique_ptr<Task> task) = 0;
+    virtual std::unique_ptr<TaskInstance> make_instance(Worker &worker,
+                                                        std::unique_ptr<Task> task,
+                                                        ResourceAllocation &&ra) = 0;
 
     const std::string &get_name() const {
         return name;
@@ -38,8 +41,10 @@ template <typename T> class SimpleTaskFactory : public TaskFactory
 public:
     SimpleTaskFactory(const std::string &name) :
         TaskFactory(name) {}
-    std::unique_ptr<TaskInstance> make_instance(Worker &worker, std::unique_ptr<Task> task) {
-        return std::make_unique<T>(worker, std::move(task));
+    std::unique_ptr<TaskInstance> make_instance(Worker &worker,
+                                                std::unique_ptr<Task> task,
+                                                ResourceAllocation &&ra) override {
+        return std::make_unique<T>(worker, std::move(task), std::move(ra));
     }
 };
 

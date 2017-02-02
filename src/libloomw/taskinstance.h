@@ -4,6 +4,7 @@
 #include "data.h"
 #include "task.h"
 #include "taskdesc.h"
+#include "resalloc.h"
 
 #include<uv.h>
 
@@ -22,8 +23,8 @@ class TaskInstance
 public:
     const int INTERNAL_JOB_ID = -2;
 
-    TaskInstance(Worker &worker, std::unique_ptr<Task> task)
-        : worker(worker), task(std::move(task))
+    TaskInstance(Worker &worker, std::unique_ptr<Task> &&task, ResourceAllocation &&ra)
+        : worker(worker), task(std::move(task)), resource_alloc(std::move(ra))
     {
 
     }
@@ -38,8 +39,16 @@ public:
         return task->get_inputs();
     }
 
-    const std::string get_task_dir();
+    const ResourceAllocation& get_resource_alloc() const {
+        return resource_alloc;
+    }
 
+    ResourceAllocation& get_resource_alloc() {
+        return resource_alloc;
+    }
+
+    ResourceAllocation pop_resource_alloc();
+    const std::string get_task_dir();
     virtual void start(DataVector &input_data) = 0;
 
 protected:
@@ -52,6 +61,7 @@ protected:
     Worker &worker;
     std::unique_ptr<Task> task;
     bool has_directory;
+    ResourceAllocation resource_alloc;
 };
 
 }

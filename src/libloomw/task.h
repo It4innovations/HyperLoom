@@ -2,8 +2,10 @@
 #define LIBLOOMW_TASK_H
 
 #include "libloom/types.h"
+
 #include <vector>
 #include <string>
+
 
 namespace loom {
 
@@ -13,11 +15,11 @@ class Worker;
 class Task {
 
 public:
-    Task(base::Id id, int task_type, const std::string &config)
-        : id(id), task_type(task_type), config(config) {}
+    Task(base::Id id, int task_type, const std::string &config, int n_cpus)
+        : id(id), task_type(task_type), config(config), n_cpus(n_cpus) {}
 
-    Task(base::Id id, int task_type, std::string &&config)
-        : id(id), task_type(task_type), config(std::move(config)) {}
+    Task(base::Id id, int task_type, std::string &&config, int n_cpus)
+        : id(id), task_type(task_type), config(std::move(config)), n_cpus(n_cpus) {}
 
     base::Id get_id() const {
         return id;
@@ -37,6 +39,10 @@ public:
         inputs.push_back(id);
     }
 
+    bool get_n_cpus() const {
+        return n_cpus;
+    }
+
     const std::vector<base::Id>& get_inputs() const {
         return inputs;
     }
@@ -46,6 +52,7 @@ protected:
     base::Id task_type;
     std::vector<base::Id> inputs;
     std::string config;
+    int n_cpus;
 };
 
 }

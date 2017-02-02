@@ -499,6 +499,13 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_task_inputs();
 
+  // optional int32 n_cpus = 6;
+  inline bool has_n_cpus() const;
+  inline void clear_n_cpus();
+  static const int kNCpusFieldNumber = 6;
+  inline ::google::protobuf::int32 n_cpus() const;
+  inline void set_n_cpus(::google::protobuf::int32 value);
+
   // optional string address = 10;
   inline bool has_address() const;
   inline void clear_address();
@@ -537,6 +544,8 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   inline void clear_has_task_type();
   inline void set_has_task_config();
   inline void clear_has_task_config();
+  inline void set_has_n_cpus();
+  inline void clear_has_n_cpus();
   inline void set_has_address();
   inline void clear_has_address();
 
@@ -547,10 +556,11 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   int type_;
   ::google::protobuf::int32 id_;
   ::std::string* task_config_;
+  ::google::protobuf::int32 task_type_;
+  ::google::protobuf::int32 n_cpus_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > task_inputs_;
   ::std::string* address_;
   ::google::protobuf::RepeatedPtrField< ::std::string> symbols_;
-  ::google::protobuf::int32 task_type_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -1989,15 +1999,39 @@ WorkerCommand::mutable_task_inputs() {
   return &task_inputs_;
 }
 
-// optional string address = 10;
-inline bool WorkerCommand::has_address() const {
+// optional int32 n_cpus = 6;
+inline bool WorkerCommand::has_n_cpus() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void WorkerCommand::set_has_address() {
+inline void WorkerCommand::set_has_n_cpus() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void WorkerCommand::clear_has_address() {
+inline void WorkerCommand::clear_has_n_cpus() {
   _has_bits_[0] &= ~0x00000020u;
+}
+inline void WorkerCommand::clear_n_cpus() {
+  n_cpus_ = 0;
+  clear_has_n_cpus();
+}
+inline ::google::protobuf::int32 WorkerCommand::n_cpus() const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerCommand.n_cpus)
+  return n_cpus_;
+}
+inline void WorkerCommand::set_n_cpus(::google::protobuf::int32 value) {
+  set_has_n_cpus();
+  n_cpus_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerCommand.n_cpus)
+}
+
+// optional string address = 10;
+inline bool WorkerCommand::has_address() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void WorkerCommand::set_has_address() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void WorkerCommand::clear_has_address() {
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void WorkerCommand::clear_address() {
   if (address_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {

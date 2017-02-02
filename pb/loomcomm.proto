@@ -40,6 +40,7 @@ message WorkerCommand {
 	optional int32 task_type = 3;
 	optional string task_config = 4;
 	repeated int32 task_inputs = 5;
+	optional int32 n_cpus = 6;
 
 	// SEND
 	optional string address = 10;

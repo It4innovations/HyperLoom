@@ -25,7 +25,7 @@ simple_worker(Server &server, const std::string &name, int cpus=1)
 }
 
 template<typename T>
-bool check_uvector(const std::vector<T> &v, const std::vector<T> &s)
+static bool check_uvector(const std::vector<T> &v, const std::vector<T> &s)
 {
    std::set<T> s1(v.begin() , v.end());
    std::set<T> s2(s.begin() , s.end());

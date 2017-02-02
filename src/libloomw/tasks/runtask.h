@@ -8,7 +8,7 @@ namespace loom {
 class RunTask : public loom::TaskInstance
 {
 public:
-    RunTask(loom::Worker &worker, std::unique_ptr<loom::Task> task);
+    RunTask(loom::Worker &worker, std::unique_ptr<loom::Task> task, ResourceAllocation &&ra);
     ~RunTask();
     void start(loom::DataVector &inputs) override;
 

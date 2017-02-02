@@ -47,7 +47,7 @@ Worker::Worker(uv_loop_t *loop,
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     ensure_py_init();
 
-    start_tasks = false;
+    start_tasks_flag = false;
     UV_CHECK(uv_idle_init(loop, &start_tasks_idle));
     start_tasks_idle.data = this;
 
@@ -99,7 +99,8 @@ Worker::Worker(uv_loop_t *loop,
 
         logger->info("Using '{}' as working directory", work_dir);
     }
-    set_cpus(config.get_cpus());
+
+    resource_manager.init(config.get_cpus());
 
     server_conn.set_on_error([this](int error_code) {
        logger->critical("Server connection error: {}", uv_strerror(error_code));
@@ -188,7 +189,7 @@ void Worker::register_worker()
     msg.set_protocol_version(PROTOCOL_VERSION);
 
     msg.set_port(get_listen_port());
-    msg.set_cpus(resource_cpus);
+    msg.set_cpus(resource_manager.get_total_cpus());
 
     for (auto& factory : unregistered_task_factories) {
         msg.add_task_types(factory->get_name());
@@ -211,7 +212,7 @@ void Worker::new_task(std::unique_ptr<Task> task)
     waiting_tasks.push_back(std::move(task));
 }
 
-void Worker::start_task(std::unique_ptr<Task> task)
+void Worker::start_task(std::unique_ptr<Task> task, ResourceAllocation &&ra)
 {
     logger->debug("Starting task id={} task_type={} n_inputs={}",
                 task->get_id(), task->get_task_type(), task->get_inputs().size());
@@ -220,7 +221,7 @@ void Worker::start_task(std::unique_ptr<Task> task)
         logger->critical("Task with unknown type {} received", task->get_task_type());
         exit(1);
     }
-    auto task_instance = i->second->make_instance(*this, std::move(task));
+    auto task_instance = i->second->make_instance(*this, std::move(task), std::move(ra));
     TaskInstance *t = task_instance.get();
     active_tasks.push_back(std::move(task_instance));
 
@@ -230,7 +231,6 @@ void Worker::start_task(std::unique_ptr<Task> task)
     }
 
     t->start(input_data);
-    task_slots -= 1;
 }
 
 void Worker:: publish_data(Id id, const DataPtr &data)
@@ -330,25 +330,31 @@ void Worker::_start_tasks_callback(uv_idle_t *idle)
 
     UV_CHECK(uv_idle_stop(idle));
     Worker *worker = static_cast<Worker*>(idle->data);
-    worker->start_tasks = false;
+    worker->start_tasks_flag = false;
     int start_limit = TASK_START_LIMIT;
-    while (worker->task_slots > 0 && !worker->ready_tasks.empty()) {
+    while (!worker->ready_tasks.empty()) {
         if (--start_limit == 0) {
             worker->check_ready_tasks();
             return;
         }
-        auto task = std::move(worker->ready_tasks[0]);
-        worker->ready_tasks.pop_front();
-        worker->start_task(std::move(task));
+        auto &task = worker->ready_tasks[0];
+        ResourceAllocation ra = worker->resource_manager.allocate(task->get_n_cpus());
+        if (ra.is_valid()) {
+            auto t = std::move(worker->ready_tasks[0]);
+            worker->ready_tasks.pop_front();
+            worker->start_task(std::move(t), std::move(ra));
+        } else {
+            return;
+        }
     }
 }
 
 void Worker::check_ready_tasks()
 {
-    if (start_tasks || task_slots == 0 || ready_tasks.empty()) {
+    if (start_tasks_flag || ready_tasks.empty()) {
         return;
     }
-    start_tasks = true;
+    start_tasks_flag = true;
     UV_CHECK(uv_idle_start(&start_tasks_idle, _start_tasks_callback));
 }
 
@@ -369,22 +375,6 @@ void Worker::check_waiting_tasks()
     if (something_new) {
         check_ready_tasks();
     }
-}
-
-void Worker::set_cpus(int value)
-{
-    if (value == 0) {
-        value = sysconf(_SC_NPROCESSORS_ONLN);
-        logger->debug("Autodetection of CPUs: {}", value);
-    }
-    if (value <= 0) {
-        logger->critical("Cannot detect number of CPUs");
-        exit(1);
-    }
-
-    resource_cpus = value;
-    task_slots = value * 2 + 1;
-    logger->info("Number of CPUs for worker: {}", value);
 }
 
 void Worker::add_unpacker(const std::string &symbol, const UnpackFactoryFn &unpacker)
@@ -419,7 +409,7 @@ void Worker::on_dictionary_updated()
 void Worker::remove_task(TaskInstance &task, bool free_resources)
 {
     if (free_resources) {
-        task_slots += 1;
+        resource_manager.free(task.get_resource_alloc());
     }
     for (auto i = active_tasks.begin(); i != active_tasks.end(); i++) {
         if ((*i)->get_id() == task.get_id()) {
@@ -450,17 +440,20 @@ void Worker::task_redirect(TaskInstance &task,
     loom::base::Id id = task.get_id();
     logger->debug("Redirecting task id={} task_type={} n_inputs={}",
                 id, new_task_desc->task_type, new_task_desc->inputs.size());
+    ResourceAllocation resource_alloc = task.pop_resource_alloc();
     remove_task(task, false);
 
     Id task_type_id = dictionary.find_symbol_or_fail(new_task_desc->task_type);
     auto new_task = std::make_unique<Task>(id, task_type_id,
-                                           std::move(new_task_desc->config));
+                                           std::move(new_task_desc->config), 0);
     auto i = task_factories.find(task_type_id);
     if (unlikely(i == task_factories.end())) {
         logger->critical("Task with unknown type {} received", new_task->get_task_type());
         assert(0);
     }
-    auto task_instance = i->second->make_instance(*this, std::move(new_task));
+    auto task_instance = i->second->make_instance(*this,
+                                                  std::move(new_task),
+                                                  std::move(resource_alloc));
     TaskInstance *t = task_instance.get();
     active_tasks.push_back(std::move(task_instance));
     t->start(new_task_desc->inputs);
@@ -507,7 +500,8 @@ void Worker::on_message(const char *data, size_t size)
         logger->debug("Task id={} received", msg.id());
         auto task = std::make_unique<Task>(msg.id(),
                                            msg.task_type(),
-                                           msg.task_config());
+                                           msg.task_config(),
+                                           msg.n_cpus());
         for (int i = 0; i < msg.task_inputs_size(); i++) {
             task->add_input(msg.task_inputs(i));
         }

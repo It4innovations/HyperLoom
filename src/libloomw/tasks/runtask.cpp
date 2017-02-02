@@ -17,8 +17,8 @@
 using namespace loom;
 using namespace loom::base;
 
-RunTask::RunTask(Worker &worker, std::unique_ptr<Task> task)
-   : TaskInstance(worker, std::move(task)), exit_status(0)
+RunTask::RunTask(Worker &worker, std::unique_ptr<Task> task, ResourceAllocation &&ra)
+   : TaskInstance(worker, std::move(task), std::move(ra)), exit_status(0)
 {    
 }
 
@@ -111,30 +111,37 @@ void RunTask::start(DataVector &inputs)
 
 
    /* Setup args */   
-   options.file = msg.args(0).c_str();
+   std::vector<std::string> prefix = taskset_command(resource_alloc.get_cpus());
+   int prefix_size = prefix.size();
+   char *args[prefix_size + args_size + 1];
 
-   char *args[args_size + 1];
+   for (int i = 0; i < prefix_size; i++) {
+       args[i] = const_cast<char*>(prefix[i].c_str());
+   }
+
    for (int i = 0; i < args_size; i++) {
       const std::string &arg = msg.args(i);
       if (!arg.empty() && arg[0] == '$') { // Variable check
          auto it = variables.find(arg);
          if (it != variables.end()) {
-            args[i] = const_cast<char*>(it->second.c_str());
+            args[i + prefix_size] = const_cast<char*>(it->second.c_str());
             continue;
          }
       }
-      args[i] = const_cast<char*>(arg.c_str());
+      args[i + prefix_size] = const_cast<char*>(arg.c_str());
    }
-   args[args_size] = NULL;
+   int real_args_size = prefix_size + args_size;
+   args[real_args_size] = NULL;
    options.args = args;
+   options.file = args[0];
    std::string work_dir = worker.get_run_dir(get_id());
    options.cwd = work_dir.c_str();
 
    if (logger->level() == spdlog::level::debug) {
       std::stringstream s;
-      s << msg.args(0);
-      for (int i = 1; i < args_size; i++) {
-         s << ' ' << msg.args(i);
+      s << args[0];
+      for (int i = 1; i < real_args_size; i++) {
+         s << ' ' << args[i];
       }
       logger->debug("Running command {}", s.str());
    }

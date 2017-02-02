@@ -5,6 +5,7 @@
 #include "taskinstance.h"
 #include "unpacking.h"
 #include "taskfactory.h"
+#include "resourcem.h"
 
 #include "libloom/dictionary.h"
 #include "libloom/listener.h"
@@ -123,15 +124,15 @@ private:
     void register_worker();
 
     void remove_task(TaskInstance &task, bool free_resources=true);
-    void start_task(std::unique_ptr<Task> task);
+    void start_task(std::unique_ptr<Task> task, ResourceAllocation &&ra);
     //int get_listen_port();
 
     void on_message(const char *data, size_t size);
     
     uv_loop_t *loop;
 
-    int resource_cpus;
-    int task_slots;
+    ResourceManager resource_manager;
+
     std::deque<std::unique_ptr<TaskInstance>> active_tasks;
     std::deque<std::unique_ptr<Task>> ready_tasks;
     std::deque<std::unique_ptr<Task>> waiting_tasks;
@@ -156,7 +157,7 @@ private:
     std::vector<std::unique_ptr<TaskFactory>> unregistered_task_factories;
     std::unordered_map<std::string, UnpackFactoryFn> unregistered_unpack_ffs;
 
-    bool start_tasks;
+    bool start_tasks_flag;
     uv_idle_t start_tasks_idle;
 
     static void _on_getaddrinfo(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);

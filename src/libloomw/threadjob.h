@@ -5,6 +5,7 @@
 #include "task.h"
 #include "taskdesc.h"
 
+
 namespace loom {
 
 /** Base class for task instance with thread support */

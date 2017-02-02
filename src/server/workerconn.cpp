@@ -72,8 +72,10 @@ void WorkerConnection::send_task(const TaskNode &task)
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_TASK);
     msg.set_id(id);
-    msg.set_task_type(task.get_task_def().task_type);
-    msg.set_task_config(task.get_task_def().config);
+    const TaskDef& def = task.get_task_def();
+    msg.set_task_type(def.task_type);
+    msg.set_task_config(def.config);
+    msg.set_n_cpus(def.n_cpus);
 
     for (TaskNode *input_node : task.get_inputs()) {
         msg.add_task_inputs(input_node->get_id());

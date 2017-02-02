@@ -14,6 +14,13 @@ TaskInstance::~TaskInstance()
 
 }
 
+ResourceAllocation TaskInstance::pop_resource_alloc()
+{
+    ResourceAllocation ra = std::move(resource_alloc);
+    resource_alloc.set_valid(false);
+    return ra;
+}
+
 const std::string TaskInstance::get_task_dir()
 {
     std::stringstream s;

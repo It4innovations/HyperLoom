@@ -19,8 +19,8 @@ template<typename T> class ThreadTaskInstance : public TaskInstance
 {
 public:
 
-    ThreadTaskInstance(Worker &worker, std::unique_ptr<Task> task)
-        : TaskInstance(worker, std::move(task)), job(worker, *this->task)
+    ThreadTaskInstance(Worker &worker, std::unique_ptr<Task> task, ResourceAllocation &&ra)
+        : TaskInstance(worker, std::move(task), std::move(ra)), job(worker, *this->task)
     {
         work.data = this;
     }

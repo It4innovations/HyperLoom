@@ -42,6 +42,10 @@ add_library(libloomw
             unpacking.h
             interconnect.h
             interconnect.cpp
+            resourcem.h
+            resourcem.cpp
+            resalloc.h
+            resalloc.cpp
             task.cpp
             task.h
             taskdesc.h
