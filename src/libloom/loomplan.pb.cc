@@ -297,11 +297,11 @@ bool Task::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string metadata = 13;
+      // optional bytes metadata = 13;
       case 13: {
         if (tag == 106) {
          parse_metadata:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_metadata()));
         } else {
           goto handle_unusual;
@@ -369,9 +369,9 @@ void Task::SerializeWithCachedSizes(
       12, this->label(), output);
   }
 
-  // optional string metadata = 13;
+  // optional bytes metadata = 13;
   if (has_metadata()) {
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       13, this->metadata(), output);
   }
 
@@ -418,10 +418,10 @@ int Task::ByteSize() const {
           this->label());
     }
 
-    // optional string metadata = 13;
+    // optional bytes metadata = 13;
     if (has_metadata()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->metadata());
     }
 

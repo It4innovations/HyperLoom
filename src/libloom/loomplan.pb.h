@@ -181,14 +181,14 @@ class Task : public ::google::protobuf::MessageLite {
   inline ::std::string* release_label();
   inline void set_allocated_label(::std::string* label);
 
-  // optional string metadata = 13;
+  // optional bytes metadata = 13;
   inline bool has_metadata() const;
   inline void clear_metadata();
   static const int kMetadataFieldNumber = 13;
   inline const ::std::string& metadata() const;
   inline void set_metadata(const ::std::string& value);
   inline void set_metadata(const char* value);
-  inline void set_metadata(const char* value, size_t size);
+  inline void set_metadata(const void* value, size_t size);
   inline ::std::string* mutable_metadata();
   inline ::std::string* release_metadata();
   inline void set_allocated_metadata(::std::string* metadata);
@@ -807,7 +807,7 @@ inline void Task::set_allocated_label(::std::string* label) {
   // @@protoc_insertion_point(field_set_allocated:loomplan.Task.label)
 }
 
-// optional string metadata = 13;
+// optional bytes metadata = 13;
 inline bool Task::has_metadata() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -843,7 +843,7 @@ inline void Task::set_metadata(const char* value) {
   metadata_->assign(value);
   // @@protoc_insertion_point(field_set_char:loomplan.Task.metadata)
 }
-inline void Task::set_metadata(const char* value, size_t size) {
+inline void Task::set_metadata(const void* value, size_t size) {
   set_has_metadata();
   if (metadata_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     metadata_ = new ::std::string;
