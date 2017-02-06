@@ -3,6 +3,7 @@ from ..pb import loomreport_pb2 as loomreport
 from ..pb import loomcomm_pb2 as loomcomm
 from .gv import Graph
 import matplotlib.pyplot as plt
+import pickle
 
 
 def generate_colors(count):
@@ -312,4 +313,40 @@ class Report:
                 duration = event.time - task_start_ts[event.id]
                 d.append(duration)
                 task_start_ts.pop(event.id)
+        return data
+
+    def get_json_data(self):
+        tasks = self.report_msg.plan.tasks
+        data = []
+        symbols = self.symbols
+        task_start_ts = {}
+        for event in self.report_msg.events:
+            task = tasks[event.id]
+            if task.metadata:
+                d = pickle.loads(tasks[event.id].metadata)
+            else:
+                d = {}
+            if task.label:
+                d["task_type"] = task.label.split(":")[0]
+            else:
+                d["task_type"] = symbols[task.task_type]
+            d["id"] = event.id
+            d["time"] = event.time
+            d["worker_id"] = event.worker_id
+            d["target_worker_id"] = event.target_worker_id
+            d["size"] = event.size
+            if event.type == loomcomm.Event.TASK_START:
+                task_start_ts[event.id] = event.time
+                d["event_type"] = "task_start"
+            elif event.type == loomcomm.Event.TASK_END:
+                d["duration"] = event.time - task_start_ts[event.id]
+                task_start_ts.pop(event.id)
+                d["event_type"] = "task_end"
+            elif event.type == loomcomm.Event.SEND_START:
+                d["event_type"] = "send_start"
+            elif event.type == loomcomm.Event.SEND_END:
+                d["event_type"] = "send_end"
+            else:
+                d["event_type"] = event.type
+            data.append(d)
         return data

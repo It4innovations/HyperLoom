@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import sys
 from itertools import cycle
+import json
 
 
 def parse_args():
@@ -46,6 +47,9 @@ def parse_args():
 
     parser.add_argument("--show-evrate",
                         action="store_true")
+
+    parser.add_argument("--write-json",
+                        metavar="FILENAME")
 
     return parser.parse_args()
 
@@ -163,6 +167,12 @@ def print_stats(report):
         print("{}: {}".format(label, result[label]))
 
 
+def write_json(report, filename):
+    data = report.get_json_data()
+    with open(filename, "w") as f:
+        f.write(json.dumps(data))
+
+
 def main():
     args = parse_args()
     report = Report(args.report)
@@ -207,6 +217,10 @@ def main():
     if args.show_evrate:
         empty = False
         show_evrate(report)
+
+    if args.write_json:
+        empty = False
+        write_json(report, args.write_json)
 
     if empty:
         sys.stderr.write("No operation specified (use --help)\n")
