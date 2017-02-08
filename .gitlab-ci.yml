@@ -1,0 +1,61 @@
+stages:
+  - check
+  - build
+  - test
+
+check_flake8:
+  stage: check
+  image: it4i/loombuilder:latest
+  script:
+    - flake8 python/loom/client
+    - flake8 python/loom/lore
+    - flake8 python/loom/wside
+    - flake8 tests/client
+
+build_job:
+  stage: build
+  image: it4i/loombuilder:latest
+  script:
+    - mkdir _build
+    - cd _build
+    - cmake ..
+    - make -j 2
+    - cd ../python
+    - sh generate.sh
+  artifacts:
+    paths:
+      - _build
+      - python
+    expire_in:
+      6h
+
+test_pytest:
+  stage: test
+  image: it4i/loombuilder:latest
+  script:
+    - cd tests/client
+    - py.test -x -v --timeout=20
+  artifacts:
+    when: on_failure
+    paths:
+      - tests/client/build
+    expire_in:
+      1d
+
+test_doc:
+  stage: test
+  image: it4i/loombuilder:latest
+  script:
+    - cd doc
+    - make html
+  artifacts:
+    paths:
+      - doc/build/html
+    expire_in:
+      1h
+
+test_catch:
+  stage: test
+  image: it4i/loombuilder:latest
+  script:
+    - _build/tests/cpp/cpp-test

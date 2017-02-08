@@ -130,7 +130,7 @@ def test_data_save(loom_env):
         loom_env.submit(b)
 
     with pytest.raises(client.TaskFailed):
-        b = tasks.save(a1, "/etc/xxx")
+        b = tasks.save(a1, "/")
         loom_env.submit(b)
 
     b1 = tasks.save(a1, loom_env.get_filename("file1"))

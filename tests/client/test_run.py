@@ -11,7 +11,7 @@ loom_env  # silence flake8
 
 
 def pytestprog(sleep, op="copy", stamp=False, file_out=None, file_in=None):
-    args = ["/usr/bin/python", LOOM_TESTPROG]
+    args = ["/usr/bin/python3", LOOM_TESTPROG]
     if stamp:
         args.append("--stamp")
     if file_in:
@@ -160,7 +160,8 @@ def test_run_chain(loom_env):
     const = b"ABC" * 10000000
     a = tasks.const(const)
 
-    b1 = tasks.run(pytestprog(0.01, file_out="test"), stdin=a, outputs=["test"])
+    b1 = tasks.run(pytestprog(0.01, file_out="test"),
+                   stdin=a, outputs=["test"])
     b2 = tasks.run(pytestprog(0.01, file_in="in", file_out="test"),
                    inputs=[(b1, "in")], outputs=["test"])
     b3 = tasks.run(pytestprog(0.01, file_in="in", file_out="test"),

@@ -24,7 +24,7 @@ def main():
 
 def run(args):
     if args.stamp:
-        print datetime.now()
+        print(datetime.now())
 
     op = args.operation
     if op != "empty":
@@ -49,7 +49,7 @@ def run(args):
     time.sleep(args.sleep)
 
     if args.stamp:
-        print datetime.now()
+        print(datetime.now())
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@ def cpus(n):
     r.add_resource("loom/resource/cpus", n)
     return r
 
+
 cpu1 = cpus(1)
 
 

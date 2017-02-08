@@ -94,9 +94,9 @@ class LoomEnv(Env):
         for i in range(workers_count):
             w = self.start_process("worker{}".format(i), worker_args, env)
             workers.append(w)
-        time.sleep(0.15)
+        time.sleep(0.25)
         if VALGRIND:
-            time.sleep(10)
+            time.sleep(5)
         assert not server.poll()
         assert not any(w.poll() for w in workers)
 
@@ -148,7 +148,7 @@ class LoomEnv(Env):
         self.client.set_trace(self.get_filename(trace_path))
 
     def independent_python(self, code):
-        return self.start_process("python",
+        return self.start_process("python3",
                                   (sys.executable, "-c", code),
                                   catch_io=False)
 

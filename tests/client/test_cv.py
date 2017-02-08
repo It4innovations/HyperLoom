@@ -1,13 +1,19 @@
-from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
-import loom.client.tasks as tasks  # noqa
+from loomenv import loom_env, LOOM_TEST_DATA_DIR
+import loom.client.tasks as tasks
 
 import os
+import shutil
+import pytest
 
 IRIS_DATA = os.path.join(LOOM_TEST_DATA_DIR, "iris.data")
 
 loom_env  # silence flake8
 
+has_libsvm = shutil.which("svm-train") is not None \
+             and shutil.which("svm-predict") is not None
 
+
+@pytest.mark.skipif(not has_libsvm, reason="libsvm not installed")
 def test_cv_iris(loom_env):
         CHUNKS = 15
         CHUNK_SIZE = 150 // CHUNKS  # There are 150 irises
@@ -38,8 +44,6 @@ def test_cv_iris(loom_env):
                              [(chunk, "testdata"), (model, "model")])
             task.label = "svm-predict"
             predict.append(task)
-
-        #loom_env.make_dry_report(predict, "dry.report")
 
         loom_env.set_trace("mytrace")
         results = loom_env.submit(predict)

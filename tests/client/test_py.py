@@ -286,5 +286,4 @@ def test_py_task_deserialization3(loom_env):
     loom_env.start(2)
     objs = tuple(tasks.py_value(str(i + 1000)) for i in range(100))
     x = tasks.array_make(objs)
-    result = loom_env.submit(x)
-
+    loom_env.submit(x)
