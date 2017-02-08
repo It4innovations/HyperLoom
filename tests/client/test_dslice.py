@@ -3,7 +3,7 @@ import loom.client.tasks as tasks  # noqa
 
 loom_env  # silence flake8
 
-
+"""
 def test_dslice(loom_env):
     loom_env.start(2)
     consts = []
@@ -32,3 +32,4 @@ def test_dget(loom_env):
     result = loom_env.submit(r)
     assert result == [bytes("data{}".format(i), "ascii")
                       for i in range(16)]
+"""
