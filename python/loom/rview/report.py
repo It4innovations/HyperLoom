@@ -43,8 +43,8 @@ class Report:
         for task in tasks:
             if task.label:
                 key = task.label
-                # if ":" in key:
-                #     key = key.split(":")[0].strip()
+                if ":" in key:
+                    key = key.split(":")[0].strip()
             else:
                 key = symbols[task.task_type]
             labels.setdefault(key, 0)
@@ -57,7 +57,10 @@ class Report:
         symbols = self.symbols
         for task in tasks:
             if task.label:
-                labels.add(task.label)
+                if ":" in task.label:
+                    labels.add(task.label.split(":")[0])
+                else:
+                    labels.add(task.label)
             else:
                 labels.add(symbols[task.task_type])
 
@@ -201,6 +204,84 @@ class Report:
                 y_labels,
                 [(l, color_list[i])
                  for i, l in enumerate(group_names)])
+
+    def get_events_hline_data_bokeh(self):
+        TASK_START = loomcomm.Event.TASK_START
+        TASK_END = loomcomm.Event.TASK_END
+        workers = {}
+
+        symbols = self.symbols
+        label_groups, group_names = self.collect_labels()
+
+        for event in self.report_msg.events:
+            lst = workers.get(event.worker_id)
+            if lst is None:
+                lst = []
+                workers[event.worker_id] = lst
+            if event.type == TASK_END:
+                for lst2 in lst:
+                    if lst2[-1].type == TASK_START and lst2[-1].id == event.id:
+                        lst2.append(event)
+                        break
+                else:
+                    assert 0
+            elif event.type == TASK_START:
+                for lst2 in lst:
+                    if lst2[-1].type == TASK_END:
+                        lst2.append(event)
+                        break
+                else:
+                    lst.append([event])
+
+        end_time = self.report_msg.events[-1].time
+
+        finished = {}
+        unfinished = {}
+
+        y_labels = []
+        color_list = generate_colors(len(group_names))
+        tasks = self.report_msg.plan.tasks
+
+        index = 0
+        for w_index, (worker, lst) in enumerate(sorted(workers.items())):
+            y_labels.append("Worker {}".format(w_index))
+            y_labels.extend([""] * len(lst))
+            for lst2 in lst:
+                count = len(lst2)
+                if count % 2 == 1:
+                    count -= 1
+                    task = tasks[lst2[-1].id]
+                    if task.label:
+                        if ":" in task.label:
+                            label = task.label.split(":")[0]
+                        else:
+                            label = task.label
+                    else:
+                        label = symbols[task.task_type]
+                    if label not in unfinished:
+                        unfinished[label] = ([], [], [], color_list[label_groups[label]])
+                    unfinished[label][0].append(index)
+                    unfinished[label][1].append(lst2[-1].time)
+                    unfinished[label][2].append(end_time)
+
+                for i in range(0, count, 2):
+                    task = tasks[lst2[i].id]
+                    if task.label:
+                        if ":" in task.label:
+                            label = task.label.split(":")[0]
+                        else:
+                            label = task.label
+                    else:
+                        label = symbols[task.task_type]
+                    if label not in finished:
+                        finished[label] = ([], [], [], color_list[label_groups[label]])
+                    finished[label][0].append(index)
+                    finished[label][1].append(lst2[i].time)
+                    finished[label][2].append(lst2[i + 1].time)
+                index += 1
+            index += 1
+
+        return finished, unfinished
 
     def get_ctasks_data(self):
         TASK_START = loomcomm.Event.TASK_START
@@ -350,3 +431,70 @@ class Report:
                 d["event_type"] = event.type
             data.append(d)
         return data
+
+    def get_html_data(self, dhm_conf):
+        tasks = self.report_msg.plan.tasks
+        symbols = self.symbols
+        task_start_ts = {}
+        event_rate_data = {"time": [], "task_type": []}
+        task_duration_data = {"duration": [], "task_type": []}
+        c_task_duration_data = {}
+
+        dhm_params = dhm_conf["params"]
+        dhm_tt = dhm_conf["task_type"]
+        dhm_data = {dhm_params[0]: [], dhm_params[1]: [], "values": [], "labels": []}
+
+        event_idx = 1
+        event_count = len(self.report_msg.events)
+        for event in self.report_msg.events:
+            if event_idx % 10000 == 0:
+                print("Processing Loom report: event {}/{} ({:.1f}%)".format(
+                      event_idx, event_count, 100 * float(event_idx) / event_count))
+            event_idx += 1
+            task = tasks[event.id]
+            if task.label:
+                task_type = task.label.split(":")[0]
+            else:
+                task_type = symbols[task.task_type]
+            if event.type == loomcomm.Event.TASK_START:
+                task_start_ts[event.id] = event.time
+                event_type = "task_start"
+            elif event.type == loomcomm.Event.TASK_END:
+                duration = event.time - task_start_ts[event.id]
+
+                # Task duration data
+                task_duration_data["duration"].append(duration)
+                task_duration_data["task_type"].append(task_type)
+
+                # Cummulative duration data
+                if task_type not in c_task_duration_data:
+                    c_task_duration_data[task_type] = [[event.time], [duration]]
+                else:
+                    c_task_duration_data[task_type][0].append(event.time)
+                    c_task_duration_data[task_type][1].append(
+                        c_task_duration_data[task_type][1][-1] + duration)
+
+                # Duration HeatMap data
+                if task_type == dhm_tt and task.metadata:
+                    task_metadata = pickle.loads(task.metadata)
+                    dhm_data[dhm_params[0]].append(str(task_metadata[dhm_params[0]]))
+                    dhm_data[dhm_params[1]].append(str(task_metadata[dhm_params[1]]))
+                    dhm_data["values"].append(duration)
+                    dhm_data["labels"].append("{}={} {}={}".format(
+                        dhm_params[0], task_metadata[dhm_params[0]],
+                        dhm_params[1], task_metadata[dhm_params[1]]))
+
+                task_start_ts.pop(event.id)
+                event_type = "task_end"
+            elif event.type == loomcomm.Event.SEND_START:
+                event_type = "send_start"
+            elif event.type == loomcomm.Event.SEND_END:
+                event_type = "send_end"
+            else:
+                event_type = event.type
+
+            # Event rate data
+            event_rate_data["time"].append(event.time)
+            event_rate_data["task_type"].append(task_type)
+
+        return event_rate_data, task_duration_data, c_task_duration_data, dhm_data

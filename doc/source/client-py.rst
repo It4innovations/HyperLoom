@@ -415,6 +415,14 @@ executed):
 
    $ python3 -m loom.rview myreport.report --show-trace
 
+
+The following command generates summary plan execution report in HTML:
+
+::
+
+   $ python3 -m loom.rview myreport.report --html-report
+
+
 The full list of commands can be obtained by
 
 ::

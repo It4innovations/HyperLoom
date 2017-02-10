@@ -51,6 +51,9 @@ def parse_args():
     parser.add_argument("--write-json",
                         metavar="FILENAME")
 
+    parser.add_argument("--write-html",
+                        metavar="FILENAME")
+
     return parser.parse_args()
 
 
@@ -173,6 +176,65 @@ def write_json(report, filename):
         f.write(json.dumps(data))
 
 
+def write_html(report, filename):
+    from bokeh.charts import Histogram, BoxPlot, HeatMap, save, output_file
+    from bokeh.layouts import column
+    from bokeh.palettes import Dark2_5 as palette
+    from bokeh.plotting import figure
+
+    # FIXME:Do NOT hardcode duration heatmap configuration
+    # The following values are specific to ExCAPE pipeline
+    dhm_conf = {"params": ["cost", "gamma"], "task_type": "train"}
+
+    # Get data
+    event_rate_data, task_duration_data, ctdd, dhmd = report.get_html_data(dhm_conf)
+
+    # Plot event rate histograms
+    erh = Histogram(event_rate_data["time"], title="Event rate histogram",
+                    xlabel="Time [ms]", ylabel="Event Rate [#]", width=1000)
+    erh2 = Histogram(event_rate_data, title="Event rate histogram (per task type)",
+                     values="time", color="task_type", width=1000,
+                     xlabel="Time [ms]", ylabel="Event Rate [#]")
+
+    # Plot task duration
+    tdbp = BoxPlot(task_duration_data, values="duration", label="task_type",
+                   width=1000, legend=False, title="Task duration box plot",
+                   xlabel="Task Type", ylabel="Duration [ms]")
+
+    # Plot cummulative task duration
+    ctdl = figure(title="Cummulative task duration", x_axis_label='Time [ms]',
+                  y_axis_label='Cummulated duration [ms]', width=1000)
+    for k, c in zip(ctdd.keys(), cycle(palette)):
+        ctdl.line(ctdd[k][0], ctdd[k][1], color=c, legend=k, line_width=2)
+
+    # Plot duration heatmap data (!ExCAPE specific)
+    dhm = HeatMap(dhmd, title="Duration heatmap", x=dhm_conf["params"][0],
+                  y=dhm_conf["params"][1], values='values', stat='mean', width=1000)
+
+    # Plot duration BoxPlot data (!ExCAPE specific)
+    dbp = BoxPlot(dhmd, values="values", label="labels",
+                  width=1000, legend=False, title="Duration box plot",
+                  xlabel="Label", ylabel="Duration [ms]")
+
+    # Plot execution trace
+    trcd, trcd_unfinished = report.get_events_hline_data_bokeh()
+    trcp = figure(title="Execution trace", x_axis_label='Time [ms]',
+                  y_axis_label='Worker [#]', width=1000)
+    for k in trcd.keys():
+        y, xmin, xmax, c = trcd[k]
+        color = (int(c[0]*255), int(c[1]*255), int(c[2]*255))
+        trcp.segment(x0=xmin, y0=y, x1=xmax, y1=y, line_width=2, legend=k,
+                     color=color)
+    for k in trcd_unfinished.keys():
+        y, xmin, xmax, c = trcd_unfinished[k]
+        color = (int(c[0]*255), int(c[1]*255), int(c[2]*255))
+        trcp.segment(x0=xmin, y0=y, x1=xmax, y1=y, line_width=2, legend=k,
+                     color=color, line_dash="dotted")
+
+    output_file(filename)
+    save(column(erh, erh2, tdbp, ctdl, dhm, dbp, trcp))
+
+
 def main():
     args = parse_args()
     report = Report(args.report)
@@ -221,6 +283,10 @@ def main():
     if args.write_json:
         empty = False
         write_json(report, args.write_json)
+
+    if args.write_html:
+        empty = False
+        write_html(report, args.write_html)
 
     if empty:
         sys.stderr.write("No operation specified (use --help)\n")
