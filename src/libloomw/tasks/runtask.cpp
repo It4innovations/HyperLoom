@@ -112,7 +112,11 @@ void RunTask::start(DataVector &inputs)
 
 
    /* Setup args */
-   std::vector<std::string> prefix = taskset_command(resource_alloc.get_cpus());
+   std::vector<std::string> prefix;
+
+   if (globals.is_pinning_enabled()) {
+        prefix = taskset_command(resource_alloc.get_cpus());
+   }
    int prefix_size = prefix.size();
    char *args[prefix_size + args_size + 1];
 

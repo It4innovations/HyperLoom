@@ -105,7 +105,13 @@ Worker::Worker(uv_loop_t *loop,
         logger->info("Using '{}' as working directory", work_dir);
     }
 
-    globals.init(work_dir);
+    globals.init(work_dir, config.get_pinning());
+
+    if (config.get_pinning()) {
+        logger->debug("Pinning enabled");
+    } else {
+        logger->info("Pinning disabled");
+    }
 
     resource_manager.init(config.get_cpus());
 

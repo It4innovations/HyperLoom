@@ -18,12 +18,17 @@ public:
         return work_dir;
     }
 
+    bool is_pinning_enabled() const {
+        return pinning;
+    }
+
     std::string create_data_filename();
 
 private:
-    void init(const std::string &work_dir);
+    void init(const std::string &work_dir, bool pinning);
     std::string work_dir;
     std::atomic<size_t> file_id_counter;
+    bool pinning;
 };
 
 }

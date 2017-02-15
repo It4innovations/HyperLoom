@@ -15,7 +15,8 @@ std::string loom::Globals::create_data_filename()
     return s.str();
 }
 
-void loom::Globals::init(const std::string &work_dir)
+void loom::Globals::init(const std::string &work_dir, bool pinning)
 {
     this->work_dir = work_dir;
+    this->pinning = pinning;
 }

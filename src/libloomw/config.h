@@ -33,12 +33,17 @@ public:
         return debug;
     }
 
+    bool get_pinning() const {
+        return pinning;
+    }
+
 protected:
     std::string server_address;
     std::string work_dir;
     int port;
     int cpus;
     bool debug;
+    bool pinning;
 
 private:
     static int parse_opt(int key, char *arg, struct argp_state *state);

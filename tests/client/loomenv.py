@@ -79,6 +79,7 @@ class LoomEnv(Env):
         workers = []
         worker_args = (LOOM_WORKER_BIN,
                        "--debug",
+                       "--nopin",
                        "--wdir=" + LOOM_TEST_BUILD_DIR,
                        "--cpus=" + str(cpus),
                        "127.0.0.1", str(self.PORT))

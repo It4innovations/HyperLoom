@@ -1,7 +1,7 @@
 #include "config.h"
 
 loom::Config::Config()
-    : work_dir("/tmp"), cpus(0), debug(false)
+    : work_dir("/tmp"), cpus(0), debug(false), pinning(true)
 {
 
 }
@@ -12,6 +12,7 @@ void loom::Config::parse_args(int argc, char **argv)
         { "debug", 300, 0, 0, "Debug mode"},
         { "cpus", 301, "NUMBER", 0, "Number of cpus (default: autodetect)"},
         { "wdir", 302, "DIRECTORY", 0, "Working directory (default: /tmp)"},
+        { "nopin", 303, 0, 0, "Disable pinning of processes"},
         { 0 }
     };
     struct argp argp = { options, parse_opt, "SERVER-ADDRESS PORT" };
@@ -41,6 +42,9 @@ loom::Config::parse_opt (int key, char *arg,
         break;
     case 302:
         config->work_dir = arg;
+        break;
+    case 303:
+        config->pinning = false;
         break;
     case ARGP_KEY_ARG:
         switch(state->arg_num) {
