@@ -87,7 +87,7 @@ static void compute_table(const TaskNode *node,
     // It is quite expensive to detect duplication, and since it is quite
     // rare ... and moreover this is just an heuristic at the end.
 
-    // Init variables    
+    // Init variables
     //Score input_size = 0;
     std::fill(table, table + worker_size, 0);
     Score total_size = 0;
@@ -160,11 +160,9 @@ static inline void init_unit(int index,
 }
 
 
-
 TaskDistribution schedule(const ComputationState &cstate)
-{   
+{
     TaskDistribution result;
-    //loom::base::logger->alert("START");
 
     // Init workers
     auto &worker_conns = cstate.get_server().get_workers();
@@ -181,7 +179,7 @@ TaskDistribution schedule(const ComputationState &cstate)
     context.workers.reserve(worker_size);
 
     int index = 0;
-    for (auto &wc : worker_conns) {        
+    for (auto &wc : worker_conns) {
         int free_cpus = wc->get_free_cpus();
         total_free_cpus += free_cpus;
         wc->set_scheduler_index(index++);

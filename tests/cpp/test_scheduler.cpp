@@ -6,6 +6,7 @@
 #include "libloom/loomplan.pb.h"
 
 #include <set>
+#include <chrono>
 
 #include <uv.h>
 #include <iostream>
@@ -206,7 +207,7 @@ static loomplan::Plan make_big_plan(Server &server, size_t plan_size)
       n->add_input_ids(0);
       n->add_input_ids(i - 1);
       if (i % 2 == 0) {
-         m->add_input_ids(i);
+         m->add_input_ids(i - 2);
       }
    }
    return plan;
@@ -287,7 +288,7 @@ static void start(ComputationState &cstate, loom::base::Id id, WorkerConnection 
 }
 
 static void finish(ComputationState &cstate, loom::base::Id id, size_t size, size_t length, WorkerConnection *wc)
-{    
+{
     auto &node = cstate.get_node(id);
     node.set_as_finished_no_check(wc, size, length);
 }
@@ -791,4 +792,74 @@ TEST_CASE("continuation", "[scheduling]") {
        REQUIRE(check_uvector(d[w2], {}));
        REQUIRE(check_uvector(d[w3], {}));
    }
+}
+
+
+TEST_CASE("benchmark1", "[benchmark]") {
+    using namespace std::chrono;
+    const size_t CPUS = 24;
+
+    for (size_t plan_size = 100; plan_size < 2000000; plan_size *= 2) {
+        Server server(NULL, 0);
+        auto plan = make_big_trivial_plan(server, plan_size);
+        size_t tasks_size = plan.tasks_size();
+        for (size_t n_workers = 10; n_workers < 600; n_workers *= 2) {
+            Server server(NULL, 0);
+            ComputationState s(server);
+            s.add_plan(plan);
+
+            std::vector<WorkerConnection*> ws;
+            ws.reserve(n_workers);
+            for (size_t i = 0; i < n_workers; i++) {
+               ws.push_back(simple_worker(server, "w", CPUS));
+            }
+
+            std::vector<loom::base::Id> ready;
+            for (size_t i = 0; i < plan_size; i++) {
+               finish(s, i, 100 << 20, 0, ws[i % n_workers]);
+               ready.push_back(i + plan_size);
+            }
+            s.test_ready_nodes(ready);
+
+            auto start = steady_clock::now();
+            TaskDistribution d = schedule(s);
+            auto end = steady_clock::now();
+            auto ds = duration_cast<duration<double>>(end - start);
+            std::cout << "!! " << n_workers << " " << tasks_size << " " << ds.count() << std::endl;
+        }
+    }
+}
+
+
+TEST_CASE("benchmark2", "[benchmark]") {
+    using namespace std::chrono;
+    const size_t CPUS = 24;
+
+    for (size_t plan_size = 100; plan_size <= 2000000; plan_size *= 2) {
+        Server server(NULL, 0);
+        auto plan = make_big_trivial_plan(server, plan_size);
+        size_t tasks_size = plan.tasks_size();
+        for (size_t n_workers = 10; n_workers <= 160; n_workers *= 2) {
+            Server server(NULL, 0);
+            ComputationState s(server);
+            s.add_plan(plan);
+            std::vector<WorkerConnection*> ws;
+            ws.reserve(n_workers);
+            for (size_t i = 0; i < n_workers; i++) {
+               ws.push_back(simple_worker(server, "w", CPUS));
+            }
+            std::vector<loom::base::Id> ready;
+            for (size_t i = 0; i < plan_size; i++) {
+               finish(s, i, 10 + i * 10, 0, ws[i % n_workers]);
+               ready.push_back(i + plan_size);
+            }
+            s.test_ready_nodes(ready);
+
+            auto start = steady_clock::now();
+            TaskDistribution d = schedule(s);
+            auto end = steady_clock::now();
+            auto ds = duration_cast<duration<double>>(end - start);
+            std::cout << "!! " << n_workers << " " << tasks_size << " " << ds.count() << std::endl;
+        }
+    }
 }
