@@ -1,6 +1,6 @@
 #include "externfile.h"
 
-#include "../utils.h"
+#include "libloom/fsutils.h"
 #include "libloom/log.h"
 
 #include <assert.h>

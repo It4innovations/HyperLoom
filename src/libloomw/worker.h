@@ -6,6 +6,7 @@
 #include "unpacking.h"
 #include "taskfactory.h"
 #include "resourcem.h"
+#include "wtrace.h"
 
 #include "libloom/dictionary.h"
 #include "libloom/listener.h"
@@ -17,6 +18,7 @@
 #include <deque>
 #include <unordered_map>
 #include <memory>
+#include <fstream>
 
 namespace loom {
 
@@ -24,8 +26,9 @@ class Worker;
 class DataUnpacker;
 class Config;
 
+
 /** Main class of the libloom that represents whole worker */
-class Worker {    
+class Worker {
     friend class ServerConnection;
 
 public:
@@ -36,7 +39,7 @@ public:
     }
 
     void register_basic_tasks();
-    
+
     void new_task(std::unique_ptr<Task> task);
     void send_data(const std::string &address, base::Id id, DataPtr &data);
     bool send_data(const std::string &address, base::Id id) {
@@ -69,7 +72,7 @@ public:
     }
 
     void add_task_factory(std::unique_ptr<TaskFactory> factory)
-    {        
+    {
         unregistered_task_factories.push_back(std::move(factory));
     }
 
@@ -118,17 +121,22 @@ public:
         return dictionary;
     }
 
+    const std::unique_ptr<WorkerTrace>& get_trace() const {
+        return trace;
+    }
+
     void on_dictionary_updated();
 
 private:
     void register_worker();
+    void create_trace(const std::string &trace_path, loom::base::Id worker_id);
 
     void remove_task(TaskInstance &task, bool free_resources=true);
     void start_task(std::unique_ptr<Task> task, ResourceAllocation &&ra);
     //int get_listen_port();
 
     void on_message(const char *data, size_t size);
-    
+
     uv_loop_t *loop;
 
     ResourceManager resource_manager;
@@ -160,8 +168,12 @@ private:
     bool start_tasks_flag;
     uv_idle_t start_tasks_idle;
 
+    std::unique_ptr<WorkerTrace> trace;
+    uv_timer_t monitoring_timer;
+
     static void _on_getaddrinfo(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);
     static void _start_tasks_callback(uv_idle_t *idle);
+    static void _monitoring_callback(uv_timer_t* handle);
 };
 
 }

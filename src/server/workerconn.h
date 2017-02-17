@@ -70,6 +70,8 @@ public:
         return scheduler_index;
     }
 
+    void create_trace(const std::string &trace_path);
+
 private:
     Server &server;
     std::unique_ptr<loom::base::Socket> socket;

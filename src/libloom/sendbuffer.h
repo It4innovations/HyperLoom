@@ -91,6 +91,8 @@ public:
        return items.size();
     }
 
+    size_t get_data_size() const;
+
     std::vector<uv_buf_t> get_bufs();
 
 protected:

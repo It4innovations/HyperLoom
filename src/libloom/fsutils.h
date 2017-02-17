@@ -1,5 +1,5 @@
-#ifndef LIBLOOMW_UTILS_H
-#define LIBLOOMW_UTILS_H
+#ifndef LIBLOOM_FSUTILS_H
+#define LIBLOOM_FSUTILS_H
 
 #include <sys/types.h>
 #include <libloom/log.h>
@@ -8,10 +8,12 @@
 #include "libloom/sendbuffer.h"
 
 namespace loom {
+namespace base {
 
 int make_path(const char *path, mode_t mode);
 size_t file_size(const char *path);
 
 }
+}
 
-#endif // LIBLOOMW_UTILS_H
+#endif // LIBLOOM_FSUTILS_H

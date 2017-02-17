@@ -14,6 +14,10 @@ add_library(libloom
     dictionary.cpp
     dictionary.h
     types.h
+    fsutils.cpp
+    fsutils.h
+    trace.cpp
+    trace.h
     loomcomm.pb.h
     loomcomm.pb.cc
     loomplan.pb.h

@@ -39,9 +39,10 @@ def test_cv_iris(loom_env):
             task.label = "svm-predict"
             predict.append(task)
 
-        loom_env.make_dry_report(predict, "dry.report")
+        #loom_env.make_dry_report(predict, "dry.report")
 
-        results = loom_env.submit(predict, report="cv.report")
+        loom_env.set_trace("mytrace")
+        results = loom_env.submit(predict)
 
         assert len(results) == CHUNKS
         for line in results:

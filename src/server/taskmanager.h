@@ -29,7 +29,7 @@ public:
         cstate.set_final_node(id);
     }
 
-    void add_plan(const loomplan::Plan &plan);
+    loom::base::Id add_plan(const loomplan::Plan &plan);
 
     void set_report(bool report) {
         this->report = report;

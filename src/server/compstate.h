@@ -43,17 +43,13 @@ public:
     bool is_ready(const TaskNode &node);
     bool is_finished() const;
 
-    uint64_t get_base_time() const {
-        return base_time;
-    }
-
     bool is_result(loom::base::Id id) const {
         return final_nodes.find(id) != final_nodes.end();
     }
 
     int get_n_data_objects() const;
 
-    void add_plan(const loomplan::Plan &plan);
+    loom::base::Id add_plan(const loomplan::Plan &plan);
     void test_ready_nodes(std::vector<loom::base::Id> ids);
 
     loom::base::Id pop_result_client_id(loom::base::Id id);
@@ -71,16 +67,13 @@ public:
     std::unique_ptr<TaskNode> pop_node(loom::base::Id id);
     void clear_all();
 
-private:    
+private:
 
     std::unordered_map<loom::base::Id, std::unique_ptr<TaskNode>> nodes;
     std::unordered_set<TaskNode*> pending_nodes;
     std::unordered_map<loom::base::Id, loom::base::Id> final_nodes; // task_id -> client_id
 
     Server &server;
-
-    uint64_t base_time;
-
     loom::base::Id dslice_task_id;
     loom::base::Id dget_task_id;
 

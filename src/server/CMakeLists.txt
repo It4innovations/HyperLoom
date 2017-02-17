@@ -17,7 +17,9 @@ add_library(loom-server-lib OBJECT
                compstate.h
                compstate.cpp
                tasknode.cpp
-               tasknode.h)
+               tasknode.h
+               trace.cpp
+               trace.h)
 
 target_include_directories(loom-server-lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
 

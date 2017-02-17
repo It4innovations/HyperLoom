@@ -35,6 +35,10 @@ public:
         return task->get_id();
     }
 
+    Task& get_task() const {
+        return *task;
+    }
+
     const std::vector<base::Id>& get_inputs() {
         return task->get_inputs();
     }

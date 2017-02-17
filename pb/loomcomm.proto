@@ -29,7 +29,8 @@ message WorkerCommand {
 		TASK = 1;
 		SEND = 2;
 		REMOVE = 3;
-		DICTIONARY = 4;
+		DICTIONARY = 8;
+		UPDATE = 9;
 	}
 	required Type type = 1;
 
@@ -47,6 +48,10 @@ message WorkerCommand {
 
 	// DICTIONARY
 	repeated string symbols = 100;
+
+  // UPDATE
+  optional string trace_path = 120;
+  optional int32 worker_id = 121;
 }
 
 message WorkerResponse {
@@ -119,13 +124,19 @@ message ClientResponse {
 }
 
 message ClientRequest {
-        enum Type {
-	        PLAN = 1;
-	        STATS = 2;
-        }
+  enum Type {
+	  PLAN = 1;
+	  STATS = 2;
+    TRACE = 3;
+    TERMINATE = 10;
+  }
 
-        // PLAN
-        required Type type = 1;
+  required Type type = 1;
+
+  // PLAN
 	optional loomplan.Plan plan = 2;
 	optional bool report = 3 [default=false];
+
+  // REPORT
+  optional string trace_path = 6;
 }

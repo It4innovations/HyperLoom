@@ -66,11 +66,12 @@ enum WorkerCommand_Type {
   WorkerCommand_Type_TASK = 1,
   WorkerCommand_Type_SEND = 2,
   WorkerCommand_Type_REMOVE = 3,
-  WorkerCommand_Type_DICTIONARY = 4
+  WorkerCommand_Type_DICTIONARY = 8,
+  WorkerCommand_Type_UPDATE = 9
 };
 bool WorkerCommand_Type_IsValid(int value);
 const WorkerCommand_Type WorkerCommand_Type_Type_MIN = WorkerCommand_Type_TASK;
-const WorkerCommand_Type WorkerCommand_Type_Type_MAX = WorkerCommand_Type_DICTIONARY;
+const WorkerCommand_Type WorkerCommand_Type_Type_MAX = WorkerCommand_Type_UPDATE;
 const int WorkerCommand_Type_Type_ARRAYSIZE = WorkerCommand_Type_Type_MAX + 1;
 
 enum WorkerResponse_Type {
@@ -108,11 +109,13 @@ const int ClientResponse_Type_Type_ARRAYSIZE = ClientResponse_Type_Type_MAX + 1;
 
 enum ClientRequest_Type {
   ClientRequest_Type_PLAN = 1,
-  ClientRequest_Type_STATS = 2
+  ClientRequest_Type_STATS = 2,
+  ClientRequest_Type_TRACE = 3,
+  ClientRequest_Type_TERMINATE = 10
 };
 bool ClientRequest_Type_IsValid(int value);
 const ClientRequest_Type ClientRequest_Type_Type_MIN = ClientRequest_Type_PLAN;
-const ClientRequest_Type ClientRequest_Type_Type_MAX = ClientRequest_Type_STATS;
+const ClientRequest_Type ClientRequest_Type_Type_MAX = ClientRequest_Type_TERMINATE;
 const int ClientRequest_Type_Type_ARRAYSIZE = ClientRequest_Type_Type_MAX + 1;
 
 // ===================================================================
@@ -442,6 +445,7 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   static const Type SEND = WorkerCommand_Type_SEND;
   static const Type REMOVE = WorkerCommand_Type_REMOVE;
   static const Type DICTIONARY = WorkerCommand_Type_DICTIONARY;
+  static const Type UPDATE = WorkerCommand_Type_UPDATE;
   static inline bool Type_IsValid(int value) {
     return WorkerCommand_Type_IsValid(value);
   }
@@ -534,6 +538,25 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& symbols() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_symbols();
 
+  // optional string trace_path = 120;
+  inline bool has_trace_path() const;
+  inline void clear_trace_path();
+  static const int kTracePathFieldNumber = 120;
+  inline const ::std::string& trace_path() const;
+  inline void set_trace_path(const ::std::string& value);
+  inline void set_trace_path(const char* value);
+  inline void set_trace_path(const char* value, size_t size);
+  inline ::std::string* mutable_trace_path();
+  inline ::std::string* release_trace_path();
+  inline void set_allocated_trace_path(::std::string* trace_path);
+
+  // optional int32 worker_id = 121;
+  inline bool has_worker_id() const;
+  inline void clear_worker_id();
+  static const int kWorkerIdFieldNumber = 121;
+  inline ::google::protobuf::int32 worker_id() const;
+  inline void set_worker_id(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:loomcomm.WorkerCommand)
  private:
   inline void set_has_type();
@@ -548,6 +571,10 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   inline void clear_has_n_cpus();
   inline void set_has_address();
   inline void clear_has_address();
+  inline void set_has_trace_path();
+  inline void clear_has_trace_path();
+  inline void set_has_worker_id();
+  inline void clear_has_worker_id();
 
   ::std::string _unknown_fields_;
 
@@ -561,6 +588,8 @@ class WorkerCommand : public ::google::protobuf::MessageLite {
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > task_inputs_;
   ::std::string* address_;
   ::google::protobuf::RepeatedPtrField< ::std::string> symbols_;
+  ::std::string* trace_path_;
+  ::google::protobuf::int32 worker_id_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -1538,6 +1567,8 @@ class ClientRequest : public ::google::protobuf::MessageLite {
   typedef ClientRequest_Type Type;
   static const Type PLAN = ClientRequest_Type_PLAN;
   static const Type STATS = ClientRequest_Type_STATS;
+  static const Type TRACE = ClientRequest_Type_TRACE;
+  static const Type TERMINATE = ClientRequest_Type_TERMINATE;
   static inline bool Type_IsValid(int value) {
     return ClientRequest_Type_IsValid(value);
   }
@@ -1573,6 +1604,18 @@ class ClientRequest : public ::google::protobuf::MessageLite {
   inline bool report() const;
   inline void set_report(bool value);
 
+  // optional string trace_path = 6;
+  inline bool has_trace_path() const;
+  inline void clear_trace_path();
+  static const int kTracePathFieldNumber = 6;
+  inline const ::std::string& trace_path() const;
+  inline void set_trace_path(const ::std::string& value);
+  inline void set_trace_path(const char* value);
+  inline void set_trace_path(const char* value, size_t size);
+  inline ::std::string* mutable_trace_path();
+  inline ::std::string* release_trace_path();
+  inline void set_allocated_trace_path(::std::string* trace_path);
+
   // @@protoc_insertion_point(class_scope:loomcomm.ClientRequest)
  private:
   inline void set_has_type();
@@ -1581,6 +1624,8 @@ class ClientRequest : public ::google::protobuf::MessageLite {
   inline void clear_has_plan();
   inline void set_has_report();
   inline void clear_has_report();
+  inline void set_has_trace_path();
+  inline void clear_has_trace_path();
 
   ::std::string _unknown_fields_;
 
@@ -1589,6 +1634,7 @@ class ClientRequest : public ::google::protobuf::MessageLite {
   ::loomplan::Plan* plan_;
   int type_;
   bool report_;
+  ::std::string* trace_path_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -2151,6 +2197,106 @@ inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 WorkerCommand::mutable_symbols() {
   // @@protoc_insertion_point(field_mutable_list:loomcomm.WorkerCommand.symbols)
   return &symbols_;
+}
+
+// optional string trace_path = 120;
+inline bool WorkerCommand::has_trace_path() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void WorkerCommand::set_has_trace_path() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void WorkerCommand::clear_has_trace_path() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void WorkerCommand::clear_trace_path() {
+  if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_->clear();
+  }
+  clear_has_trace_path();
+}
+inline const ::std::string& WorkerCommand::trace_path() const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerCommand.trace_path)
+  return *trace_path_;
+}
+inline void WorkerCommand::set_trace_path(const ::std::string& value) {
+  set_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_ = new ::std::string;
+  }
+  trace_path_->assign(value);
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerCommand.trace_path)
+}
+inline void WorkerCommand::set_trace_path(const char* value) {
+  set_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_ = new ::std::string;
+  }
+  trace_path_->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomcomm.WorkerCommand.trace_path)
+}
+inline void WorkerCommand::set_trace_path(const char* value, size_t size) {
+  set_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_ = new ::std::string;
+  }
+  trace_path_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.WorkerCommand.trace_path)
+}
+inline ::std::string* WorkerCommand::mutable_trace_path() {
+  set_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:loomcomm.WorkerCommand.trace_path)
+  return trace_path_;
+}
+inline ::std::string* WorkerCommand::release_trace_path() {
+  clear_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = trace_path_;
+    trace_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void WorkerCommand::set_allocated_trace_path(::std::string* trace_path) {
+  if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete trace_path_;
+  }
+  if (trace_path) {
+    set_has_trace_path();
+    trace_path_ = trace_path;
+  } else {
+    clear_has_trace_path();
+    trace_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:loomcomm.WorkerCommand.trace_path)
+}
+
+// optional int32 worker_id = 121;
+inline bool WorkerCommand::has_worker_id() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void WorkerCommand::set_has_worker_id() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void WorkerCommand::clear_has_worker_id() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void WorkerCommand::clear_worker_id() {
+  worker_id_ = 0;
+  clear_has_worker_id();
+}
+inline ::google::protobuf::int32 WorkerCommand::worker_id() const {
+  // @@protoc_insertion_point(field_get:loomcomm.WorkerCommand.worker_id)
+  return worker_id_;
+}
+inline void WorkerCommand::set_worker_id(::google::protobuf::int32 value) {
+  set_has_worker_id();
+  worker_id_ = value;
+  // @@protoc_insertion_point(field_set:loomcomm.WorkerCommand.worker_id)
 }
 
 // -------------------------------------------------------------------
@@ -3174,6 +3320,82 @@ inline void ClientRequest::set_report(bool value) {
   set_has_report();
   report_ = value;
   // @@protoc_insertion_point(field_set:loomcomm.ClientRequest.report)
+}
+
+// optional string trace_path = 6;
+inline bool ClientRequest::has_trace_path() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ClientRequest::set_has_trace_path() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ClientRequest::clear_has_trace_path() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ClientRequest::clear_trace_path() {
+  if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_->clear();
+  }
+  clear_has_trace_path();
+}
+inline const ::std::string& ClientRequest::trace_path() const {
+  // @@protoc_insertion_point(field_get:loomcomm.ClientRequest.trace_path)
+  return *trace_path_;
+}
+inline void ClientRequest::set_trace_path(const ::std::string& value) {
+  set_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_ = new ::std::string;
+  }
+  trace_path_->assign(value);
+  // @@protoc_insertion_point(field_set:loomcomm.ClientRequest.trace_path)
+}
+inline void ClientRequest::set_trace_path(const char* value) {
+  set_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_ = new ::std::string;
+  }
+  trace_path_->assign(value);
+  // @@protoc_insertion_point(field_set_char:loomcomm.ClientRequest.trace_path)
+}
+inline void ClientRequest::set_trace_path(const char* value, size_t size) {
+  set_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_ = new ::std::string;
+  }
+  trace_path_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:loomcomm.ClientRequest.trace_path)
+}
+inline ::std::string* ClientRequest::mutable_trace_path() {
+  set_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    trace_path_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:loomcomm.ClientRequest.trace_path)
+  return trace_path_;
+}
+inline ::std::string* ClientRequest::release_trace_path() {
+  clear_has_trace_path();
+  if (trace_path_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = trace_path_;
+    trace_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void ClientRequest::set_allocated_trace_path(::std::string* trace_path) {
+  if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete trace_path_;
+  }
+  if (trace_path) {
+    set_has_trace_path();
+    trace_path_ = trace_path;
+  } else {
+    clear_has_trace_path();
+    trace_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientRequest.trace_path)
 }
 
 

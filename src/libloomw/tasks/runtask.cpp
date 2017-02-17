@@ -6,7 +6,7 @@
 #include "libloomw/data/array.h"
 #include "libloom/log.h"
 #include "loomrun.pb.h"
-#include "libloomw/utils.h"
+#include "libloom/fsutils.h"
 
 #include <sstream>
 #include <fstream>
@@ -19,7 +19,7 @@ using namespace loom::base;
 
 RunTask::RunTask(Worker &worker, std::unique_ptr<Task> task, ResourceAllocation &&ra)
    : TaskInstance(worker, std::move(task), std::move(ra)), exit_status(0)
-{    
+{
 }
 
 RunTask::~RunTask()
@@ -110,7 +110,7 @@ void RunTask::start(DataVector &inputs)
    }
 
 
-   /* Setup args */   
+   /* Setup args */
    std::vector<std::string> prefix = taskset_command(resource_alloc.get_cpus());
    int prefix_size = prefix.size();
    char *args[prefix_size + args_size + 1];

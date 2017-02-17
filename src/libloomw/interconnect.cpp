@@ -11,7 +11,7 @@ using namespace loom;
 using namespace loom::base;
 
 InterConnection::InterConnection(Worker &worker)
-    : socket(worker.get_loop()), worker(worker), unpacking_data_id(-1)
+    : socket(worker.get_loop()), worker(worker), unpacking_data_id(-1), received_bytes(0)
 {
     socket.set_on_close([this]() {
         logger->debug("Interconnection closed");
@@ -55,7 +55,14 @@ void InterConnection::finish_receive()
     logger->debug("Interconnect: Data id={} received", unpacking_data_id);
     worker.data_transferred(unpacking_data_id);
     worker.publish_data(unpacking_data_id, unpacker->finish());
+
+    auto &trace = worker.get_trace();
+    if (trace) {
+        trace->trace_receive(unpacking_data_id, received_bytes, address);
+    }
+
     unpacking_data_id = -1;
+    received_bytes = 0;
     unpacker.reset();
 }
 
@@ -63,6 +70,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
 {
     if (!address.empty()) {
         if (unpacker) {
+            received_bytes += size;
             // Message to unpacker
             auto result = unpacker->on_message(buffer, size);
             switch(result) {
@@ -80,6 +88,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
             loomcomm::DataHeader msg;
             assert(msg.ParseFromArray(buffer, size));
             unpacking_data_id = msg.id();
+            received_bytes = size;
             logger->debug("Interconnect: Receving data_id={}", unpacking_data_id);
             unpacker = worker.get_unpacker(msg.type_id());
             switch(unpacker->get_initial_mode()) {
@@ -106,6 +115,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
 
 void InterConnection::on_stream_data(const char *buffer, size_t size, size_t remaining)
 {
+    received_bytes += size;
     assert(unpacker);
     auto result = unpacker->on_stream_data(buffer, size, remaining);
     switch(result) {
@@ -132,6 +142,11 @@ void InterConnection::send(Id id, DataPtr &data)
     msg.set_type_id(data->get_type_id(worker));
     msg.set_n_messages(n_messages);
     buffer->insert(0, loom::base::message_to_item(msg));
+
+    auto &trace = worker.get_trace();
+    if (trace) {
+        trace->trace_send(id, buffer->get_data_size(), address);
+    }
 
     auto state = socket.get_state();
     assert(state == loom::base::Socket::State::Open ||

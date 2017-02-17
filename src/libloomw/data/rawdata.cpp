@@ -2,7 +2,7 @@
 
 #include "libloom/log.h"
 #include "libloom/sendbuffer.h"
-#include "../utils.h"
+#include "libloom/fsutils.h"
 #include "../worker.h"
 
 

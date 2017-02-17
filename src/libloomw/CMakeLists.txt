@@ -48,11 +48,11 @@ add_library(libloomw
             resalloc.cpp
             task.cpp
             task.h
+            wtrace.cpp
+            wtrace.h
             taskdesc.h
             config.cpp
-            config.h
-            utils.h
-            utils.cpp)
+            config.h)
 
 target_include_directories(libloomw PUBLIC ${PROJECT_SOURCE_DIR}/src)
 install(TARGETS libloomw

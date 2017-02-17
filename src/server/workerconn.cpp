@@ -18,7 +18,7 @@ WorkerConnection::WorkerConnection(Server &server,
     : server(server),
       socket(std::move(socket)),
       free_cpus(resource_cpus),
-      resource_cpus(resource_cpus),      
+      resource_cpus(resource_cpus),
       address(address),
       task_types(task_types),
       data_types(data_types),
@@ -100,5 +100,14 @@ void WorkerConnection::remove_data(Id id)
     loomcomm::WorkerCommand msg;
     msg.set_type(loomcomm::WorkerCommand_Type_REMOVE);
     msg.set_id(id);
+    send_message(*socket, msg);
+}
+
+void WorkerConnection::create_trace(const std::string &trace_path)
+{
+    loomcomm::WorkerCommand msg;
+    msg.set_type(loomcomm::WorkerCommand_Type_UPDATE);
+    msg.set_trace_path(trace_path);
+    msg.set_worker_id(worker_id);
     send_message(*socket, msg);
 }

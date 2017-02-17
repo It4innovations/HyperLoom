@@ -1,7 +1,7 @@
 #include "taskinstance.h"
 #include "worker.h"
-#include "utils.h"
 
+#include "libloom/fsutils.h"
 #include "libloom/log.h"
 
 #include <sstream>

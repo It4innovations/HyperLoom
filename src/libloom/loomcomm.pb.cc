@@ -647,7 +647,8 @@ bool WorkerCommand_Type_IsValid(int value) {
     case 1:
     case 2:
     case 3:
-    case 4:
+    case 8:
+    case 9:
       return true;
     default:
       return false;
@@ -659,6 +660,7 @@ const WorkerCommand_Type WorkerCommand::TASK;
 const WorkerCommand_Type WorkerCommand::SEND;
 const WorkerCommand_Type WorkerCommand::REMOVE;
 const WorkerCommand_Type WorkerCommand::DICTIONARY;
+const WorkerCommand_Type WorkerCommand::UPDATE;
 const WorkerCommand_Type WorkerCommand::Type_MIN;
 const WorkerCommand_Type WorkerCommand::Type_MAX;
 const int WorkerCommand::Type_ARRAYSIZE;
@@ -672,6 +674,8 @@ const int WorkerCommand::kTaskInputsFieldNumber;
 const int WorkerCommand::kNCpusFieldNumber;
 const int WorkerCommand::kAddressFieldNumber;
 const int WorkerCommand::kSymbolsFieldNumber;
+const int WorkerCommand::kTracePathFieldNumber;
+const int WorkerCommand::kWorkerIdFieldNumber;
 #endif  // !_MSC_VER
 
 WorkerCommand::WorkerCommand()
@@ -699,6 +703,8 @@ void WorkerCommand::SharedCtor() {
   task_config_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   n_cpus_ = 0;
   address_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  trace_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  worker_id_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -713,6 +719,9 @@ void WorkerCommand::SharedDtor() {
   }
   if (address_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete address_;
+  }
+  if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete trace_path_;
   }
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   if (this != &default_instance()) {
@@ -767,6 +776,14 @@ void WorkerCommand::Clear() {
         address_->clear();
       }
     }
+  }
+  if (_has_bits_[8 / 32] & 768) {
+    if (has_trace_path()) {
+      if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        trace_path_->clear();
+      }
+    }
+    worker_id_ = 0;
   }
 
 #undef OFFSET_OF_FIELD_
@@ -912,6 +929,34 @@ bool WorkerCommand::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(802)) goto parse_symbols;
+        if (input->ExpectTag(962)) goto parse_trace_path;
+        break;
+      }
+
+      // optional string trace_path = 120;
+      case 120: {
+        if (tag == 962) {
+         parse_trace_path:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_trace_path()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(968)) goto parse_worker_id;
+        break;
+      }
+
+      // optional int32 worker_id = 121;
+      case 121: {
+        if (tag == 968) {
+         parse_worker_id:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &worker_id_)));
+          set_has_worker_id();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -986,6 +1031,17 @@ void WorkerCommand::SerializeWithCachedSizes(
       100, this->symbols(i), output);
   }
 
+  // optional string trace_path = 120;
+  if (has_trace_path()) {
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      120, this->trace_path(), output);
+  }
+
+  // optional int32 worker_id = 121;
+  if (has_worker_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(121, this->worker_id(), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomcomm.WorkerCommand)
@@ -1034,6 +1090,22 @@ int WorkerCommand::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->address());
+    }
+
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional string trace_path = 120;
+    if (has_trace_path()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->trace_path());
+    }
+
+    // optional int32 worker_id = 121;
+    if (has_worker_id()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->worker_id());
     }
 
   }
@@ -1091,6 +1163,14 @@ void WorkerCommand::MergeFrom(const WorkerCommand& from) {
       set_address(from.address());
     }
   }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (from.has_trace_path()) {
+      set_trace_path(from.trace_path());
+    }
+    if (from.has_worker_id()) {
+      set_worker_id(from.worker_id());
+    }
+  }
   mutable_unknown_fields()->append(from.unknown_fields());
 }
 
@@ -1116,6 +1196,8 @@ void WorkerCommand::Swap(WorkerCommand* other) {
     std::swap(n_cpus_, other->n_cpus_);
     std::swap(address_, other->address_);
     symbols_.Swap(&other->symbols_);
+    std::swap(trace_path_, other->trace_path_);
+    std::swap(worker_id_, other->worker_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -3318,6 +3400,8 @@ bool ClientRequest_Type_IsValid(int value) {
   switch(value) {
     case 1:
     case 2:
+    case 3:
+    case 10:
       return true;
     default:
       return false;
@@ -3327,6 +3411,8 @@ bool ClientRequest_Type_IsValid(int value) {
 #ifndef _MSC_VER
 const ClientRequest_Type ClientRequest::PLAN;
 const ClientRequest_Type ClientRequest::STATS;
+const ClientRequest_Type ClientRequest::TRACE;
+const ClientRequest_Type ClientRequest::TERMINATE;
 const ClientRequest_Type ClientRequest::Type_MIN;
 const ClientRequest_Type ClientRequest::Type_MAX;
 const int ClientRequest::Type_ARRAYSIZE;
@@ -3335,6 +3421,7 @@ const int ClientRequest::Type_ARRAYSIZE;
 const int ClientRequest::kTypeFieldNumber;
 const int ClientRequest::kPlanFieldNumber;
 const int ClientRequest::kReportFieldNumber;
+const int ClientRequest::kTracePathFieldNumber;
 #endif  // !_MSC_VER
 
 ClientRequest::ClientRequest()
@@ -3360,10 +3447,12 @@ ClientRequest::ClientRequest(const ClientRequest& from)
 }
 
 void ClientRequest::SharedCtor() {
+  ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   type_ = 1;
   plan_ = NULL;
   report_ = false;
+  trace_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -3373,6 +3462,9 @@ ClientRequest::~ClientRequest() {
 }
 
 void ClientRequest::SharedDtor() {
+  if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete trace_path_;
+  }
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   if (this != &default_instance()) {
   #else
@@ -3403,12 +3495,17 @@ ClientRequest* ClientRequest::New() const {
 }
 
 void ClientRequest::Clear() {
-  if (_has_bits_[0 / 32] & 7) {
+  if (_has_bits_[0 / 32] & 15) {
     type_ = 1;
     if (has_plan()) {
       if (plan_ != NULL) plan_->::loomplan::Plan::Clear();
     }
     report_ = false;
+    if (has_trace_path()) {
+      if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        trace_path_->clear();
+      }
+    }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->clear();
@@ -3472,6 +3569,19 @@ bool ClientRequest::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(50)) goto parse_trace_path;
+        break;
+      }
+
+      // optional string trace_path = 6;
+      case 6: {
+        if (tag == 50) {
+         parse_trace_path:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_trace_path()));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -3518,6 +3628,12 @@ void ClientRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->report(), output);
   }
 
+  // optional string trace_path = 6;
+  if (has_trace_path()) {
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      6, this->trace_path(), output);
+  }
+
   output->WriteRaw(unknown_fields().data(),
                    unknown_fields().size());
   // @@protoc_insertion_point(serialize_end:loomcomm.ClientRequest)
@@ -3543,6 +3659,13 @@ int ClientRequest::ByteSize() const {
     // optional bool report = 3 [default = false];
     if (has_report()) {
       total_size += 1 + 1;
+    }
+
+    // optional string trace_path = 6;
+    if (has_trace_path()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->trace_path());
     }
 
   }
@@ -3571,6 +3694,9 @@ void ClientRequest::MergeFrom(const ClientRequest& from) {
     if (from.has_report()) {
       set_report(from.report());
     }
+    if (from.has_trace_path()) {
+      set_trace_path(from.trace_path());
+    }
   }
   mutable_unknown_fields()->append(from.unknown_fields());
 }
@@ -3595,6 +3721,7 @@ void ClientRequest::Swap(ClientRequest* other) {
     std::swap(type_, other->type_);
     std::swap(plan_, other->plan_);
     std::swap(report_, other->report_);
+    std::swap(trace_path_, other->trace_path_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.swap(other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

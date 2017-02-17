@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "fsutils.h"
 
 #include "libloom/log.h"
 #include "uv.h"
@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <limits.h>
 
-using namespace loom;
 using namespace loom::base;
 
 static bool is_directory(const char *path)
@@ -21,7 +20,7 @@ static bool is_directory(const char *path)
     return false;
 }
 
-size_t loom::file_size(const char *path)
+size_t loom::base::file_size(const char *path)
 {
     struct stat info;
     if (stat(path, &info))
@@ -32,7 +31,7 @@ size_t loom::file_size(const char *path)
 }
 
 
-int loom::make_path(const char *path, mode_t mode)
+int loom::base::make_path(const char *path, mode_t mode)
 {
     int len = strlen(path);
     assert(len < PATH_MAX);

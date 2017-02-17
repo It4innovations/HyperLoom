@@ -1,5 +1,4 @@
 #include "worker.h"
-#include "utils.h"
 
 #include "config.h"
 
@@ -21,6 +20,7 @@
 #include "libloom/log.h"
 #include "libloom/sendbuffer.h"
 #include "libloom/pbutils.h"
+#include "libloom/fsutils.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -28,6 +28,8 @@
 
 using namespace loom;
 using namespace loom::base;
+
+static const int MONITORING_PERIOD = 1000; // [ms]
 
 
 Worker::Worker(uv_loop_t *loop,
@@ -50,6 +52,8 @@ Worker::Worker(uv_loop_t *loop,
     start_tasks_flag = false;
     UV_CHECK(uv_idle_init(loop, &start_tasks_idle));
     start_tasks_idle.data = this;
+    UV_CHECK(uv_timer_init(loop, &monitoring_timer));
+    monitoring_timer.data = this;
 
     listener.start(loop, 0, [this]() {
         auto connection = std::make_unique<InterConnection>(*this);
@@ -202,6 +206,35 @@ void Worker::register_worker()
     loom::base::send_message(server_conn, msg);
 }
 
+void Worker::create_trace(const std::string &trace_path, Id worker_id)
+{
+    bool previous_trace = false;
+    if (trace) {
+        trace.reset();
+        previous_trace = true;
+    }
+
+    std::stringstream s;
+    s << trace_path << "/worker-" << worker_id << ".ltrace";
+    std::string filename = s.str();
+    logger->info("Trace: {}", filename);
+
+    uv_update_time(loop);
+    trace = std::make_unique<WorkerTrace>(loop);
+    if (!trace->open(filename)) {
+        trace.reset();
+        logger->error("Trace file could not be opened");
+        return;
+    }
+
+    trace->entry("TRACE", "worker");
+    trace->entry("VERSION", 0);
+
+    if (!previous_trace) {
+        uv_timer_start(&monitoring_timer, _monitoring_callback, 0, MONITORING_PERIOD);
+    }
+}
+
 void Worker::new_task(std::unique_ptr<Task> task)
 {
     if (task->is_ready(*this)) {
@@ -216,6 +249,11 @@ void Worker::start_task(std::unique_ptr<Task> task, ResourceAllocation &&ra)
 {
     logger->debug("Starting task id={} task_type={} n_inputs={}",
                 task->get_id(), task->get_task_type(), task->get_inputs().size());
+
+    if (trace) {
+        trace->trace_task_started(*task);
+    }
+
     auto i = task_factories.find(task->get_task_type());
     if (unlikely(i == task_factories.end())) {
         logger->critical("Task with unknown type {} received", task->get_task_type());
@@ -272,6 +310,10 @@ InterConnection& Worker::get_connection(const std::string &address)
 
 void Worker::close_all()
 {
+    if (trace) {
+        trace->flush();
+        uv_timer_stop(&monitoring_timer);
+    }
     listener.close();
     server_conn.close();
     for (auto& pair : connections) {
@@ -283,7 +325,7 @@ void Worker::close_all()
 }
 
 void Worker::register_connection(InterConnection &connection)
-{    
+{
     auto &c = connections[connection.get_address()];
     if (unlikely(c.get() != nullptr)) {
         // This can happen when two workers connect each other in the same time
@@ -347,6 +389,12 @@ void Worker::_start_tasks_callback(uv_idle_t *idle)
             return;
         }
     }
+}
+
+void Worker::_monitoring_callback(uv_timer_t *handle)
+{
+    Worker *worker = static_cast<Worker*>(handle->data);
+    worker->trace->trace_monitoring();
 }
 
 void Worker::check_ready_tasks()
@@ -469,6 +517,12 @@ void Worker::task_finished(TaskInstance &task, const DataPtr &data)
         msg.set_length(data->get_length());
         send_message(server_conn, msg);
     }
+
+    if (trace) {
+        uv_update_time(loop);
+        trace->trace_task_finished(task.get_task());
+    }
+
     remove_task(task);
     check_ready_tasks();
 }
@@ -520,6 +574,12 @@ void Worker::on_message(const char *data, size_t size)
         }
         logger->debug("Sending data id={} to {}", msg.id(), msg.address());
         assert(send_data(msg.address(), msg.id()));
+        break;
+    }
+    case loomcomm::WorkerCommand_Type_UPDATE: {
+        if (msg.has_trace_path()) {
+            create_trace(msg.trace_path(), msg.worker_id());
+        }
         break;
     }
     case loomcomm::WorkerCommand_Type_DICTIONARY: {

@@ -6,12 +6,14 @@
 #include "freshconn.h"
 #include "taskmanager.h"
 #include "dummyworker.h"
+#include "trace.h"
 
 
 #include "libloom/dictionary.h"
 #include "libloom/listener.h"
 
 #include <vector>
+#include <fstream>
 
 namespace loomcomm {
     class Event;
@@ -77,11 +79,19 @@ public:
     void send_dictionary(loom::base::Socket &socket);
     int get_worker_ncpus();
     void report_event(std::unique_ptr<loomcomm::Event> event);
-
     void need_task_distribution();
 
     const std::vector<std::unique_ptr<WorkerConnection>>& get_workers() const {
         return connections;
+    }
+
+    void create_trace(const std::string &trace_path);
+    void terminate();
+
+    void create_file_in_trace_dir(const std::string &filename, const char *data, size_t size);
+
+    std::unique_ptr<ServerTrace>& get_trace() {
+        return trace;
     }
 
 private:
@@ -103,10 +113,15 @@ private:
     DummyWorker dummy_worker;
 
     loom::base::Id id_counter;
+
     void on_new_connection();
 
     bool task_distribution_active;
     uv_idle_t distribution_idle;
+
+    std::string trace_dir;
+    std::unique_ptr<ServerTrace> trace;
+
     static void _distribution_callback(uv_idle_t *idle);
 };
 

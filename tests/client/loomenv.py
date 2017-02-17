@@ -145,6 +145,9 @@ class LoomEnv(Env):
         self.check_final_state()
         return result
 
+    def set_trace(self, trace_path):
+        self.client.set_trace(self.get_filename(trace_path))
+
     def independent_python(self, code):
         return self.start_process("python",
                                   (sys.executable, "-c", code),
@@ -159,6 +162,12 @@ class LoomEnv(Env):
         thread = threading.Timer(sleep_time, fn)
         thread.start()
         self.cleanups.append(lambda: thread.cancel())
+
+    def terminate(self):
+        if self._client:
+            self._client.terminate()
+            time.sleep(0.1)
+            self._client = None
 
 
 def cleanup():
@@ -178,4 +187,5 @@ def loom_env():
     cleanup()
     env = LoomEnv()
     yield env
+    env.terminate()
     env.kill_all()

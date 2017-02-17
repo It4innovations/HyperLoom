@@ -3,13 +3,14 @@ from .connection import Connection
 from .task import Task
 from .plan import Plan
 
-from ..pb.loomcomm_pb2 import Register, DataHeader
+from ..pb.loomcomm_pb2 import Register
 from ..pb.loomcomm_pb2 import ClientRequest, ClientResponse
 from ..pb.loomreport_pb2 import Report
 
 import socket
 import struct
 import cloudpickle
+import os
 from datetime import datetime
 
 LOOM_PROTOCOL_VERSION = 2
@@ -44,10 +45,12 @@ class Client(object):
         self.server_address = address
         self.server_port = port
 
+        self.trace_path = None
         self.symbols = None
-
         self.array_id = None
         self.rawdata_id = None
+
+        self.submit_id = 0
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((address, port))
@@ -61,8 +64,8 @@ class Client(object):
         while self.symbols is None:
             self._read_symbols()
 
-    """Ask server for basic statistic informations"""
     def get_stats(self):
+        """Ask server for basic statistic informations"""
         msg = ClientRequest()
         msg.type = ClientRequest.STATS
         self._send_message(msg)
@@ -74,6 +77,19 @@ class Client(object):
             "n_workers": cmsg.stats.n_workers,
             "n_data_objects": cmsg.stats.n_data_objects
         }
+
+    def terminate(self):
+        """ Terminate server & workers """
+        msg = ClientRequest()
+        msg.type = ClientRequest.TERMINATE
+        self._send_message(msg)
+
+    def set_trace(self, trace_path):
+        self.trace_path = trace_path
+        msg = ClientRequest()
+        msg.type = ClientRequest.TRACE
+        msg.trace_path = os.path.abspath(trace_path)
+        self._send_message(msg)
 
     def submit(self, tasks, report=None, report_save_period=None):
         """Submits task(s) to the server and waits for results
@@ -118,7 +134,8 @@ class Client(object):
 
         msg.plan.result_ids.extend(plan.tasks[t] for t in task_set)
         expected = len(task_set)
-        plan.set_message(msg.plan, self.symbols)
+        include_metadata = self.trace_path is not None
+        plan.set_message(msg.plan, self.symbols, include_metadata)
 
         self._send_message(msg)
 

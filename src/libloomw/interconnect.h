@@ -60,6 +60,7 @@ protected:
 
     std::unique_ptr<DataUnpacker> unpacker;
     base::Id unpacking_data_id;
+    size_t received_bytes;
 
     static std::string make_address(const std::string &host, int port);
 

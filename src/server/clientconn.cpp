@@ -51,8 +51,14 @@ void ClientConnection::on_message(const char *buffer, size_t size)
         bool report = request.report();
         task_manager.set_report(report);
         const loomplan::Plan &plan = request.plan();
-        task_manager.add_plan(plan);
+        loom::base::Id id_base = task_manager.add_plan(plan);
         logger->info("Plan submitted tasks={} report={}", plan.tasks_size(), report);
+
+        if (server.get_trace()) {
+            server.create_file_in_trace_dir("0.plan", buffer, size);
+            server.get_trace()->entry("SUBMIT", id_base);
+        }
+
     } else if (request.type() == loomcomm::ClientRequest_Type_STATS) {
         logger->debug("Stats request");
         loomcomm::ClientResponse cmsg;
@@ -61,6 +67,11 @@ void ClientConnection::on_message(const char *buffer, size_t size)
         stats->set_n_workers(server.get_connections().size());
         stats->set_n_data_objects(server.get_task_manager().get_n_of_data_objects());
         send_message(cmsg);
+    } else if (request.type() == loomcomm::ClientRequest_Type_TRACE) {
+        server.create_trace(request.trace_path());
+    } else if (request.type() == loomcomm::ClientRequest_Type_TERMINATE) {
+        logger->info("Server terminated by client");
+        server.terminate();
     } else {
         logger->critical("Invalid request type");
         exit(1);

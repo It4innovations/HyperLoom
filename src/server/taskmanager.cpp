@@ -1,5 +1,6 @@
 #include "taskmanager.h"
 #include "server.h"
+#include "trace.h"
 
 #include "libloom/compat.h"
 #include "libloom/loomplan.pb.h"
@@ -17,10 +18,11 @@ TaskManager::TaskManager(Server &server)
 {
 }
 
-void TaskManager::add_plan(const loomplan::Plan &plan)
+loom::base::Id TaskManager::add_plan(const loomplan::Plan &plan)
 {
-    cstate.add_plan(plan);
+    loom::base::Id id_base = cstate.add_plan(plan);
     distribute_work(schedule(cstate));
+    return id_base;
 }
 
 void TaskManager::distribute_work(const TaskDistribution &distribution)
@@ -61,18 +63,20 @@ void TaskManager::start_task(WorkerConnection *wc, TaskNode &node)
         }
     }
 
-    if (report) {
-        report_task_start(wc, node);
-    }
-
     wc->send_task(node);
+
     cstate.activate_pending_node(node, wc);
+    //auto &trace = server.get_trace();
+    /*if (trace) {
+        trace->trace_task_start(node, wc);
+    }*/
 }
 
 
 void TaskManager::report_send_start(loom::base::Id source_id, loom::base::Id target_id, const TaskNode &node)
 {
-    auto event = std::make_unique<loomcomm::Event>();
+    assert(false);
+ /*   auto event = std::make_unique<loomcomm::Event>();
     event->set_type(loomcomm::Event_Type_SEND_START);
     event->set_time(uv_now(server.get_loop()) - cstate.get_base_time());
 
@@ -80,29 +84,31 @@ void TaskManager::report_send_start(loom::base::Id source_id, loom::base::Id tar
     event->set_id(node.get_client_id());
     event->set_worker_id(source_id);
     event->set_target_worker_id(target_id);
-    server.report_event(std::move(event));
+    server.report_event(std::move(event));*/
 }
 
 
 void TaskManager::report_task_start(WorkerConnection *wc, const TaskNode &node)
 {
-    auto event = std::make_unique<loomcomm::Event>();
+    assert(false);
+/*    auto event = std::make_unique<loomcomm::Event>();
     event->set_type(loomcomm::Event_Type_TASK_START);
     event->set_time(uv_now(server.get_loop()) - cstate.get_base_time());
     event->set_id(node.get_client_id());
     event->set_worker_id(wc->get_worker_id());
-    server.report_event(std::move(event));
+    server.report_event(std::move(event));*/
 }
 
 void TaskManager::report_task_end(WorkerConnection *wc, const TaskNode &node)
 {
-    auto event = std::make_unique<loomcomm::Event>();
+    assert(false);
+/*    auto event = std::make_unique<loomcomm::Event>();
     event->set_type(loomcomm::Event_Type_TASK_END);
     event->set_time(uv_now(server.get_loop()) - cstate.get_base_time());
     event->set_id(node.get_client_id());
     event->set_size(node.get_size());
     event->set_worker_id(wc->get_worker_id());
-    server.report_event(std::move(event));
+    server.report_event(std::move(event));*/
 }
 
 void TaskManager::remove_node(TaskNode &node)
@@ -134,9 +140,10 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
 
     node->set_as_finished(wc, size, length);
 
-    if (report) {
-        report_task_end(wc, *node);
-    }
+    /*auto &trace = server.get_trace();
+    if (trace) {
+        trace->trace_task_end(*node, wc);
+    }*/
 
     if (cstate.is_result(id)) {
         logger->debug("Job id={} [RESULT] finished", id);
@@ -220,6 +227,11 @@ void TaskManager::run_task_distribution()
     uv_update_time(loop);
     auto start_scheduler = uv_now(loop);
 
+    auto& trace = server.get_trace();
+    if (trace) {
+        trace->trace_scheduler_start();
+    }
+
     // Schedule
     auto distribute = schedule(cstate);
 
@@ -233,10 +245,12 @@ void TaskManager::run_task_distribution()
     // Update & get time
     uv_update_time(loop);
     auto end = uv_now(loop);
-
     logger->debug("Schuduling finished: sched_time={}, dist_time={})",
                   start_distribute - start_scheduler,
                   end - start_distribute);
+    if (trace) {
+        trace->trace_scheduler_end();
+    }
 }
 
 void TaskManager::trash_all_tasks()

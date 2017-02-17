@@ -17,10 +17,6 @@ ComputationState::ComputationState(Server &server) : server(server)
    get_task_id = dictionary.find_or_create("loom/base/get");
    dslice_task_id = dictionary.find_or_create("loom/scheduler/dslice");
    dget_task_id = dictionary.find_or_create("loom/scheduler/dget");
-
-   if (server.get_loop()) {
-        base_time = uv_now(server.get_loop());
-   }
 }
 
 void ComputationState::add_node(std::unique_ptr<TaskNode> &&node) {
@@ -89,7 +85,7 @@ const TaskNode &ComputationState::get_node(Id id) const
 }
 
 void ComputationState::activate_pending_node(TaskNode &node, WorkerConnection *wc)
-{   
+{
    auto it = pending_nodes.find(&node);
    assert(it != pending_nodes.end());
    pending_nodes.erase(it);
@@ -110,7 +106,7 @@ void ComputationState::add_ready_nexts(const TaskNode &node)
          if (nn->get_task_def().policy == TaskPolicy::SCHEDULER) {
             assert(0);
             //expand_node(node);
-         } else {            
+         } else {
             add_pending_node(*nn);
          }
       }
@@ -305,7 +301,7 @@ static TaskPolicy read_task_policy(loomplan::Task_Policy policy) {
     }
 }
 
-void ComputationState::add_plan(const loomplan::Plan &plan)
+loom::base::Id ComputationState::add_plan(const loomplan::Plan &plan)
 {
     auto task_size = plan.tasks_size();
     loom::base::Id id_base = server.new_id(task_size);
@@ -353,6 +349,8 @@ void ComputationState::add_plan(const loomplan::Plan &plan)
     {
         set_final_node(plan.result_ids(i) + id_base);
     }
+
+    return id_base;
 }
 
 void ComputationState::test_ready_nodes(std::vector<Id> ids)

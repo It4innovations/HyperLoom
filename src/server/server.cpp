@@ -3,6 +3,7 @@
 #include "libloom/pbutils.h"
 #include "libloom/compat.h"
 #include "libloom/log.h"
+#include "libloom/fsutils.h"
 #include "libloom/loomcomm.pb.h"
 
 #include <sstream>
@@ -11,7 +12,7 @@ using namespace loom;
 using namespace loom::base;
 
 Server::Server(uv_loop_t *loop, int port)
-    : loop(loop),      
+    : loop(loop),
       task_manager(*this),
       dummy_worker(*this),
       id_counter(0),
@@ -159,6 +160,60 @@ void Server::need_task_distribution()
     }
     task_distribution_active = true;
     UV_CHECK(uv_idle_start(&distribution_idle, _distribution_callback));
+}
+
+void Server::create_trace(const std::string &trace_path)
+{
+    // Prepare trace
+    logger->info("Trace directory: {}", trace_path);
+    loom::base::make_path(trace_path.c_str(), S_IRWXU);
+
+    uv_update_time(loop);
+    trace = std::make_unique<ServerTrace>(loop);
+    if (!trace->open(trace_path + "/server.ltrace")) {
+        logger->error("Server trace file could not be created in {}", trace_path);
+        trace.reset();
+        return;
+    }
+
+    trace_dir = trace_path;
+
+    for (auto &wc : connections) {
+        wc->create_trace(trace_path);
+    }
+
+    trace->entry("TRACE", "server");
+    trace->entry("VERSION", 0);
+
+    for (auto &symbol : dictionary.get_all_symbols()) {
+        trace->entry("SYMBOL", symbol);
+    }
+
+    for (auto &wc : connections) {
+        trace->trace_worker(wc.get());
+    }
+}
+
+void Server::terminate()
+{
+    /*for (auto &wc : connections) {
+        wc->terminate();
+    }
+    uv_stop(loop);*/
+    if (trace) {
+        trace->flush();
+    }
+    exit(0);
+}
+
+void Server::create_file_in_trace_dir(const std::string &filename, const char *data, size_t size)
+{
+    std::ofstream f(trace_dir + '/' + filename, std::ofstream::binary);
+    if (!f.is_open()) {
+        logger->error("Cannot open trace file for writing: {}", filename);
+        return;
+    }
+    f.write(data, size);
 }
 
 void Server::_distribution_callback(uv_idle_t *idle)

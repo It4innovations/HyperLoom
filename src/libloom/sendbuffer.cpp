@@ -9,6 +9,16 @@ SendBuffer::SendBuffer()
     request.data = this;
 }
 
+size_t SendBuffer::get_data_size() const
+{
+    size_t result = 0;
+    for (auto& item : items) {
+        uv_buf_t buf = item->get_buf();
+        result += buf.len;
+    }
+    return result;
+}
+
 std::vector<uv_buf_t> loom::base::SendBuffer::get_bufs()
 {
    std::vector<uv_buf_t> bufs;
