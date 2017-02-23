@@ -395,49 +395,29 @@ Reports
 -------
 
 Reporting system serves for debugging and profiling the Loom programs.
-Report can be created by ``submit`` method by the following way::
+Reports can be enabled by ``set_trace`` method as follows::
 
    task = ...
-   client.submit(task, "myreport.report")
+   client.set_trace("/path/to/mytrace")
+   client.submit(task)
 
-It creates report file `myreport.report`. This file can be explored by ``loom.rview``.
+The path provided to ``set_trace`` has to be placed on a network filesystem that
+is visible to server and all workers. It creates a directory
+``/path/to/mytrace`` where server and workers writes its traces.
 
-The following command shows graph of the plan:
-
-::
-
-   $ python3 -m loom.rview myreport.report --show-graph
-
-The following command shows tracelog of tasks (how long and where each tasks was
-executed):
+The trace can be explored by ``loom.lore``.
 
 ::
 
-   $ python3 -m loom.rview myreport.report --show-trace
+   $ python3 -m loom.lore /path/to/mytrace
 
-
-The following command generates summary plan execution report in HTML:
-
-::
-
-   $ python3 -m loom.rview myreport.report --html-report
-
-
+It creates file *output.html* that contains the final report.
 The full list of commands can be obtained by
 
 ::
 
    $ python3 -m loom.rview --help
 
-In the example above, we have created report by ``submit``. It is possible to
-create a report without submitting a task by
-:py:func:`loom.client.make_dry_report`. The report created by this way contains
-a graph of tasks, but does not contain runtime information (since the task was
-not executed)::
-
-   from loom.client import make_dry_report
-   task = ...
-   make_dry_report(task, "myreport.report")
 
 Labels
 ------
