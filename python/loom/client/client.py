@@ -5,13 +5,11 @@ from .plan import Plan
 
 from ..pb.loomcomm_pb2 import Register
 from ..pb.loomcomm_pb2 import ClientRequest, ClientResponse
-from ..pb.loomreport_pb2 import Report
 
 import socket
 import struct
 import cloudpickle
 import os
-from datetime import datetime
 
 LOOM_PROTOCOL_VERSION = 2
 
@@ -91,19 +89,11 @@ class Client(object):
         msg.trace_path = os.path.abspath(trace_path)
         self._send_message(msg)
 
-    def submit(self, tasks, report=None, report_save_period=None):
+    def submit(self, tasks):
         """Submits task(s) to the server and waits for results
 
         Args:
             tasks (Task or [Task]): Task(s) that are submitted
-            report (str or None): If it is not None than reporting is enabled
-                                  report is saved to file defined by this
-                                  argument
-            report_save_period (timedelta or None):
-                  Debugging option when client crases or is killed.
-                  How often should be report saved during computation.
-                  It is always also saved at the end of the computation
-                  If None then it is saved only at the end of computation.
 
         Raises:
             loom.client.TaskFailed: When an execution of a task failes
@@ -130,7 +120,6 @@ class Client(object):
 
         msg = ClientRequest()
         msg.type = ClientRequest.PLAN
-        msg.report = bool(report)
 
         msg.plan.result_ids.extend(plan.tasks[t] for t in task_set)
         expected = len(task_set)
@@ -139,38 +128,18 @@ class Client(object):
 
         self._send_message(msg)
 
-        if report:
-            report_data = self._create_report(plan)
-        else:
-            report_save_period = None
-
         data = {}
 
-        if report_save_period is not None:
-            last_save = datetime.now()
-
-        try:
-            while expected != len(data):
-                msg = self.connection.receive_message()
-                cmsg = ClientResponse()
-                cmsg.ParseFromString(msg)
-                if cmsg.type == ClientResponse.DATA:
-                    data[cmsg.data.id] = self._receive_data(cmsg.data.type_id)
-                elif cmsg.type == ClientResponse.EVENT:
-                    self.process_event(cmsg.event, report_data)
-                    if report_save_period is not None:
-                        now = datetime.now()
-                        if now - last_save >= report_save_period:
-                            last_save = now
-                            now_str = now.strftime("-%Y-%m-%dT%H:%M:%S")
-                            write_report(report_data, report + now_str)
-                elif cmsg.type == ClientResponse.ERROR:
-                    self.process_error(cmsg)
-                else:
-                    assert 0
-        finally:
-            if report:
-                write_report(report_data, report)
+        while expected != len(data):
+            msg = self.connection.receive_message()
+            cmsg = ClientResponse()
+            cmsg.ParseFromString(msg)
+            if cmsg.type == ClientResponse.DATA:
+                data[cmsg.data.id] = self._receive_data(cmsg.data.type_id)
+            elif cmsg.type == ClientResponse.ERROR:
+                self.process_error(cmsg)
+            else:
+                assert 0
 
         if single_result:
             return data[plan.tasks[tasks[0]]]
@@ -182,12 +151,6 @@ class Client(object):
         for name, index in self.symbols.items():
             symbols[index] = name
         return symbols
-
-    def _create_report(self, plan):
-        report_msg = Report()
-        report_msg.symbols.extend(self._symbol_list())
-        plan.set_message(report_msg.plan, self.symbols, True)
-        return report_msg
 
     def _read_symbols(self):
         msg = self.connection.receive_message()
@@ -205,10 +168,6 @@ class Client(object):
         assert cmsg.HasField("error")
         error = cmsg.error
         raise TaskFailed(error.id, error.worker, error.error_msg)
-
-    def process_event(self, event, report_data):
-        new_event = report_data.events.add()
-        new_event.CopyFrom(event)
 
     def _receive_data(self, type_id):
         if type_id == self.rawdata_id:
@@ -237,27 +196,4 @@ def make_dry_report(tasks, report_filename):
          tasks (Task or [Task]): Tasks for which the report is composed
          report_filename (str): Filename of the resulting file
     """
-    if isinstance(tasks, Task):
-        tasks = (tasks,)
-
-    plan = Plan()
-    for task in tasks:
-        plan.add(task)
-
-    # Create symbols
-    symbols = sorted(plan.collect_symbols())
-    symbol_table = {}
-    for i, s in enumerate(symbols):
-        symbol_table[s] = i
-
-    # Create report
-    report_data = Report()
-    report_data.symbols.extend(symbols)
-    plan.set_message(report_data.plan, symbol_table)
-
-    write_report(report_data, report_filename)
-
-
-def write_report(report_data, report_filename):
-    with open(report_filename, "wb") as f:
-        f.write(report_data.SerializeToString())
+    raise Exception("Not implemented in this version")

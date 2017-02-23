@@ -19,7 +19,7 @@ from . import loomplan_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='loomcomm.proto',
   package='loomcomm',
-  serialized_pb=_b('\n\x0eloomcomm.proto\x12\x08loomcomm\x1a\x0eloomplan.proto\"\xc1\x01\n\x08Register\x12\x18\n\x10protocol_version\x18\x01 \x02(\x05\x12%\n\x04type\x18\x02 \x02(\x0e\x32\x17.loomcomm.Register.Type\x12\x0c\n\x04port\x18\x03 \x01(\x05\x12\x12\n\ntask_types\x18\x04 \x03(\t\x12\x12\n\ndata_types\x18\x05 \x03(\t\x12\x0c\n\x04\x63pus\x18\x06 \x01(\x05\"0\n\x04Type\x12\x13\n\x0fREGISTER_WORKER\x10\x01\x12\x13\n\x0fREGISTER_CLIENT\x10\x02\"&\n\rServerMessage\"\x15\n\x04Type\x12\r\n\tSTART_JOB\x10\x01\"\xa1\x02\n\rWorkerCommand\x12*\n\x04type\x18\x01 \x02(\x0e\x32\x1c.loomcomm.WorkerCommand.Type\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x11\n\ttask_type\x18\x03 \x01(\x05\x12\x13\n\x0btask_config\x18\x04 \x01(\t\x12\x13\n\x0btask_inputs\x18\x05 \x03(\x05\x12\x0e\n\x06n_cpus\x18\x06 \x01(\x05\x12\x0f\n\x07\x61\x64\x64ress\x18\n \x01(\t\x12\x0f\n\x07symbols\x18\x64 \x03(\t\x12\x12\n\ntrace_path\x18x \x01(\t\x12\x11\n\tworker_id\x18y \x01(\x05\"B\n\x04Type\x12\x08\n\x04TASK\x10\x01\x12\x08\n\x04SEND\x10\x02\x12\n\n\x06REMOVE\x10\x03\x12\x0e\n\nDICTIONARY\x10\x08\x12\n\n\x06UPDATE\x10\t\"\xac\x01\n\x0eWorkerResponse\x12+\n\x04type\x18\x01 \x02(\x0e\x32\x1d.loomcomm.WorkerResponse.Type\x12\n\n\x02id\x18\x02 \x02(\x05\x12\x0c\n\x04size\x18\x03 \x01(\x04\x12\x0e\n\x06length\x18\x04 \x01(\x04\x12\x11\n\terror_msg\x18\x64 \x01(\t\"0\n\x04Type\x12\x0c\n\x08\x46INISHED\x10\x01\x12\x0e\n\nTRANSFERED\x10\x02\x12\n\n\x06\x46\x41ILED\x10\x03\"\x18\n\x08\x41nnounce\x12\x0c\n\x04port\x18\x01 \x02(\x05\"=\n\nDataHeader\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x0f\n\x07type_id\x18\x03 \x02(\x05\x12\x12\n\nn_messages\x18\x02 \x02(\x03\"\xc4\x01\n\x05\x45vent\x12\x0c\n\x04time\x18\x01 \x02(\x04\x12\"\n\x04type\x18\x02 \x02(\x0e\x32\x14.loomcomm.Event.Type\x12\n\n\x02id\x18\x03 \x02(\x05\x12\x11\n\tworker_id\x18\x04 \x01(\x05\x12\x0c\n\x04size\x18\x05 \x01(\x04\x12\x18\n\x10target_worker_id\x18\x06 \x01(\x05\"B\n\x04Type\x12\x0e\n\nTASK_START\x10\x01\x12\x0c\n\x08TASK_END\x10\x02\x12\x0e\n\nSEND_START\x10\x03\x12\x0c\n\x08SEND_END\x10\x04\"6\n\x05\x45rror\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x0e\n\x06worker\x18\x02 \x02(\t\x12\x11\n\terror_msg\x18\x03 \x02(\t\"2\n\x05Stats\x12\x11\n\tn_workers\x18\x01 \x01(\x05\x12\x16\n\x0en_data_objects\x18\x02 \x01(\x05\"\x95\x02\n\x0e\x43lientResponse\x12+\n\x04type\x18\x01 \x02(\x0e\x32\x1d.loomcomm.ClientResponse.Type\x12\"\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x14.loomcomm.DataHeader\x12\x1e\n\x05\x65vent\x18\x03 \x01(\x0b\x32\x0f.loomcomm.Event\x12\x1e\n\x05\x65rror\x18\x04 \x01(\x0b\x32\x0f.loomcomm.Error\x12\x0f\n\x07symbols\x18\x05 \x03(\t\x12\x1e\n\x05stats\x18\x06 \x01(\x0b\x32\x0f.loomcomm.Stats\"A\n\x04Type\x12\x08\n\x04\x44\x41TA\x10\x01\x12\t\n\x05\x45VENT\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x12\x0e\n\nDICTIONARY\x10\x04\x12\t\n\x05STATS\x10\x05\"\xbb\x01\n\rClientRequest\x12*\n\x04type\x18\x01 \x02(\x0e\x32\x1c.loomcomm.ClientRequest.Type\x12\x1c\n\x04plan\x18\x02 \x01(\x0b\x32\x0e.loomplan.Plan\x12\x15\n\x06report\x18\x03 \x01(\x08:\x05\x66\x61lse\x12\x12\n\ntrace_path\x18\x06 \x01(\t\"5\n\x04Type\x12\x08\n\x04PLAN\x10\x01\x12\t\n\x05STATS\x10\x02\x12\t\n\x05TRACE\x10\x03\x12\r\n\tTERMINATE\x10\nB\x02H\x03')
+  serialized_pb=_b('\n\x0eloomcomm.proto\x12\x08loomcomm\x1a\x0eloomplan.proto\"\xc1\x01\n\x08Register\x12\x18\n\x10protocol_version\x18\x01 \x02(\x05\x12%\n\x04type\x18\x02 \x02(\x0e\x32\x17.loomcomm.Register.Type\x12\x0c\n\x04port\x18\x03 \x01(\x05\x12\x12\n\ntask_types\x18\x04 \x03(\t\x12\x12\n\ndata_types\x18\x05 \x03(\t\x12\x0c\n\x04\x63pus\x18\x06 \x01(\x05\"0\n\x04Type\x12\x13\n\x0fREGISTER_WORKER\x10\x01\x12\x13\n\x0fREGISTER_CLIENT\x10\x02\"&\n\rServerMessage\"\x15\n\x04Type\x12\r\n\tSTART_JOB\x10\x01\"\xa1\x02\n\rWorkerCommand\x12*\n\x04type\x18\x01 \x02(\x0e\x32\x1c.loomcomm.WorkerCommand.Type\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x11\n\ttask_type\x18\x03 \x01(\x05\x12\x13\n\x0btask_config\x18\x04 \x01(\t\x12\x13\n\x0btask_inputs\x18\x05 \x03(\x05\x12\x0e\n\x06n_cpus\x18\x06 \x01(\x05\x12\x0f\n\x07\x61\x64\x64ress\x18\n \x01(\t\x12\x0f\n\x07symbols\x18\x64 \x03(\t\x12\x12\n\ntrace_path\x18x \x01(\t\x12\x11\n\tworker_id\x18y \x01(\x05\"B\n\x04Type\x12\x08\n\x04TASK\x10\x01\x12\x08\n\x04SEND\x10\x02\x12\n\n\x06REMOVE\x10\x03\x12\x0e\n\nDICTIONARY\x10\x08\x12\n\n\x06UPDATE\x10\t\"\xac\x01\n\x0eWorkerResponse\x12+\n\x04type\x18\x01 \x02(\x0e\x32\x1d.loomcomm.WorkerResponse.Type\x12\n\n\x02id\x18\x02 \x02(\x05\x12\x0c\n\x04size\x18\x03 \x01(\x04\x12\x0e\n\x06length\x18\x04 \x01(\x04\x12\x11\n\terror_msg\x18\x64 \x01(\t\"0\n\x04Type\x12\x0c\n\x08\x46INISHED\x10\x01\x12\x0e\n\nTRANSFERED\x10\x02\x12\n\n\x06\x46\x41ILED\x10\x03\"\x18\n\x08\x41nnounce\x12\x0c\n\x04port\x18\x01 \x02(\x05\"=\n\nDataHeader\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x0f\n\x07type_id\x18\x03 \x02(\x05\x12\x12\n\nn_messages\x18\x02 \x02(\x03\"6\n\x05\x45rror\x12\n\n\x02id\x18\x01 \x02(\x05\x12\x0e\n\x06worker\x18\x02 \x02(\t\x12\x11\n\terror_msg\x18\x03 \x02(\t\"2\n\x05Stats\x12\x11\n\tn_workers\x18\x01 \x01(\x05\x12\x16\n\x0en_data_objects\x18\x02 \x01(\x05\"\xea\x01\n\x0e\x43lientResponse\x12+\n\x04type\x18\x01 \x02(\x0e\x32\x1d.loomcomm.ClientResponse.Type\x12\"\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x14.loomcomm.DataHeader\x12\x1e\n\x05\x65rror\x18\x04 \x01(\x0b\x32\x0f.loomcomm.Error\x12\x0f\n\x07symbols\x18\x05 \x03(\t\x12\x1e\n\x05stats\x18\x06 \x01(\x0b\x32\x0f.loomcomm.Stats\"6\n\x04Type\x12\x08\n\x04\x44\x41TA\x10\x01\x12\t\n\x05\x45RROR\x10\x03\x12\x0e\n\nDICTIONARY\x10\x04\x12\t\n\x05STATS\x10\x05\"\xa4\x01\n\rClientRequest\x12*\n\x04type\x18\x01 \x02(\x0e\x32\x1c.loomcomm.ClientRequest.Type\x12\x1c\n\x04plan\x18\x02 \x01(\x0b\x32\x0e.loomplan.Plan\x12\x12\n\ntrace_path\x18\x06 \x01(\t\"5\n\x04Type\x12\x08\n\x04PLAN\x10\x01\x12\t\n\x05STATS\x10\x02\x12\t\n\x05TRACE\x10\x03\x12\r\n\tTERMINATE\x10\nB\x02H\x03')
   ,
   dependencies=[loomplan_pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -126,36 +126,6 @@ _WORKERRESPONSE_TYPE = _descriptor.EnumDescriptor(
 )
 _sym_db.RegisterEnumDescriptor(_WORKERRESPONSE_TYPE)
 
-_EVENT_TYPE = _descriptor.EnumDescriptor(
-  name='Type',
-  full_name='loomcomm.Event.Type',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='TASK_START', index=0, number=1,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='TASK_END', index=1, number=2,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='SEND_START', index=2, number=3,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='SEND_END', index=3, number=4,
-      options=None,
-      type=None),
-  ],
-  containing_type=None,
-  options=None,
-  serialized_start=967,
-  serialized_end=1033,
-)
-_sym_db.RegisterEnumDescriptor(_EVENT_TYPE)
-
 _CLIENTRESPONSE_TYPE = _descriptor.EnumDescriptor(
   name='Type',
   full_name='loomcomm.ClientResponse.Type',
@@ -167,26 +137,22 @@ _CLIENTRESPONSE_TYPE = _descriptor.EnumDescriptor(
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='EVENT', index=1, number=2,
+      name='ERROR', index=1, number=3,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ERROR', index=2, number=3,
+      name='DICTIONARY', index=2, number=4,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='DICTIONARY', index=3, number=4,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='STATS', index=4, number=5,
+      name='STATS', index=3, number=5,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=1356,
-  serialized_end=1421,
+  serialized_start=1125,
+  serialized_end=1179,
 )
 _sym_db.RegisterEnumDescriptor(_CLIENTRESPONSE_TYPE)
 
@@ -215,8 +181,8 @@ _CLIENTREQUEST_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1558,
-  serialized_end=1611,
+  serialized_start=1293,
+  serialized_end=1346,
 )
 _sym_db.RegisterEnumDescriptor(_CLIENTREQUEST_TYPE)
 
@@ -538,72 +504,6 @@ _DATAHEADER = _descriptor.Descriptor(
 )
 
 
-_EVENT = _descriptor.Descriptor(
-  name='Event',
-  full_name='loomcomm.Event',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='time', full_name='loomcomm.Event.time', index=0,
-      number=1, type=4, cpp_type=4, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='type', full_name='loomcomm.Event.type', index=1,
-      number=2, type=14, cpp_type=8, label=2,
-      has_default_value=False, default_value=1,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='id', full_name='loomcomm.Event.id', index=2,
-      number=3, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='worker_id', full_name='loomcomm.Event.worker_id', index=3,
-      number=4, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='size', full_name='loomcomm.Event.size', index=4,
-      number=5, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='target_worker_id', full_name='loomcomm.Event.target_worker_id', index=5,
-      number=6, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-    _EVENT_TYPE,
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=837,
-  serialized_end=1033,
-)
-
-
 _ERROR = _descriptor.Descriptor(
   name='Error',
   full_name='loomcomm.Error',
@@ -643,8 +543,8 @@ _ERROR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1035,
-  serialized_end=1089,
+  serialized_start=836,
+  serialized_end=890,
 )
 
 
@@ -680,8 +580,8 @@ _STATS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1091,
-  serialized_end=1141,
+  serialized_start=892,
+  serialized_end=942,
 )
 
 
@@ -707,28 +607,21 @@ _CLIENTRESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='event', full_name='loomcomm.ClientResponse.event', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='error', full_name='loomcomm.ClientResponse.error', index=3,
+      name='error', full_name='loomcomm.ClientResponse.error', index=2,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='symbols', full_name='loomcomm.ClientResponse.symbols', index=4,
+      name='symbols', full_name='loomcomm.ClientResponse.symbols', index=3,
       number=5, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='stats', full_name='loomcomm.ClientResponse.stats', index=5,
+      name='stats', full_name='loomcomm.ClientResponse.stats', index=4,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -746,8 +639,8 @@ _CLIENTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1144,
-  serialized_end=1421,
+  serialized_start=945,
+  serialized_end=1179,
 )
 
 
@@ -773,14 +666,7 @@ _CLIENTREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='report', full_name='loomcomm.ClientRequest.report', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=True, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='trace_path', full_name='loomcomm.ClientRequest.trace_path', index=3,
+      name='trace_path', full_name='loomcomm.ClientRequest.trace_path', index=2,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -798,8 +684,8 @@ _CLIENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1424,
-  serialized_end=1611,
+  serialized_start=1182,
+  serialized_end=1346,
 )
 
 _REGISTER.fields_by_name['type'].enum_type = _REGISTER_TYPE
@@ -809,11 +695,8 @@ _WORKERCOMMAND.fields_by_name['type'].enum_type = _WORKERCOMMAND_TYPE
 _WORKERCOMMAND_TYPE.containing_type = _WORKERCOMMAND
 _WORKERRESPONSE.fields_by_name['type'].enum_type = _WORKERRESPONSE_TYPE
 _WORKERRESPONSE_TYPE.containing_type = _WORKERRESPONSE
-_EVENT.fields_by_name['type'].enum_type = _EVENT_TYPE
-_EVENT_TYPE.containing_type = _EVENT
 _CLIENTRESPONSE.fields_by_name['type'].enum_type = _CLIENTRESPONSE_TYPE
 _CLIENTRESPONSE.fields_by_name['data'].message_type = _DATAHEADER
-_CLIENTRESPONSE.fields_by_name['event'].message_type = _EVENT
 _CLIENTRESPONSE.fields_by_name['error'].message_type = _ERROR
 _CLIENTRESPONSE.fields_by_name['stats'].message_type = _STATS
 _CLIENTRESPONSE_TYPE.containing_type = _CLIENTRESPONSE
@@ -826,7 +709,6 @@ DESCRIPTOR.message_types_by_name['WorkerCommand'] = _WORKERCOMMAND
 DESCRIPTOR.message_types_by_name['WorkerResponse'] = _WORKERRESPONSE
 DESCRIPTOR.message_types_by_name['Announce'] = _ANNOUNCE
 DESCRIPTOR.message_types_by_name['DataHeader'] = _DATAHEADER
-DESCRIPTOR.message_types_by_name['Event'] = _EVENT
 DESCRIPTOR.message_types_by_name['Error'] = _ERROR
 DESCRIPTOR.message_types_by_name['Stats'] = _STATS
 DESCRIPTOR.message_types_by_name['ClientResponse'] = _CLIENTRESPONSE
@@ -873,13 +755,6 @@ DataHeader = _reflection.GeneratedProtocolMessageType('DataHeader', (_message.Me
   # @@protoc_insertion_point(class_scope:loomcomm.DataHeader)
   ))
 _sym_db.RegisterMessage(DataHeader)
-
-Event = _reflection.GeneratedProtocolMessageType('Event', (_message.Message,), dict(
-  DESCRIPTOR = _EVENT,
-  __module__ = 'loomcomm_pb2'
-  # @@protoc_insertion_point(class_scope:loomcomm.Event)
-  ))
-_sym_db.RegisterMessage(Event)
 
 Error = _reflection.GeneratedProtocolMessageType('Error', (_message.Message,), dict(
   DESCRIPTOR = _ERROR,

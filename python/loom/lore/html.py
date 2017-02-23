@@ -158,7 +158,7 @@ def create_scheduling_time(report):
     ds = report.scheduler_times
     duration = ds["end_time"] - ds["start_time"]
 
-    df = pd.DataFrame({"time": ds["end_time"], "duration" : duration})
+    df = pd.DataFrame({"time": ds["end_time"], "duration": duration})
     df["label"] = 0
     f1 = figure(plot_width=1000, plot_height=400)
     f1.line(df["time"], df["duration"].cumsum())

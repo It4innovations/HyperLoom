@@ -39,7 +39,6 @@ class WorkerCommand;
 class WorkerResponse;
 class Announce;
 class DataHeader;
-class Event;
 class Error;
 class Stats;
 class ClientResponse;
@@ -84,20 +83,8 @@ const WorkerResponse_Type WorkerResponse_Type_Type_MIN = WorkerResponse_Type_FIN
 const WorkerResponse_Type WorkerResponse_Type_Type_MAX = WorkerResponse_Type_FAILED;
 const int WorkerResponse_Type_Type_ARRAYSIZE = WorkerResponse_Type_Type_MAX + 1;
 
-enum Event_Type {
-  Event_Type_TASK_START = 1,
-  Event_Type_TASK_END = 2,
-  Event_Type_SEND_START = 3,
-  Event_Type_SEND_END = 4
-};
-bool Event_Type_IsValid(int value);
-const Event_Type Event_Type_Type_MIN = Event_Type_TASK_START;
-const Event_Type Event_Type_Type_MAX = Event_Type_SEND_END;
-const int Event_Type_Type_ARRAYSIZE = Event_Type_Type_MAX + 1;
-
 enum ClientResponse_Type {
   ClientResponse_Type_DATA = 1,
-  ClientResponse_Type_EVENT = 2,
   ClientResponse_Type_ERROR = 3,
   ClientResponse_Type_DICTIONARY = 4,
   ClientResponse_Type_STATS = 5
@@ -955,162 +942,6 @@ class DataHeader : public ::google::protobuf::MessageLite {
 };
 // -------------------------------------------------------------------
 
-class Event : public ::google::protobuf::MessageLite {
- public:
-  Event();
-  virtual ~Event();
-
-  Event(const Event& from);
-
-  inline Event& operator=(const Event& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::std::string& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::std::string* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const Event& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const Event* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(Event* other);
-
-  // implements Message ----------------------------------------------
-
-  Event* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const Event& from);
-  void MergeFrom(const Event& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  void DiscardUnknownFields();
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  typedef Event_Type Type;
-  static const Type TASK_START = Event_Type_TASK_START;
-  static const Type TASK_END = Event_Type_TASK_END;
-  static const Type SEND_START = Event_Type_SEND_START;
-  static const Type SEND_END = Event_Type_SEND_END;
-  static inline bool Type_IsValid(int value) {
-    return Event_Type_IsValid(value);
-  }
-  static const Type Type_MIN =
-    Event_Type_Type_MIN;
-  static const Type Type_MAX =
-    Event_Type_Type_MAX;
-  static const int Type_ARRAYSIZE =
-    Event_Type_Type_ARRAYSIZE;
-
-  // accessors -------------------------------------------------------
-
-  // required uint64 time = 1;
-  inline bool has_time() const;
-  inline void clear_time();
-  static const int kTimeFieldNumber = 1;
-  inline ::google::protobuf::uint64 time() const;
-  inline void set_time(::google::protobuf::uint64 value);
-
-  // required .loomcomm.Event.Type type = 2;
-  inline bool has_type() const;
-  inline void clear_type();
-  static const int kTypeFieldNumber = 2;
-  inline ::loomcomm::Event_Type type() const;
-  inline void set_type(::loomcomm::Event_Type value);
-
-  // required int32 id = 3;
-  inline bool has_id() const;
-  inline void clear_id();
-  static const int kIdFieldNumber = 3;
-  inline ::google::protobuf::int32 id() const;
-  inline void set_id(::google::protobuf::int32 value);
-
-  // optional int32 worker_id = 4;
-  inline bool has_worker_id() const;
-  inline void clear_worker_id();
-  static const int kWorkerIdFieldNumber = 4;
-  inline ::google::protobuf::int32 worker_id() const;
-  inline void set_worker_id(::google::protobuf::int32 value);
-
-  // optional uint64 size = 5;
-  inline bool has_size() const;
-  inline void clear_size();
-  static const int kSizeFieldNumber = 5;
-  inline ::google::protobuf::uint64 size() const;
-  inline void set_size(::google::protobuf::uint64 value);
-
-  // optional int32 target_worker_id = 6;
-  inline bool has_target_worker_id() const;
-  inline void clear_target_worker_id();
-  static const int kTargetWorkerIdFieldNumber = 6;
-  inline ::google::protobuf::int32 target_worker_id() const;
-  inline void set_target_worker_id(::google::protobuf::int32 value);
-
-  // @@protoc_insertion_point(class_scope:loomcomm.Event)
- private:
-  inline void set_has_time();
-  inline void clear_has_time();
-  inline void set_has_type();
-  inline void clear_has_type();
-  inline void set_has_id();
-  inline void clear_has_id();
-  inline void set_has_worker_id();
-  inline void clear_has_worker_id();
-  inline void set_has_size();
-  inline void clear_has_size();
-  inline void set_has_target_worker_id();
-  inline void clear_has_target_worker_id();
-
-  ::std::string _unknown_fields_;
-
-  ::google::protobuf::uint32 _has_bits_[1];
-  mutable int _cached_size_;
-  ::google::protobuf::uint64 time_;
-  int type_;
-  ::google::protobuf::int32 id_;
-  ::google::protobuf::uint64 size_;
-  ::google::protobuf::int32 worker_id_;
-  ::google::protobuf::int32 target_worker_id_;
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_loomcomm_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_loomcomm_2eproto();
-  friend void protobuf_ShutdownFile_loomcomm_2eproto();
-
-  void InitAsDefaultInstance();
-  static Event* default_instance_;
-};
-// -------------------------------------------------------------------
-
 class Error : public ::google::protobuf::MessageLite {
  public:
   Error();
@@ -1394,7 +1225,6 @@ class ClientResponse : public ::google::protobuf::MessageLite {
 
   typedef ClientResponse_Type Type;
   static const Type DATA = ClientResponse_Type_DATA;
-  static const Type EVENT = ClientResponse_Type_EVENT;
   static const Type ERROR = ClientResponse_Type_ERROR;
   static const Type DICTIONARY = ClientResponse_Type_DICTIONARY;
   static const Type STATS = ClientResponse_Type_STATS;
@@ -1425,15 +1255,6 @@ class ClientResponse : public ::google::protobuf::MessageLite {
   inline ::loomcomm::DataHeader* mutable_data();
   inline ::loomcomm::DataHeader* release_data();
   inline void set_allocated_data(::loomcomm::DataHeader* data);
-
-  // optional .loomcomm.Event event = 3;
-  inline bool has_event() const;
-  inline void clear_event();
-  static const int kEventFieldNumber = 3;
-  inline const ::loomcomm::Event& event() const;
-  inline ::loomcomm::Event* mutable_event();
-  inline ::loomcomm::Event* release_event();
-  inline void set_allocated_event(::loomcomm::Event* event);
 
   // optional .loomcomm.Error error = 4;
   inline bool has_error() const;
@@ -1475,8 +1296,6 @@ class ClientResponse : public ::google::protobuf::MessageLite {
   inline void clear_has_type();
   inline void set_has_data();
   inline void clear_has_data();
-  inline void set_has_event();
-  inline void clear_has_event();
   inline void set_has_error();
   inline void clear_has_error();
   inline void set_has_stats();
@@ -1487,7 +1306,6 @@ class ClientResponse : public ::google::protobuf::MessageLite {
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::loomcomm::DataHeader* data_;
-  ::loomcomm::Event* event_;
   ::loomcomm::Error* error_;
   ::google::protobuf::RepeatedPtrField< ::std::string> symbols_;
   ::loomcomm::Stats* stats_;
@@ -1597,13 +1415,6 @@ class ClientRequest : public ::google::protobuf::MessageLite {
   inline ::loomplan::Plan* release_plan();
   inline void set_allocated_plan(::loomplan::Plan* plan);
 
-  // optional bool report = 3 [default = false];
-  inline bool has_report() const;
-  inline void clear_report();
-  static const int kReportFieldNumber = 3;
-  inline bool report() const;
-  inline void set_report(bool value);
-
   // optional string trace_path = 6;
   inline bool has_trace_path() const;
   inline void clear_trace_path();
@@ -1622,8 +1433,6 @@ class ClientRequest : public ::google::protobuf::MessageLite {
   inline void clear_has_type();
   inline void set_has_plan();
   inline void clear_has_plan();
-  inline void set_has_report();
-  inline void clear_has_report();
   inline void set_has_trace_path();
   inline void clear_has_trace_path();
 
@@ -1632,9 +1441,8 @@ class ClientRequest : public ::google::protobuf::MessageLite {
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::loomplan::Plan* plan_;
-  int type_;
-  bool report_;
   ::std::string* trace_path_;
+  int type_;
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_loomcomm_2eproto_impl();
   #else
@@ -2582,155 +2390,6 @@ inline void DataHeader::set_n_messages(::google::protobuf::int64 value) {
 
 // -------------------------------------------------------------------
 
-// Event
-
-// required uint64 time = 1;
-inline bool Event::has_time() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void Event::set_has_time() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Event::clear_has_time() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void Event::clear_time() {
-  time_ = GOOGLE_ULONGLONG(0);
-  clear_has_time();
-}
-inline ::google::protobuf::uint64 Event::time() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Event.time)
-  return time_;
-}
-inline void Event::set_time(::google::protobuf::uint64 value) {
-  set_has_time();
-  time_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Event.time)
-}
-
-// required .loomcomm.Event.Type type = 2;
-inline bool Event::has_type() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void Event::set_has_type() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Event::clear_has_type() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void Event::clear_type() {
-  type_ = 1;
-  clear_has_type();
-}
-inline ::loomcomm::Event_Type Event::type() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Event.type)
-  return static_cast< ::loomcomm::Event_Type >(type_);
-}
-inline void Event::set_type(::loomcomm::Event_Type value) {
-  assert(::loomcomm::Event_Type_IsValid(value));
-  set_has_type();
-  type_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Event.type)
-}
-
-// required int32 id = 3;
-inline bool Event::has_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void Event::set_has_id() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void Event::clear_has_id() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void Event::clear_id() {
-  id_ = 0;
-  clear_has_id();
-}
-inline ::google::protobuf::int32 Event::id() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Event.id)
-  return id_;
-}
-inline void Event::set_id(::google::protobuf::int32 value) {
-  set_has_id();
-  id_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Event.id)
-}
-
-// optional int32 worker_id = 4;
-inline bool Event::has_worker_id() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void Event::set_has_worker_id() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void Event::clear_has_worker_id() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void Event::clear_worker_id() {
-  worker_id_ = 0;
-  clear_has_worker_id();
-}
-inline ::google::protobuf::int32 Event::worker_id() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Event.worker_id)
-  return worker_id_;
-}
-inline void Event::set_worker_id(::google::protobuf::int32 value) {
-  set_has_worker_id();
-  worker_id_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Event.worker_id)
-}
-
-// optional uint64 size = 5;
-inline bool Event::has_size() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void Event::set_has_size() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void Event::clear_has_size() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void Event::clear_size() {
-  size_ = GOOGLE_ULONGLONG(0);
-  clear_has_size();
-}
-inline ::google::protobuf::uint64 Event::size() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Event.size)
-  return size_;
-}
-inline void Event::set_size(::google::protobuf::uint64 value) {
-  set_has_size();
-  size_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Event.size)
-}
-
-// optional int32 target_worker_id = 6;
-inline bool Event::has_target_worker_id() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void Event::set_has_target_worker_id() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void Event::clear_has_target_worker_id() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void Event::clear_target_worker_id() {
-  target_worker_id_ = 0;
-  clear_has_target_worker_id();
-}
-inline ::google::protobuf::int32 Event::target_worker_id() const {
-  // @@protoc_insertion_point(field_get:loomcomm.Event.target_worker_id)
-  return target_worker_id_;
-}
-inline void Event::set_target_worker_id(::google::protobuf::int32 value) {
-  set_has_target_worker_id();
-  target_worker_id_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.Event.target_worker_id)
-}
-
-// -------------------------------------------------------------------
-
 // Error
 
 // required int32 id = 1;
@@ -3035,60 +2694,15 @@ inline void ClientResponse::set_allocated_data(::loomcomm::DataHeader* data) {
   // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientResponse.data)
 }
 
-// optional .loomcomm.Event event = 3;
-inline bool ClientResponse::has_event() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ClientResponse::set_has_event() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ClientResponse::clear_has_event() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ClientResponse::clear_event() {
-  if (event_ != NULL) event_->::loomcomm::Event::Clear();
-  clear_has_event();
-}
-inline const ::loomcomm::Event& ClientResponse::event() const {
-  // @@protoc_insertion_point(field_get:loomcomm.ClientResponse.event)
-#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return event_ != NULL ? *event_ : *default_instance().event_;
-#else
-  return event_ != NULL ? *event_ : *default_instance_->event_;
-#endif
-}
-inline ::loomcomm::Event* ClientResponse::mutable_event() {
-  set_has_event();
-  if (event_ == NULL) event_ = new ::loomcomm::Event;
-  // @@protoc_insertion_point(field_mutable:loomcomm.ClientResponse.event)
-  return event_;
-}
-inline ::loomcomm::Event* ClientResponse::release_event() {
-  clear_has_event();
-  ::loomcomm::Event* temp = event_;
-  event_ = NULL;
-  return temp;
-}
-inline void ClientResponse::set_allocated_event(::loomcomm::Event* event) {
-  delete event_;
-  event_ = event;
-  if (event) {
-    set_has_event();
-  } else {
-    clear_has_event();
-  }
-  // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientResponse.event)
-}
-
 // optional .loomcomm.Error error = 4;
 inline bool ClientResponse::has_error() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ClientResponse::set_has_error() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ClientResponse::clear_has_error() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ClientResponse::clear_error() {
   if (error_ != NULL) error_->::loomcomm::Error::Clear();
@@ -3181,13 +2795,13 @@ ClientResponse::mutable_symbols() {
 
 // optional .loomcomm.Stats stats = 6;
 inline bool ClientResponse::has_stats() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ClientResponse::set_has_stats() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ClientResponse::clear_has_stats() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ClientResponse::clear_stats() {
   if (stats_ != NULL) stats_->::loomcomm::Stats::Clear();
@@ -3298,39 +2912,15 @@ inline void ClientRequest::set_allocated_plan(::loomplan::Plan* plan) {
   // @@protoc_insertion_point(field_set_allocated:loomcomm.ClientRequest.plan)
 }
 
-// optional bool report = 3 [default = false];
-inline bool ClientRequest::has_report() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ClientRequest::set_has_report() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ClientRequest::clear_has_report() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ClientRequest::clear_report() {
-  report_ = false;
-  clear_has_report();
-}
-inline bool ClientRequest::report() const {
-  // @@protoc_insertion_point(field_get:loomcomm.ClientRequest.report)
-  return report_;
-}
-inline void ClientRequest::set_report(bool value) {
-  set_has_report();
-  report_ = value;
-  // @@protoc_insertion_point(field_set:loomcomm.ClientRequest.report)
-}
-
 // optional string trace_path = 6;
 inline bool ClientRequest::has_trace_path() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ClientRequest::set_has_trace_path() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ClientRequest::clear_has_trace_path() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ClientRequest::clear_trace_path() {
   if (trace_path_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {

@@ -81,21 +81,6 @@ message DataHeader {
 	required int64 n_messages = 2;
 }
 
-message Event {
-	enum Type {
-		TASK_START = 1;
-		TASK_END = 2;
-		SEND_START = 3;
-		SEND_END = 4;
-	}
-	required uint64 time = 1;
-	required Type type = 2;
-	required int32 id = 3;
-	optional int32 worker_id = 4;
-	optional uint64 size = 5;
-	optional int32 target_worker_id = 6;
-}
-
 message Error {
 	required int32 id = 1;
 	required string worker = 2;
@@ -110,17 +95,16 @@ message Stats {
 message ClientResponse {
 	enum Type {
 		DATA = 1;
-		EVENT = 2;
+		// EVENT = 2;
 		ERROR = 3;
 		DICTIONARY = 4;
 		STATS = 5;
 	}
 	required Type type = 1;
 	optional DataHeader data = 2;
-	optional Event event = 3;
 	optional Error error = 4;
 	repeated string symbols = 5;
-        optional Stats stats = 6;
+  optional Stats stats = 6;
 }
 
 message ClientRequest {
@@ -135,7 +119,6 @@ message ClientRequest {
 
   // PLAN
 	optional loomplan.Plan plan = 2;
-	optional bool report = 3 [default=false];
 
   // REPORT
   optional string trace_path = 6;

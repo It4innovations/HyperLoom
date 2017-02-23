@@ -31,10 +31,6 @@ public:
 
     loom::base::Id add_plan(const loomplan::Plan &plan);
 
-    void set_report(bool report) {
-        this->report = report;
-    }
-
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
     void on_data_transferred(loom::base::Id id, WorkerConnection *wc);
     void on_task_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
@@ -61,15 +57,10 @@ private:
     Server &server;
     ComputationState cstate;
     std::unordered_map<loom::base::Id, std::unique_ptr<TaskNode>> trash;
-    bool report;
 
     void distribute_work(const TaskDistribution &distribution);
     void start_task(WorkerConnection *wc, TaskNode &node);
     void remove_node(TaskNode &node);
-
-    void report_task_start(WorkerConnection *wc, const TaskNode &node);
-    void report_task_end(WorkerConnection *wc, const TaskNode &node);
-    void report_send_start(loom::base::Id source_id, loom::base::Id target_id, const TaskNode &node);
 };
 
 

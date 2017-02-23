@@ -15,9 +15,6 @@
 #include <vector>
 #include <fstream>
 
-namespace loomcomm {
-    class Event;
-}
 
 /** Main class of the server */
 class Server {
@@ -78,7 +75,6 @@ public:
 
     void send_dictionary(loom::base::Socket &socket);
     int get_worker_ncpus();
-    void report_event(std::unique_ptr<loomcomm::Event> event);
     void need_task_distribution();
 
     const std::vector<std::unique_ptr<WorkerConnection>>& get_workers() const {

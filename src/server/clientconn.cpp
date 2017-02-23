@@ -48,11 +48,9 @@ void ClientConnection::on_message(const char *buffer, size_t size)
 
     if (request.type() == loomcomm::ClientRequest_Type_PLAN) {
         logger->debug("Plan received");
-        bool report = request.report();
-        task_manager.set_report(report);
         const loomplan::Plan &plan = request.plan();
         loom::base::Id id_base = task_manager.add_plan(plan);
-        logger->info("Plan submitted tasks={} report={}", plan.tasks_size(), report);
+        logger->info("Plan submitted tasks={}", plan.tasks_size());
 
         if (server.get_trace()) {
             server.create_file_in_trace_dir("0.plan", buffer, size);

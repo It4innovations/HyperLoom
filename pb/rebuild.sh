@@ -15,7 +15,6 @@ protoc loomrun.proto --cpp_out=${LIBLOOMW_DIR}/tasks
 protoc loomcomm.proto --python_out=${PYTHON_DIR}
 protoc loomplan.proto --python_out=${PYTHON_DIR}
 protoc loomrun.proto --python_out=${PYTHON_DIR}
-protoc loomreport.proto --python_out=${PYTHON_DIR}
 
 # Fix python
 

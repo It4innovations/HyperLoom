@@ -140,19 +140,6 @@ void Server::on_new_connection()
     fresh_connections.push_back(std::move(connection));
 }
 
-void Server::report_event(std::unique_ptr<loomcomm::Event> event)
-{
-    if (!client_connection) {
-        return;
-    }
-
-    loomcomm::ClientResponse cmsg;
-    cmsg.set_type(loomcomm::ClientResponse_Type_EVENT);
-    cmsg.set_allocated_event(event.release());
-
-    client_connection->send_message(cmsg);
-}
-
 void Server::need_task_distribution()
 {
     if (task_distribution_active) {
