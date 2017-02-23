@@ -1,11 +1,13 @@
 
-from bokeh.charts import save, output_file
+from bokeh.charts import save, output_file, BoxPlot
 from bokeh.layouts import column, gridplot
 from bokeh.palettes import all_palettes
 from bokeh.plotting import figure
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.models.widgets import DataTable, TableColumn
 from bokeh.models import ColumnDataSource
+
+import pandas as pd
 
 import itertools
 
@@ -152,6 +154,18 @@ def create_pending_tasks(report):
     return column([f2, f1])
 
 
+def create_scheduling_time(report):
+    ds = report.scheduler_times
+    duration = ds["end_time"] - ds["start_time"]
+
+    df = pd.DataFrame({"time": ds["end_time"], "duration" : duration})
+    df["label"] = 0
+    f1 = figure(plot_width=1000, plot_height=400)
+    f1.line(df["time"], df["duration"].cumsum())
+    f2 = BoxPlot(df, values="duration", label="label")
+    return column([f1, f2])
+
+
 def create_html(report, filename):
     output_file(filename)
 
@@ -167,6 +181,7 @@ def create_html(report, filename):
     scheduling = Tabs(tabs=[
         Panel(child=create_timelines(report), title="Timeline"),
         Panel(child=create_pending_tasks(report), title="Pending tasks"),
+        Panel(child=create_scheduling_time(report), title="Scheduling time"),
     ])
 
     comm = Tabs(tabs=[

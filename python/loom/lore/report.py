@@ -69,7 +69,7 @@ class Report:
         self.tasks = {}
         self.symbols = []
         self.id_base = None
-        self.scheduling_times = []
+        self.scheduler_times = None
 
         self.parse_server_file()
         for worker_id in self.workers:
@@ -99,6 +99,8 @@ class Report:
     def parse_server_file(self):
         filename = self.get_filename("server.ltrace")
         print("Reading", filename, "...")
+        start_time = []
+        end_time = []
         with open(filename) as f:
             it = split_lines(f)
             assert next(it) == ["TRACE", "server"]
@@ -110,9 +112,9 @@ class Report:
                 if command == "T":
                     time = to_int(line[1])
                 elif command == "s":
-                    self.scheduling_times.append(time)
+                    start_time.append(time)
                 elif command == "e":
-                    self.scheduling_times.append(time)
+                    end_time.append(time)
                 elif command == "WORKER":
                     worker_id = to_int(line[1])
                     self.workers[worker_id] = Worker(worker_id, line[2])
@@ -124,6 +126,8 @@ class Report:
                     raise Exception("Unknown line: {}".format(line))
         if self.id_base is None:
             raise Exception("No submit occurs")
+        self.scheduler_times = pd.DataFrame(
+            {"start_time": start_time, "end_time": end_time})
 
     def get_task(self, task_id):
         return self.tasks[task_id]
@@ -253,9 +257,9 @@ class Report:
         group_names.append("scheduler")
 
         server_lines = [
-            ([x for x in self.scheduling_times[::2]],
-             [x for x in self.scheduling_times[1::2]],
-             [scheduler for x in range(len(self.scheduling_times) // 2)])
+            (self.scheduler_times.start_time,
+             self.scheduler_times.end_time,
+             [scheduler for x in range(len(self.scheduler_times))])
         ]
         worker_lines[-1] = server_lines
 
