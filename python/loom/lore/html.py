@@ -8,6 +8,7 @@ from bokeh.models.widgets import DataTable, TableColumn
 from bokeh.models import ColumnDataSource
 
 import pandas as pd
+import numpy as np
 
 import itertools
 
@@ -19,6 +20,7 @@ def create_colors(count):
 
 
 def create_timelines(report):
+    print("\tTimeline")
 
     worker_timelines, group_names = report.get_timelines()
     worker_timelines = list(worker_timelines.items())
@@ -58,9 +60,9 @@ def create_monitoring(report):
     for worker in report.worker_list:
         f = figure(plot_width=1000, plot_height=130,
                    title="Worker {}".format(worker.address))
-        f.line(worker.monitoring_times, worker.monitoring_cpu,
+        f.line(worker.monitoring.time, worker.monitoring.cpu,
                color="blue", legend="CPU %")
-        f.line(worker.monitoring_times, worker.monitoring_mem,
+        f.line(worker.monitoring.time, worker.monitoring.mem,
                color="red", legend="mem %")
         result.append([f])
     return gridplot(result)
@@ -83,11 +85,8 @@ def create_ctransfer(report):
     sends = report.all_sends()
     f = figure(plot_width=1000, plot_height=500,
                title="Cumulative transfers")
-    sends["group"] = sends["id"].map(
-        lambda task_id: report.get_task(task_id).group_name)
-
-    names = sends["group"].unique()
-    names.sort()
+    sends = sends.join(report.task_frame["group"], on="id")
+    names = report.group_names
     f = figure(plot_width=1000, plot_height=500)
     for color, name in zip(create_colors(len(names)), names):
         frame = sends[sends["group"] == name]
@@ -98,10 +97,7 @@ def create_ctransfer(report):
 
 
 def create_ctime(report):
-    ds = report.get_task_frame().sort_values("end_time")
-    ds["duration"] = ds["end_time"] - ds["start_time"]
-    ds["one"] = 1
-
+    ds = report.task_frame
     names = ds["group"].unique()
     names.sort()
     colors = create_colors(len(names))
@@ -118,32 +114,35 @@ def create_ctime(report):
 
     for name, color in zip(names, colors):
         frame = ds[ds["group"] == name]
-        f2.line(frame.end_time, frame["one"].cumsum(),
+        f2.line(frame.end_time, np.arange(1, len(frame) + 1),
                 legend=name, color=color, line_width=2)
     return column([f1, f2])
 
 
 def create_task_summary(report):
-    counts, names = report.get_counts()
+    counts = report.task_frame.group.value_counts().sort_index()
 
-    data = {"name":  names, "count": counts}
-    source = ColumnDataSource(data)
+    groups = counts.index
+    counts.reset_index(drop=True)
+
+    ds = pd.DataFrame({"group": groups, "count": counts})
+    ds.reset_index(inplace=True)
+
+    source = ColumnDataSource(ds)
 
     columns = [
-        TableColumn(field="name", title="Task"),
+        TableColumn(field="group", title="Task"),
         TableColumn(field="count", title="Count"),
     ]
     table = DataTable(source=source, columns=columns, width=400, height=280)
-
     return table
 
 
 def create_pending_tasks(report):
+    print("\tPending tasks")
     ds = report.get_pending_tasks()
-    ds = ds.sort_values("time")
-    names = ds["group"].unique()
-    names.sort()
     f1 = figure(plot_width=1000, plot_height=400)
+    names = report.group_names
     for color, name in zip(create_colors(len(names)), names):
         frame = ds[ds["group"] == name]
         f1.line(frame.time, frame.change.cumsum(),
@@ -155,6 +154,7 @@ def create_pending_tasks(report):
 
 
 def create_scheduling_time(report):
+    print("\tScheduling time")
     ds = report.scheduler_times
     duration = ds["end_time"] - ds["start_time"]
 
@@ -166,24 +166,48 @@ def create_scheduling_time(report):
     return column([f1, f2])
 
 
+def create_worker_load(report):
+    print("\tWorker load")
+    data = []
+    for task in report.task_frame.itertuples():
+        data.append((task.start_time, 1, task.worker))
+        data.append((task.end_time, -1, task.worker))
+    frame = pd.DataFrame(data, columns=["time", "change", "worker"])
+    frame.sort_values("time", inplace=True)
+    result = []
+    for worker in report.worker_list:
+        f = figure(plot_width=1000, plot_height=130,
+                   title="Worker {}".format(worker.address))
+        data = frame[frame.worker == worker.worker_id]
+        f.line(data.time, data.change.cumsum(),
+               color="blue", legend="# tasks")
+        result.append([f])
+    return gridplot(result)
+
+
 def create_html(report, filename):
     output_file(filename)
 
+    print("Task plots")
     tasks = Tabs(tabs=[
         Panel(child=create_ctime(report), title="Task progress"),
         Panel(child=create_task_summary(report), title="Task summary"),
     ])
 
+    print("Monitoring plots")
     monitoring = Tabs(tabs=[
         Panel(child=create_monitoring(report), title="CPU & Memory usage"),
     ])
 
+    print("Scheduling plots")
     scheduling = Tabs(tabs=[
         Panel(child=create_timelines(report), title="Timeline"),
         Panel(child=create_pending_tasks(report), title="Pending tasks"),
         Panel(child=create_scheduling_time(report), title="Scheduling time"),
+        Panel(child=create_worker_load(report), title="Worker load"),
     ])
 
+    print("Communication plots")
     comm = Tabs(tabs=[
         Panel(child=create_ctransfer(report), title="Transfer per tasks"),
         Panel(child=create_transfer(report), title="Transfer per nodes"),
@@ -196,4 +220,5 @@ def create_html(report, filename):
         Panel(child=comm, title="Communication"),
     ])
 
+    print("Saving result")
     save(main)
