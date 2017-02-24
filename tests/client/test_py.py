@@ -42,7 +42,7 @@ def test_py_task(loom_env):
     a = tasks.const("1234")
     b = t1()
     c = t2(a, b)
-    result = loom_env.submit(c, "report")
+    result = loom_env.submit(c)
     assert result == b"1234ABC"
 
 
@@ -65,7 +65,7 @@ def test_py_context_task(loom_env):
     a = tasks.const("1234")
     b = t1()
     c = t2(a)
-    ra, rb = loom_env.submit((b, c), "report")
+    ra, rb = loom_env.submit((b, c))
     assert 0 <= int(ra)
     assert rb == b"1234"
 
@@ -252,7 +252,7 @@ def test_py_value(loom_env):
     v.resource_request = cpu1
     v2.resource_request = cpu1
     t = join(v, v2)
-    result = loom_env.submit(t, report="rep")
+    result = loom_env.submit(t)
     assert result == [[(1, 2)], ("30", None)]
 
 

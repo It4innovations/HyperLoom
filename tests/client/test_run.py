@@ -33,7 +33,7 @@ def test_run_separated_1_cpu(loom_env):
     loom_env.start(1)
     args = pytestprog(0.3, stamp=True)
     ts = [tasks.run(args) for i in range(3)]
-    results = loom_env.submit(ts, "report")
+    results = loom_env.submit(ts)
 
     starts = []
 

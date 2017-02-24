@@ -118,5 +118,4 @@ def test_fail_and_report(loom_env):
     loom_env.start(4)
     a = tasks.const("ABC")
     with pytest.raises(client.TaskFailed):
-        loom_env.submit((sleep(), sleep(), sleep(), fail(a)),
-                        report="fail.report")
+        loom_env.submit((sleep(), sleep(), sleep(), fail(a)))
