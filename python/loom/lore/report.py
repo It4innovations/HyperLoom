@@ -241,8 +241,7 @@ class Report:
 
         frame = pd.DataFrame(
             self.task_frame[["start_time", "end_time", "group", "worker"]])
-
-        frame.sort_values("start_time")
+        frame.sort_values("start_time", inplace=True)
 
         for row in frame.itertuples(index=False):
             lines = worker_lines[row.worker]
