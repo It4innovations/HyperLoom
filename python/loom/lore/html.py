@@ -185,6 +185,12 @@ def create_worker_load(report):
     return gridplot(result)
 
 
+def create_task_durations(report):
+    ds = report.task_frame
+    f = BoxPlot(ds, values="duration", label="group", color="group")
+    return f
+
+
 def create_html(report, filename):
     output_file(filename)
 
@@ -192,6 +198,7 @@ def create_html(report, filename):
     tasks = Tabs(tabs=[
         Panel(child=create_ctime(report), title="Task progress"),
         Panel(child=create_task_summary(report), title="Task summary"),
+        Panel(child=create_task_durations(report), title="Task durations"),
     ])
 
     print("Monitoring plots")
