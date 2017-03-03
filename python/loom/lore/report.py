@@ -1,6 +1,6 @@
 
 import os
-from loom.pb import loomcomm_pb2 as loomcomm
+from loom.pb import comm_pb2
 import pandas as pd
 
 
@@ -205,7 +205,7 @@ class Report:
         print("Reading", filename, "...")
         id_base = self.id_base
         with open(filename, "br") as f:
-            request = loomcomm.ClientRequest()
+            request = comm_pb2.ClientRequest()
             request.ParseFromString(f.read())
             for i, pt in enumerate(request.plan.tasks):
                 task = _get_task(tasks, i + id_base)

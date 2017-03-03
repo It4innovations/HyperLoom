@@ -5,7 +5,7 @@
 
 #include "libloom/compat.h"
 #include "libloom/log.h"
-#include "libloom/loomcomm.pb.h"
+#include "pb/comm.pb.h"
 
 #include <sstream>
 
@@ -33,7 +33,8 @@ void FreshConnection::accept(loom::base::Listener &listener) {
 
 void FreshConnection::on_message(const char *buffer, size_t size)
 {
-    loomcomm::Register msg;
+    using namespace loom::pb::comm;
+    Register msg;
     bool r = msg.ParseFromArray(buffer, size);
     if (!r) {
         logger->error("Invalid registration message from {}",
@@ -49,7 +50,7 @@ void FreshConnection::on_message(const char *buffer, size_t size)
         return;
     }
 
-    if (msg.type() == loomcomm::Register_Type_REGISTER_WORKER) {
+    if (msg.type() == Register_Type_REGISTER_WORKER) {
         std::stringstream address;
         address << socket->get_peername() << ":" << msg.port();
 
@@ -74,10 +75,10 @@ void FreshConnection::on_message(const char *buffer, size_t size)
                                                         server.new_id());
 
         server.add_worker_connection(std::move(wconn));
-        server.remove_freshconnection(*this);        
+        server.remove_freshconnection(*this);
         return;
     }
-    if (msg.type() == loomcomm::Register_Type_REGISTER_CLIENT) {
+    if (msg.type() == Register_Type_REGISTER_CLIENT) {
         if (server.has_client_connection()) {
             logger->error("New client connection while there still exists a client connection.");
             logger->error("The new connection is rejected.");

@@ -3,8 +3,8 @@
 #include "workerconn.h"
 #include "server.h"
 
+#include "pb/comm.pb.h"
 #include "libloom/log.h"
-#include "libloom/loomplan.pb.h"
 
 constexpr static double TRANSFER_COST_COEF = 1.0 / (1024 * 1024); // 1MB = 1cost
 
@@ -287,13 +287,14 @@ bool ComputationState::is_ready(const TaskNode &node)
    return true;
 }
 
-static TaskPolicy read_task_policy(loomplan::Task_Policy policy) {
+static TaskPolicy read_task_policy(loom::pb::comm::Task_Policy policy) {
+    using namespace loom::pb::comm;
     switch(policy) {
-        case loomplan::Task_Policy_POLICY_STANDARD:
+        case Task_Policy_POLICY_STANDARD:
             return TaskPolicy::STANDARD;
-        case loomplan::Task_Policy_POLICY_SIMPLE:
+        case Task_Policy_POLICY_SIMPLE:
             return TaskPolicy::SIMPLE;
-        case loomplan::Task_Policy_POLICY_SCHEDULER:
+        case Task_Policy_POLICY_SCHEDULER:
             return TaskPolicy::SCHEDULER;
         default:
             loom::base::logger->critical("Invalid task policy");
@@ -301,7 +302,7 @@ static TaskPolicy read_task_policy(loomplan::Task_Policy policy) {
     }
 }
 
-loom::base::Id ComputationState::add_plan(const loomplan::Plan &plan)
+loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
 {
     auto task_size = plan.tasks_size();
     loom::base::Id id_base = server.new_id(task_size);

@@ -95,7 +95,7 @@ class LoomEnv(Env):
             workers.append(w)
         time.sleep(0.15)
         if VALGRIND:
-            time.sleep(4)
+            time.sleep(10)
         assert not server.poll()
         assert not any(w.poll() for w in workers)
 

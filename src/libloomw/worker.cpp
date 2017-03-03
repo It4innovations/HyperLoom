@@ -15,7 +15,7 @@
 
 #include "python/core.h"
 
-#include "libloom/loomcomm.pb.h"
+#include "pb/comm.pb.h"
 #include "libloom/types.h"
 #include "libloom/log.h"
 #include "libloom/sendbuffer.h"
@@ -188,8 +188,9 @@ void Worker::_on_getaddrinfo(uv_getaddrinfo_t* handle, int status,
 
 void Worker::register_worker()
 {
-    loomcomm::Register msg;
-    msg.set_type(loomcomm::Register_Type_REGISTER_WORKER);
+    using namespace loom::pb::comm;
+    Register msg;
+    msg.set_type(Register_Type_REGISTER_WORKER);
     msg.set_protocol_version(PROTOCOL_VERSION);
 
     msg.set_port(get_listen_port());
@@ -472,8 +473,8 @@ void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
 {
     logger->error("Task id={} failed: {}", task.get_id(), error_msg);
     if (server_conn.is_connected()) {
-        loomcomm::WorkerResponse msg;
-        msg.set_type(loomcomm::WorkerResponse_Type_FAILED);
+        loom::pb::comm::WorkerResponse msg;
+        msg.set_type(loom::pb::comm::WorkerResponse_Type_FAILED);
         msg.set_id(task.get_id());
         msg.set_error_msg(error_msg);
         send_message(server_conn, msg);
@@ -509,9 +510,10 @@ void Worker::task_redirect(TaskInstance &task,
 
 void Worker::task_finished(TaskInstance &task, const DataPtr &data)
 {
+    using namespace loom::pb::comm;
     if (server_conn.is_connected()) {
-        loomcomm::WorkerResponse msg;
-        msg.set_type(loomcomm::WorkerResponse_Type_FINISHED);
+        WorkerResponse msg;
+        msg.set_type(WorkerResponse_Type_FINISHED);
         msg.set_id(task.get_id());
         msg.set_size(data->get_size());
         msg.set_length(data->get_length());
@@ -529,9 +531,10 @@ void Worker::task_finished(TaskInstance &task, const DataPtr &data)
 
 void Worker::data_transferred(base::Id task_id)
 {
+    using namespace loom::pb::comm;
     if (server_conn.is_connected()) {
-        loomcomm::WorkerResponse msg;
-        msg.set_type(loomcomm::WorkerResponse_Type_TRANSFERED);
+        WorkerResponse msg;
+        msg.set_type(WorkerResponse_Type_TRANSFERED);
         msg.set_id(task_id);
         send_message(server_conn, msg);
     }
@@ -545,12 +548,13 @@ void Worker::send_data(const std::string &address, Id id, DataPtr &data)
 
 void Worker::on_message(const char *data, size_t size)
 {
-    loomcomm::WorkerCommand msg;
+    using namespace loom::pb;
+    comm::WorkerCommand msg;
     assert(msg.ParseFromArray(data, size));
     auto type = msg.type();
 
     switch (type) {
-    case loomcomm::WorkerCommand_Type_TASK: {
+    case comm::WorkerCommand_Type_TASK: {
         logger->debug("Task id={} received", msg.id());
         auto task = std::make_unique<Task>(msg.id(),
                                            msg.task_type(),
@@ -562,11 +566,11 @@ void Worker::on_message(const char *data, size_t size)
         new_task(std::move(task));
         break;
     }
-    case loomcomm::WorkerCommand_Type_REMOVE: {
+    case comm::WorkerCommand_Type_REMOVE: {
         remove_data(msg.id());
         break;
     }
-    case loomcomm::WorkerCommand_Type_SEND: {
+    case comm::WorkerCommand_Type_SEND: {
         auto& address = msg.address();
         /* "!" means address to server, so we replace the sign to proper address */
         if (address.size() > 2 && address[0] == '!' && address[1] == ':') {
@@ -576,13 +580,13 @@ void Worker::on_message(const char *data, size_t size)
         assert(send_data(msg.address(), msg.id()));
         break;
     }
-    case loomcomm::WorkerCommand_Type_UPDATE: {
+    case comm::WorkerCommand_Type_UPDATE: {
         if (msg.has_trace_path()) {
             create_trace(msg.trace_path(), msg.worker_id());
         }
         break;
     }
-    case loomcomm::WorkerCommand_Type_DICTIONARY: {
+    case comm::WorkerCommand_Type_DICTIONARY: {
         auto count = msg.symbols_size();
         logger->debug("New dictionary ({} symbols)", count);
         Dictionary &dictionary = get_dictionary();

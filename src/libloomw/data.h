@@ -1,9 +1,7 @@
 #ifndef LIBLOOMW_DATA_H
 #define LIBLOOMW_DATA_H
 
-
-
-#include "libloom/loomcomm.pb.h"
+#include "pb/comm.pb.h"
 #include "libloom/types.h"
 #include "libloom/sendbuffer.h"
 
@@ -23,7 +21,7 @@ using DataVector = std::vector<DataPtr>;
 
 /** Base class for data objects */
 class Data
-{    
+{
 public:
     virtual ~Data();
 

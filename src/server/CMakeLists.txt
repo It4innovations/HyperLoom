@@ -27,7 +27,6 @@ add_executable(loom-server
                $<TARGET_OBJECTS:loom-server-lib>
                main.cpp)
 
-target_link_libraries(loom-server libloom ${LIBUV_LIBRARY} pthread)
-target_link_libraries(loom-server ${PROTOBUF_LIBRARIES})
+target_link_libraries(loom-server libloom)
 
 install (TARGETS loom-server DESTINATION bin)

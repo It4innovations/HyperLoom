@@ -4,7 +4,7 @@
 #include "libloom/compat.h"
 #include "libloom/log.h"
 #include "libloom/fsutils.h"
-#include "libloom/loomcomm.pb.h"
+#include "pb/comm.pb.h"
 
 #include <sstream>
 
@@ -96,12 +96,13 @@ void Server::on_task_failed(Id id, WorkerConnection *wc, const std::string &erro
 
 void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::string &error_msg)
 {
+    using namespace loom::pb::comm;
     logger->error("Task id={} failed on worker {}: {}",
                 id, wconn.get_address(), error_msg);
 
-    loomcomm::ClientResponse msg;
-    msg.set_type(loomcomm::ClientResponse_Type_ERROR);
-    loomcomm::Error *error = msg.mutable_error();
+    ClientResponse msg;
+    msg.set_type(ClientResponse_Type_ERROR);
+    Error *error = msg.mutable_error();
 
     error->set_id(id);
     error->set_worker(wconn.get_address());
@@ -114,8 +115,9 @@ void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::
 
 void Server::send_dictionary(loom::base::Socket &socket)
 {
-    loomcomm::WorkerCommand msg;
-    msg.set_type(loomcomm::WorkerCommand_Type_DICTIONARY);
+    using namespace loom::pb::comm;
+    WorkerCommand msg;
+    msg.set_type(WorkerCommand_Type_DICTIONARY);
     std::vector<std::string> symbols = dictionary.get_all_symbols();
     for (std::string &symbol : symbols) {
         std::string *s = msg.add_symbols();

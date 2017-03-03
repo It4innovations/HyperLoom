@@ -3,7 +3,7 @@
 #include "src/server/server.h"
 
 #include "libloom/compat.h"
-#include "libloom/loomplan.pb.h"
+#include "pb/comm.pb.h"
 
 #include <set>
 #include <chrono>
@@ -33,17 +33,18 @@ static bool check_uvector(const std::vector<T> &v, const std::vector<T> &s)
    return s1 == s2;
 }
 
-static void add_cpu_request(Server &server, loomplan::Plan &plan, int value)
+static void add_cpu_request(Server &server, loom::pb::comm::Plan &plan, int value)
 {
-    loomplan::ResourceRequest *rr = plan.add_resource_requests();
-    loomplan::Resource *r = rr->add_resources();
+    using namespace loom::pb;
+    comm::ResourceRequest *rr = plan.add_resource_requests();
+    comm::Resource *r = rr->add_resources();
     r->set_resource_type(server.get_dictionary().find_or_create("loom/resource/cpus"));
     r->set_value(value);
 }
 
-loomplan::Task* new_task(loomplan::Plan &plan, int rr_index=-1)
+loom::pb::comm::Task* new_task(loom::pb::comm::Plan &plan, int rr_index=-1)
 {
-    loomplan::Task *t = plan.add_tasks();
+    loom::pb::comm::Task *t = plan.add_tasks();
     if (rr_index >= 0) {
         t->set_resource_request_index(rr_index);
     }
@@ -57,13 +58,14 @@ loomplan::Task* new_task(loomplan::Plan &plan, int rr_index=-1)
     n3
 
 */
-static loomplan::Plan make_simple_plan(Server &server)
+static loom::pb::comm::Plan make_simple_plan(Server &server)
 {
-   loomplan::Plan plan;
+   using namespace loom::pb::comm;
+   Plan plan;
    add_cpu_request(server, plan, 1);
-   loomplan::Task *n1 = new_task(plan, 0);
-   loomplan::Task *n2 = new_task(plan, 0);
-   loomplan::Task *n3 = new_task(plan, 0);
+   Task *n1 = new_task(plan, 0);
+   Task *n2 = new_task(plan, 0);
+   Task *n3 = new_task(plan, 0);
    n3->add_input_ids(0);
    n3->add_input_ids(1);
    return plan;
@@ -77,9 +79,10 @@ static loomplan::Plan make_simple_plan(Server &server)
     n5    n6     n7  n8
 
 */
-static loomplan::Plan make_plan2(Server &server)
+static loom::pb::comm::Plan make_plan2(Server &server)
 {
-   loomplan::Plan plan;
+   using namespace loom::pb::comm;
+   Plan plan;
    add_cpu_request(server, plan, 1);
 
    new_task(plan, 0); // n0
@@ -88,10 +91,10 @@ static loomplan::Plan make_plan2(Server &server)
    new_task(plan, 0); // n3
    new_task(plan, 0); // n4
 
-   loomplan::Task *n5 = new_task(plan, 0);
-   loomplan::Task *n6 = new_task(plan, 0);
-   loomplan::Task *n7 = new_task(plan, 0);
-   loomplan::Task *n8 = new_task(plan, 0);
+   Task *n5 = new_task(plan, 0);
+   Task *n6 = new_task(plan, 0);
+   Task *n7 = new_task(plan, 0);
+   Task *n8 = new_task(plan, 0);
 
    n5->add_input_ids(0);
    n5->add_input_ids(1);
@@ -117,19 +120,20 @@ static loomplan::Plan make_plan2(Server &server)
         n7     n8
 
 */
-static loomplan::Plan make_plan3(Server &server)
+static loom::pb::comm::Plan make_plan3(Server &server)
 {
-   loomplan::Plan plan;
+   using namespace loom::pb::comm;
+   Plan plan;
    add_cpu_request(server, plan, 1);
 
    new_task(plan, 0); // n0
    new_task(plan, 0); // n1
    new_task(plan, 0); // n2
 
-   loomplan::Task *n3 = new_task(plan, 0);
-   loomplan::Task *n4 = new_task(plan, 0);
-   loomplan::Task *n5 = new_task(plan, 0);
-   loomplan::Task *n6 = new_task(plan, 0);
+   Task *n3 = new_task(plan, 0);
+   Task *n4 = new_task(plan, 0);
+   Task *n5 = new_task(plan, 0);
+   Task *n6 = new_task(plan, 0);
 
    n3->add_input_ids(0);
    n4->add_input_ids(1);
@@ -138,8 +142,8 @@ static loomplan::Plan make_plan3(Server &server)
    n5->add_input_ids(1);
    n6->add_input_ids(2);
 
-   loomplan::Task *n7 = new_task(plan, 0);
-   loomplan::Task *n8 = new_task(plan, 0);
+   Task *n7 = new_task(plan, 0);
+   Task *n8 = new_task(plan, 0);
 
    n7->add_input_ids(3);
    n7->add_input_ids(4);
@@ -158,16 +162,17 @@ static loomplan::Plan make_plan3(Server &server)
           n3            n7      n8  n9
 
 */
-static loomplan::Plan make_plan4(Server &server)
+static loom::pb::comm::Plan make_plan4(Server &server)
 {
-   loomplan::Plan plan;
+   using namespace loom::pb::comm;
+   Plan plan;
    add_cpu_request(server, plan, 1);
 
    new_task(plan, 0); // n0
    new_task(plan, 0); // n1
    new_task(plan, 0); // n2
 
-   loomplan::Task *n3 = new_task(plan, 0);
+   Task *n3 = new_task(plan, 0);
 
    n3->add_input_ids(0);
    n3->add_input_ids(1);
@@ -178,7 +183,7 @@ static loomplan::Plan make_plan4(Server &server)
    new_task(plan, 0); // n5
    new_task(plan, 0); // n6
 
-   loomplan::Task *n7 = new_task(plan, 0);
+   Task *n7 = new_task(plan, 0);
 
    n7->add_input_ids(4);
    n7->add_input_ids(5);
@@ -192,17 +197,18 @@ static loomplan::Plan make_plan4(Server &server)
 
 
 
-static loomplan::Plan make_big_plan(Server &server, size_t plan_size)
+static loom::pb::comm::Plan make_big_plan(Server &server, size_t plan_size)
 {
-   loomplan::Plan plan;
+   using namespace loom::pb::comm;
+   Plan plan;
    add_cpu_request(server, plan, 1);
 
    for (size_t i = 0; i < plan_size; i++) {
       new_task(plan, 0);
    }
-   loomplan::Task *m = new_task(plan, 0);
+   Task *m = new_task(plan, 0);
    for (size_t i = 1; i < plan_size; i++) {
-      loomplan::Task *n = new_task(plan, 0);
+      Task *n = new_task(plan, 0);
       n->add_input_ids(i);
       n->add_input_ids(0);
       n->add_input_ids(i - 1);
@@ -220,25 +226,27 @@ static loomplan::Plan make_big_plan(Server &server, size_t plan_size)
       |     |      |    ...
       n0+s  n1+s   n2+s
 */
-static loomplan::Plan make_big_trivial_plan(Server &server, size_t plan_size)
+static loom::pb::comm::Plan make_big_trivial_plan(Server &server, size_t plan_size)
 {
-   loomplan::Plan plan;
+   using namespace loom::pb::comm;
+   Plan plan;
    add_cpu_request(server, plan, 1);
 
    for (size_t i = 0; i < plan_size; i++) {
       new_task(plan, 0);
    }
    for (size_t i = 0; i < plan_size; i++) {
-      loomplan::Task *n = new_task(plan, 0);
+      Task *n = new_task(plan, 0);
       n->add_input_ids(i);
    }
 
    return plan;
 }
 
-static loomplan::Plan make_request_plan(Server &server)
+static loom::pb::comm::Plan make_request_plan(Server &server)
 {
-   loomplan::Plan plan;
+   using namespace loom::pb::comm;
+   Plan plan;
    add_cpu_request(server, plan, 1); // 0
    add_cpu_request(server, plan, 2); // 1
    add_cpu_request(server, plan, 3); // 2

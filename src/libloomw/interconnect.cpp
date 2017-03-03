@@ -1,6 +1,6 @@
 #include "interconnect.h"
 #include "worker.h"
-#include "libloom/loomcomm.pb.h"
+#include "pb/comm.pb.h"
 #include "libloom/log.h"
 #include "libloom/pbutils.h"
 #include "libloom/sendbuffer.h"
@@ -39,7 +39,7 @@ InterConnection::~InterConnection()
 void InterConnection::on_connect()
 {
     logger->info("Connected to {}", get_address());
-    loomcomm::Announce msg;
+    loom::pb::comm::Announce msg;
     msg.set_port(worker.get_listen_port());
 
     send_message(socket, msg);
@@ -68,6 +68,7 @@ void InterConnection::finish_receive()
 
 void InterConnection::on_message(const char *buffer, size_t size)
 {
+    using namespace loom::pb::comm;
     if (!address.empty()) {
         if (unpacker) {
             received_bytes += size;
@@ -85,7 +86,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
             }
         } else {
             // First data message
-            loomcomm::DataHeader msg;
+            DataHeader msg;
             assert(msg.ParseFromArray(buffer, size));
             unpacking_data_id = msg.id();
             received_bytes = size;
@@ -104,7 +105,7 @@ void InterConnection::on_message(const char *buffer, size_t size)
         }
     } else {
         // First message
-        loomcomm::Announce msg;
+        Announce msg;
         assert(msg.ParseFromArray(buffer, size));
         std::stringstream s;
         address = make_address(get_peername(), msg.port());
@@ -137,7 +138,7 @@ void InterConnection::send(Id id, DataPtr &data)
 
     size_t n_messages = data->serialize(worker, *buffer, data);
 
-    loomcomm::DataHeader msg;
+    loom::pb::comm::DataHeader msg;
     msg.set_id(id);
     msg.set_type_id(data->get_type_id(worker));
     msg.set_n_messages(n_messages);

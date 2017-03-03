@@ -3,8 +3,7 @@
 #include "trace.h"
 
 #include "libloom/compat.h"
-#include "libloom/loomplan.pb.h"
-#include "libloom/loomcomm.pb.h"
+#include "pb/comm.pb.h"
 #include "libloom/log.h"
 
 #include <algorithm>
@@ -18,7 +17,7 @@ TaskManager::TaskManager(Server &server)
 {
 }
 
-loom::base::Id TaskManager::add_plan(const loomplan::Plan &plan)
+loom::base::Id TaskManager::add_plan(const loom::pb::comm::Plan &plan)
 {
     loom::base::Id id_base = cstate.add_plan(plan);
     distribute_work(schedule(cstate));

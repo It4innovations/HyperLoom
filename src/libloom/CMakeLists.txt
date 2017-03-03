@@ -18,13 +18,12 @@ add_library(libloom
     fsutils.h
     trace.cpp
     trace.h
-    loomcomm.pb.h
-    loomcomm.pb.cc
-    loomplan.pb.h
-    loomplan.pb.cc
 )
 
 target_include_directories(libloom PUBLIC ${PROJECT_SOURCE_DIR}/src)
+target_link_libraries(libloom ${PROTOBUF_LIBRARIES} ${LIBUV_LIBRARY} pthread)
+target_link_libraries(libloom pb_comm)
+
 install(TARGETS libloom
         ARCHIVE DESTINATION lib)
 install(

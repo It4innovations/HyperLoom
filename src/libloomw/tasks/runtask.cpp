@@ -5,7 +5,7 @@
 #include "libloomw/data/rawdata.h"
 #include "libloomw/data/array.h"
 #include "libloom/log.h"
-#include "loomrun.pb.h"
+#include "pb/run.pb.h"
 #include "libloom/fsutils.h"
 
 #include <sstream>
@@ -35,7 +35,7 @@ void RunTask::start(DataVector &inputs)
    }
 
    /* Parse config */
-   loomrun::Run msg;
+   loom::pb::run::Run msg;
    msg.ParseFromString(task->get_config());
 
    uv_process_options_t options;
@@ -240,7 +240,7 @@ void RunTask::create_result()
         return;
     }
 
-    loomrun::Run msg;
+    loom::pb::run::Run msg;
     msg.ParseFromString(task->get_config());
     std::unique_ptr<Data> result;
 

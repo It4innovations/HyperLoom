@@ -6,7 +6,7 @@
 #include <libloom/pbutils.h>
 
 #include <libloom/log.h>
-#include <libloom/loomcomm.pb.h>
+#include <pb/comm.pb.h>
 
 
 #include <sstream>
@@ -67,6 +67,7 @@ void DWConnection::accept(loom::base::Listener &listener)
 
 void DWConnection::on_message(const char *buffer, size_t size)
 {
+   using namespace loom::pb::comm;
    if (!registered) {
       // This is first message: Announce, we do not care, so we drop it
       registered = true;
@@ -91,7 +92,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
    assert(!send_buffer);
    send_buffer = std::make_unique<loom::base::SendBuffer>();
 
-   loomcomm::DataHeader msg;
+   DataHeader msg;
    assert(msg.ParseFromArray(buffer, size));
 
    remaining_messages = msg.n_messages();
@@ -101,8 +102,8 @@ void DWConnection::on_message(const char *buffer, size_t size)
    msg.set_id(client_id);
    logger->debug("DummyWorker: Capturing data for client data_id={} (messages={})", data_id, remaining_messages);
 
-   loomcomm::ClientResponse cmsg;
-   cmsg.set_type(loomcomm::ClientResponse_Type_DATA);
+   ClientResponse cmsg;
+   cmsg.set_type(ClientResponse_Type_DATA);
    *cmsg.mutable_data() = msg;
    send_buffer->add(base::message_to_item(cmsg));
 }

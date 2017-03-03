@@ -1,4 +1,6 @@
-package loomrun;
+syntax = "proto2";
+
+package loom.pb.run;
 
 option optimize_for = LITE_RUNTIME;
 

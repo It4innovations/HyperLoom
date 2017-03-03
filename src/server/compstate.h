@@ -5,9 +5,13 @@
 
 #include <unordered_set>
 
-namespace loomplan {
+namespace loom {
+namespace pb {
+namespace comm {
+
 class Plan;
-}
+
+}}}
 
 class Server;
 
@@ -49,7 +53,7 @@ public:
 
     int get_n_data_objects() const;
 
-    loom::base::Id add_plan(const loomplan::Plan &plan);
+    loom::base::Id add_plan(const loom::pb::comm::Plan &plan);
     void test_ready_nodes(std::vector<loom::base::Id> ids);
 
     loom::base::Id pop_result_client_id(loom::base::Id id);

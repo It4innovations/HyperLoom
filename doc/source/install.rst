@@ -32,6 +32,12 @@ following commands: ::
     apt install libuv-dev libprotobuf-dev
     pip install cloudpickle
 
+.. Note::
+   If you are going to create plans with many tasks, you can obtain a
+   significant speedup by using PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION="cpp"
+   feature.
+
+
 When dependencies are installed, Loom itself can be installed by the following
 commands: ::
 
@@ -54,4 +60,5 @@ Python client depends on:
 Python client can be installed by the following commands: ::
 
     cd loom/python
+    sh generate.sh
     python setup.py install

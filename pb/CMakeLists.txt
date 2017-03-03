@@ -1,0 +1,8 @@
+
+PROTOBUF_GENERATE_CPP(PB_COMM_SRC PB_COMM_HEADER
+                      comm.proto)
+ADD_LIBRARY(pb_comm STATIC ${PB_COMM_HEADER} ${PB_COMM_SRC})
+
+PROTOBUF_GENERATE_CPP(PB_RUN_SRC PB_RUN_HEADER
+                      run.proto)
+ADD_LIBRARY(pb_run STATIC ${PB_RUN_HEADER} ${PB_RUN_SRC})

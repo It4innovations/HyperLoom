@@ -3,7 +3,7 @@ from .task import Task, ResourceRequest
 from .task import POLICY_SCHEDULER, POLICY_SIMPLE
 
 import struct
-from ..pb import loomrun_pb2 as loomrun
+from ..pb import run_pb2 as loomrun
 import cloudpickle
 
 

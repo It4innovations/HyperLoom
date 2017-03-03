@@ -3,8 +3,8 @@ from .connection import Connection
 from .task import Task
 from .plan import Plan
 
-from ..pb.loomcomm_pb2 import Register
-from ..pb.loomcomm_pb2 import ClientRequest, ClientResponse
+from ..pb.comm_pb2 import Register
+from ..pb.comm_pb2 import ClientRequest, ClientResponse
 
 import socket
 import struct

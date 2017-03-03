@@ -29,7 +29,7 @@ public:
         cstate.set_final_node(id);
     }
 
-    loom::base::Id add_plan(const loomplan::Plan &plan);
+    loom::base::Id add_plan(const loom::pb::comm::Plan &plan);
 
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
     void on_data_transferred(loom::base::Id id, WorkerConnection *wc);

@@ -9,9 +9,7 @@ add_executable(cpp-test
                test_resourcem.cpp
                main.cpp)
 
-target_link_libraries(cpp-test Catch libloom libloomw ${LIBUV_LIBRARY} pthread)
-target_link_libraries(cpp-test ${LPSOLVE_LIBRARY} ${COLAMD_LIBRARY} dl)
-target_link_libraries(cpp-test ${PROTOBUF_LIBRARIES})
+target_link_libraries(cpp-test Catch libloom libloomw)
 
 target_include_directories(cpp-test PUBLIC ${PROJECT_SOURCE_DIR})
 

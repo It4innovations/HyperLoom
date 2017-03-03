@@ -2,7 +2,7 @@
 #include "server.h"
 
 #include "libloom/log.h"
-#include "libloom/loomcomm.pb.h"
+#include "pb/comm.pb.h"
 #include "taskmanager.h"
 
 
@@ -43,20 +43,21 @@ WorkerConnection::WorkerConnection(Server &server,
 
 void WorkerConnection::on_message(const char *buffer, size_t size)
 {
-    loomcomm::WorkerResponse msg;
+    using namespace loom::pb::comm;
+    WorkerResponse msg;
     msg.ParseFromArray(buffer, size);
 
-    if (msg.type() == loomcomm::WorkerResponse_Type_FINISHED) {
+    if (msg.type() == WorkerResponse_Type_FINISHED) {
         server.on_task_finished(msg.id(), msg.size(), msg.length(), this);
         return;
     }
 
-    if (msg.type() == loomcomm::WorkerResponse_Type_TRANSFERED) {
+    if (msg.type() == WorkerResponse_Type_TRANSFERED) {
         server.on_data_transferred(msg.id(), this);
         return;
     }
 
-    if (msg.type() == loomcomm::WorkerResponse_Type_FAILED) {
+    if (msg.type() == WorkerResponse_Type_FAILED) {
         assert(msg.has_error_msg());
         server.on_task_failed(msg.id(), this, msg.error_msg());
         return;
@@ -65,12 +66,13 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
 
 void WorkerConnection::send_task(const TaskNode &task)
 {
+    using namespace loom::pb::comm;
     auto id = task.get_id();
     logger->debug("Assigning task id={} (client_id={}) to address={} cpus={}",
                   id, task.get_client_id(), address, task.get_n_cpus());
 
-    loomcomm::WorkerCommand msg;
-    msg.set_type(loomcomm::WorkerCommand_Type_TASK);
+    WorkerCommand msg;
+    msg.set_type(WorkerCommand_Type_TASK);
     msg.set_id(id);
     const TaskDef& def = task.get_task_def();
     msg.set_task_type(def.task_type);
@@ -85,10 +87,11 @@ void WorkerConnection::send_task(const TaskNode &task)
 
 void WorkerConnection::send_data(Id id, const std::string &address)
 {
+    using namespace loom::pb::comm;
     logger->debug("Command for {}: SEND id={} address={}", this->address, id, address);
 
-    loomcomm::WorkerCommand msg;
-    msg.set_type(loomcomm::WorkerCommand_Type_SEND);
+    WorkerCommand msg;
+    msg.set_type(WorkerCommand_Type_SEND);
     msg.set_id(id);
     msg.set_address(address);
     send_message(*socket, msg);
@@ -96,17 +99,19 @@ void WorkerConnection::send_data(Id id, const std::string &address)
 
 void WorkerConnection::remove_data(Id id)
 {
+    using namespace loom::pb::comm;
     logger->debug("Command for {}: REMOVE id={}", this->address, id);
-    loomcomm::WorkerCommand msg;
-    msg.set_type(loomcomm::WorkerCommand_Type_REMOVE);
+    WorkerCommand msg;
+    msg.set_type(WorkerCommand_Type_REMOVE);
     msg.set_id(id);
     send_message(*socket, msg);
 }
 
 void WorkerConnection::create_trace(const std::string &trace_path)
 {
-    loomcomm::WorkerCommand msg;
-    msg.set_type(loomcomm::WorkerCommand_Type_UPDATE);
+    using namespace loom::pb::comm;
+    WorkerCommand msg;
+    msg.set_type(WorkerCommand_Type_UPDATE);
     msg.set_trace_path(trace_path);
     msg.set_worker_id(worker_id);
     send_message(*socket, msg);

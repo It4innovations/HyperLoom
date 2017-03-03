@@ -20,8 +20,6 @@ add_library(libloomw
             tasks/runtask.h
             tasks/python.cpp
             tasks/python.h
-            tasks/loomrun.pb.cc
-            tasks/loomrun.pb.h
             python/core.cpp
             python/core.h
             python/data_wrapper.cpp
@@ -54,7 +52,9 @@ add_library(libloomw
             config.cpp
             config.h)
 
+target_link_libraries(libloomw libloom pb_run)
 target_include_directories(libloomw PUBLIC ${PROJECT_SOURCE_DIR}/src)
+
 install(TARGETS libloomw
         ARCHIVE DESTINATION lib)
 install(
