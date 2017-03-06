@@ -19,7 +19,7 @@ enum class TaskPolicy {
 };
 
 struct TaskDef
-{    
+{
     int n_cpus; // TODO: Replace by resource index
     std::vector<TaskNode*> inputs;
     loom::base::Id task_type;
@@ -42,10 +42,11 @@ class TaskNode {
 
 public:
 
-    struct DataState {
+    struct RuntimeState {
         WorkerMap<TaskStatus> workers;
         size_t size;
         size_t length;
+        size_t remaining_inputs;
     };
 
     TaskNode(loom::base::Id id, loom::base::Id client_id, TaskDef &&task);
@@ -112,11 +113,18 @@ public:
         state->workers[wc] = status;
     }
 
-    void ensure_state() {
+    inline void ensure_state() {
         if (!state) {
             create_state();
         }
     }
+
+    inline bool input_is_ready() {
+        ensure_state();
+        assert(state->remaining_inputs > 0);
+        return --state->remaining_inputs == 0;
+    }
+
 
     void create_state();
 
@@ -164,7 +172,7 @@ private:
     TaskDef task;
     std::vector<TaskNode*> nexts;
     loom::base::Id client_id;
-    std::unique_ptr<DataState> state;
+    std::unique_ptr<RuntimeState> state;
 };
 
 

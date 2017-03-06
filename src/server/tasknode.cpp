@@ -34,9 +34,10 @@ WorkerConnection *TaskNode::get_random_owner()
 void TaskNode::create_state()
 {
     assert(!state);
-    state = std::make_unique<DataState>();
+    state = std::make_unique<RuntimeState>();
     state->size = 0;
     state->length = 0;
+    state->remaining_inputs = task.inputs.size();
 }
 
 bool TaskNode::is_active() const
@@ -101,7 +102,7 @@ void TaskNode::set_as_finished_no_check(WorkerConnection *wc, size_t size, size_
 }
 
 void TaskNode::set_as_running(WorkerConnection *wc)
-{    
+{
     assert(get_worker_status(wc) == TaskStatus::NONE);
     set_worker_status(wc, TaskStatus::RUNNING);
     wc->remove_free_cpus(get_n_cpus());

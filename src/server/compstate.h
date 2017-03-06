@@ -30,8 +30,6 @@ public:
     TaskNode& get_node(loom::base::Id id);
     const TaskNode& get_node(loom::base::Id id) const;
 
-    void add_ready_nexts(const TaskNode &node);
-
     bool has_pending_nodes() const {
         return !pending_nodes.empty();
     }
@@ -70,6 +68,7 @@ public:
 
     std::unique_ptr<TaskNode> pop_node(loom::base::Id id);
     void clear_all();
+    void add_pending_node(TaskNode &node);
 
 private:
 
@@ -94,7 +93,6 @@ private:
                                        const PlanNode &node,
                                        std::unordered_set<loom::base::Id> &nonlocals);*/
     int get_max_cpus();
-    void add_pending_node(TaskNode &node);
 };
 
 

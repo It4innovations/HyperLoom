@@ -26,11 +26,7 @@ void ComputationState::add_node(std::unique_ptr<TaskNode> &&node) {
         pending_nodes.insert(node.get());
     }
 
-    auto inputs = node->get_inputs();
-    std::sort(inputs.begin(), inputs.end());
-    inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
-
-    for (TaskNode* input_node : inputs) {
+    for (TaskNode* input_node : node->get_inputs()) {
         input_node->add_next(node.get());
     }
 
@@ -97,20 +93,6 @@ void ComputationState::remove_node(TaskNode &node)
    auto it = nodes.find(node.get_id());
    assert(it != nodes.end());
    nodes.erase(it);
-}
-
-void ComputationState::add_ready_nexts(const TaskNode &node)
-{
-   for (TaskNode *nn : node.get_nexts()) {
-      if (is_ready(*nn)) {
-         if (nn->get_task_def().policy == TaskPolicy::SCHEDULER) {
-            assert(0);
-            //expand_node(node);
-         } else {
-            add_pending_node(*nn);
-         }
-      }
-   }
 }
 
 bool ComputationState::is_finished() const
@@ -276,16 +258,6 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
    }
 }*/
 
-
-bool ComputationState::is_ready(const TaskNode &node)
-{
-   for (TaskNode *input_node : node.get_inputs()) {
-      if (!input_node->is_computed()) {
-         return false;
-      }
-   }
-   return true;
-}
 
 static TaskPolicy read_task_policy(loom::pb::comm::Task_Policy policy) {
     using namespace loom::pb::comm;

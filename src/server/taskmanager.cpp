@@ -112,19 +112,22 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
         logger->debug("Job id={} finished (size={}, length={})", id, size, length);
     }
 
-    // Remove duplicates
-    std::vector<TaskNode*> inputs = node->get_inputs();
-    std::sort(inputs.begin(), inputs.end());
-    inputs.erase(std::unique(inputs.begin(), inputs.end()), inputs.end());
-
-    for (TaskNode *input_node : inputs) {
+    for (TaskNode *input_node : node->get_inputs()) {
         if (input_node->next_finished(*node)) {
             remove_node(*input_node);
         }
     }
-
-    if (node->get_nexts().size() > 0) {
-        cstate.add_ready_nexts(*node);
+    if (!node->get_nexts().empty()) {
+        for (TaskNode *nn : node->get_nexts()) {
+           if (nn->input_is_ready()) {
+              if (nn->get_task_def().policy == TaskPolicy::SCHEDULER) {
+                 assert(0);
+                 //expand_node(node);
+              } else {
+                 cstate.add_pending_node(*nn);
+              }
+           }
+        }
     } else {
         remove_node(*node);
     }
