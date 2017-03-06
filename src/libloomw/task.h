@@ -39,7 +39,7 @@ public:
         inputs.push_back(id);
     }
 
-    bool get_n_cpus() const {
+    int get_n_cpus() const {
         return n_cpus;
     }
 
