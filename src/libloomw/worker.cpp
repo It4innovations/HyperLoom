@@ -238,7 +238,7 @@ void Worker::create_trace(const std::string &trace_path, Id worker_id)
 
 void Worker::new_task(std::unique_ptr<Task> task)
 {
-    if (task->is_ready(*this)) {
+    if (task->is_ready()) {
         ready_tasks.push_back(std::move(task));
         check_ready_tasks();
         return;
@@ -407,16 +407,13 @@ void Worker::check_ready_tasks()
     UV_CHECK(uv_idle_start(&start_tasks_idle, _start_tasks_callback));
 }
 
-void Worker::check_waiting_tasks(Id id)
+void Worker::check_waiting_tasks(Id finished_id)
 {
     bool something_new = false;
     auto i = waiting_tasks.begin();
     while (i != waiting_tasks.end()) {
         auto& task_ptr = *i;
-        if (task_ptr->is_unresolved(id)) {
-            task_ptr->dec_unresolved();
-        }
-        if (task_ptr->is_ready(*this)) {
+        if (task_ptr->is_ready(finished_id)) {
             ready_tasks.push_back(std::move(task_ptr));
             i = waiting_tasks.erase(i);
             something_new = true;
@@ -559,16 +556,19 @@ void Worker::on_message(const char *data, size_t size)
     switch (type) {
     case comm::WorkerCommand_Type_TASK: {
         logger->debug("Task id={} received", msg.id());
+        std::unordered_set<base::Id> unresolved_set;
         auto task = std::make_unique<Task>(msg.id(),
                                            msg.task_type(),
                                            msg.task_config(),
                                            msg.n_cpus());
         for (int i = 0; i < msg.task_inputs_size(); i++) {
-            task->add_input(msg.task_inputs(i));
-            if(!this->has_data(msg.task_inputs(i))) {
-                task->unresolved_set_insert(msg.task_inputs(i));
+            Id task_id = msg.task_inputs(i);
+            task->add_input(task_id);
+            if(!this->has_data(task_id)) {
+                unresolved_set.insert(task_id);
             }
         }
+        task->set_unresolved_set(std::move(unresolved_set));
         new_task(std::move(task));
         break;
     }

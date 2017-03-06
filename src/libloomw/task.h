@@ -34,7 +34,10 @@ public:
         return config;
     }
 
-    bool is_ready(const Worker &worker) const;
+    bool is_ready(base::Id finished_id);
+    bool is_ready() const {
+        return n_unresolved == 0;
+    }
 
     void add_input(base::Id id) {
         inputs.push_back(id);
@@ -48,22 +51,7 @@ public:
         return inputs;
     }
 
-    void dec_unresolved() {
-        --n_unresolved;
-    }
-
-    void unresolved_set_insert(base::Id id) {
-        unresolved_set.insert(id);
-        n_unresolved = unresolved_set.size();
-    }
-    
-    bool is_unresolved(base::Id id) {
-        if (unresolved_set.find(id) != unresolved_set.end()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    void set_unresolved_set(std::unordered_set<base::Id> &&set);
 
 protected:
     base::Id id;

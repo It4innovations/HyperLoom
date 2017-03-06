@@ -108,7 +108,7 @@ public:
 
     std::string get_run_dir(base::Id id);
 
-    void check_waiting_tasks(base::Id id);
+    void check_waiting_tasks(base::Id finished_id);
     void check_ready_tasks();
 
     void set_cpus(int value);
