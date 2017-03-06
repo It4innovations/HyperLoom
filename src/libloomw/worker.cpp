@@ -276,7 +276,7 @@ void Worker:: publish_data(Id id, const DataPtr &data)
 {
     logger->debug("Publishing data id={} size={} info={}", id, data->get_size(), data->get_info());
     public_data[id] = data;
-    check_waiting_tasks();
+    check_waiting_tasks(id);
 }
 
 void Worker::remove_data(Id id)
@@ -407,12 +407,15 @@ void Worker::check_ready_tasks()
     UV_CHECK(uv_idle_start(&start_tasks_idle, _start_tasks_callback));
 }
 
-void Worker::check_waiting_tasks()
+void Worker::check_waiting_tasks(Id id)
 {
     bool something_new = false;
     auto i = waiting_tasks.begin();
     while (i != waiting_tasks.end()) {
         auto& task_ptr = *i;
+        if (task_ptr->is_unresolved(id)) {
+            task_ptr->dec_unresolved();
+        }
         if (task_ptr->is_ready(*this)) {
             ready_tasks.push_back(std::move(task_ptr));
             i = waiting_tasks.erase(i);
@@ -562,6 +565,9 @@ void Worker::on_message(const char *data, size_t size)
                                            msg.n_cpus());
         for (int i = 0; i < msg.task_inputs_size(); i++) {
             task->add_input(msg.task_inputs(i));
+            if(!this->has_data(msg.task_inputs(i))) {
+                task->unresolved_set_insert(msg.task_inputs(i));
+            }
         }
         new_task(std::move(task));
         break;
