@@ -24,7 +24,7 @@ ResourceAllocation TaskInstance::pop_resource_alloc()
 const std::string TaskInstance::get_task_dir()
 {
     std::stringstream s;
-    s << worker.get_work_dir() << get_id() << '/';
+    s << worker.get_globals().get_work_dir() << get_id() << '/';
     std::string name = s.str();
     if (has_directory) {
         return name;

@@ -86,7 +86,7 @@ DataPtr PyCallJob::convert_py_object(PyObject *obj)
         char *ptr = PyUnicode_AsUTF8AndSize(obj, &size);
         assert(ptr);
         auto output = std::make_shared<RawData>();
-        output->init_from_mem(work_dir, ptr, size);
+        output->init_from_mem(globals, ptr, size);
         return output;
     } else if (PyBytes_Check(obj)) {
         // obj is bytes
@@ -95,7 +95,7 @@ DataPtr PyCallJob::convert_py_object(PyObject *obj)
         assert(ptr);
 
         auto output = std::make_shared<RawData>();
-        output->init_from_mem(work_dir, ptr, size);
+        output->init_from_mem(globals, ptr, size);
         return output;
     } else if (PySequence_Check(obj)) {
         DataVector vector = list_to_data_vector(obj);

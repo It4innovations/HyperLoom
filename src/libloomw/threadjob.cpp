@@ -5,7 +5,7 @@
 using namespace loom;
 
 ThreadJob::ThreadJob(Worker &worker, Task &task)
-    : task(task), work_dir(worker.get_work_dir())
+    : task(task), globals(worker.get_globals())
 {
 }
 

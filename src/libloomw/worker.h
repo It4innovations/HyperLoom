@@ -7,6 +7,7 @@
 #include "taskfactory.h"
 #include "resourcem.h"
 #include "wtrace.h"
+#include "globals.h"
 
 #include "libloom/dictionary.h"
 #include "libloom/listener.h"
@@ -102,8 +103,8 @@ public:
         return server_address;
     }
 
-    const std::string& get_work_dir() {
-        return work_dir;
+    Globals& get_globals() {
+        return globals;
     }
 
     std::string get_run_dir(base::Id id);
@@ -147,7 +148,7 @@ private:
     std::unordered_map<base::Id, std::unique_ptr<TaskFactory>> task_factories;
 
     std::unordered_map<int, DataPtr> public_data;
-    std::string work_dir;
+    Globals globals;
 
     std::unordered_map<base::Id, UnpackFactoryFn> unpack_ffs;
 

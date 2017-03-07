@@ -8,6 +8,8 @@
 
 namespace loom {
 
+class Globals;
+
 /** Base class for task instance with thread support */
 class ThreadJob
 {
@@ -48,7 +50,7 @@ protected:
     DataVector inputs;
     std::string error_message;
     std::unique_ptr<TaskDescription> task_redirect;
-    const std::string &work_dir;
+    Globals &globals;
 
     static void _work_cb(uv_work_t *req);
     static void _after_work_cb(uv_work_t *req, int status);

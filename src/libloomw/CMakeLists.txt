@@ -26,6 +26,8 @@ add_library(libloomw
             python/data_wrapper.h
             python/module.cpp
             python/module.h
+            globals.h
+            globals.cpp
             worker.cpp
             worker.h
             taskinstance.cpp

@@ -77,6 +77,7 @@ Worker::Worker(uv_loop_t *loop,
     }
 
     auto &work_dir_root = config.get_work_dir();
+    std::string work_dir;
     if (!work_dir_root.empty()) {
         std::stringstream s;
         s << work_dir_root;
@@ -103,6 +104,8 @@ Worker::Worker(uv_loop_t *loop,
 
         logger->info("Using '{}' as working directory", work_dir);
     }
+
+    globals.init(work_dir);
 
     resource_manager.init(config.get_cpus());
 
@@ -362,7 +365,7 @@ void Worker::unregister_connection(InterConnection &connection)
 std::string Worker::get_run_dir(Id id)
 {
     std::stringstream s;
-    s << work_dir << "run/" << id << "/";
+    s << globals.get_work_dir() << "run/" << id << "/";
     return s.str();
 }
 

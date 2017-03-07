@@ -62,12 +62,12 @@ bool RawData::has_raw_data() const {
     return true;
 }
 
-char* RawData::init_empty(const std::string &work_dir, size_t size)
+char* RawData::init_empty(Globals &globals, size_t size)
 {
     assert(data == nullptr);
 
     if (filename.empty()) {
-        assign_filename(work_dir);
+        assign_filename(globals);
     }
 
     this->size = size;
@@ -91,20 +91,20 @@ char* RawData::init_empty(const std::string &work_dir, size_t size)
     return data;
 }
 
-void RawData::assign_filename(const std::string &work_dir)
+void RawData::assign_filename(Globals &globals)
 {
     assert(filename.empty());
     int file_id = file_id_counter++;
     std::stringstream s;
-    s << work_dir << "data/" << file_id;
+    s << globals.get_work_dir() << "data/" << file_id;
     filename = s.str();
 }
 
-void RawData::init_from_file(const std::string &work_dir)
+void RawData::init_from_file(Globals &globals)
 {
     assert(data == nullptr);
     if (filename.empty()) {
-        assign_filename(work_dir);
+        assign_filename(globals);
     }
     size = file_size(filename.c_str());
 }
@@ -157,16 +157,16 @@ std::string RawData::get_info() const
     return "RawData file=" + filename;
 }
 
-void RawData::init_from_string(const std::string &work_dir, const std::string &str)
+void RawData::init_from_string(Globals &globals, const std::string &str)
 {
     auto size = str.size();
-    char *mem = init_empty(work_dir, size);
+    char *mem = init_empty(globals, size);
     memcpy(mem, str.c_str(), size);
 }
 
-void RawData::init_from_mem(const std::string &work_dir, const void *ptr, size_t size)
+void RawData::init_from_mem(Globals &globals, const void *ptr, size_t size)
 {
-    char *mem = init_empty(work_dir, size);
+    char *mem = init_empty(globals, size);
     memcpy(mem, ptr, size);
 }
 
@@ -177,7 +177,7 @@ size_t RawData::serialize(Worker &worker, loom::base::SendBuffer &buffer, const 
     return 1;
 }
 
-RawDataUnpacker::RawDataUnpacker(Worker &worker) : ptr(nullptr), worker_dir(worker.get_work_dir())
+RawDataUnpacker::RawDataUnpacker(Worker &worker) : ptr(nullptr), globals(worker.get_globals())
 {
 
 }
@@ -197,7 +197,7 @@ DataUnpacker::Result RawDataUnpacker::on_stream_data(const char *data, size_t si
    if (ptr == nullptr) {
         auto obj = std::make_shared<RawData>();
         size_t total_size = size + remaining;
-        ptr = obj->init_empty(worker_dir, total_size);
+        ptr = obj->init_empty(globals, total_size);
         memcpy(ptr, data, size);
         ptr += size;
         result = obj;

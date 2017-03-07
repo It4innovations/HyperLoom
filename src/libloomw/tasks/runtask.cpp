@@ -250,14 +250,16 @@ void RunTask::create_result()
        *msg.add_map_outputs() = "+out";
     }
 
+    Globals &globals = worker.get_globals();
+
     if (output_size == 1) {
        logger->debug("Returning file '{}'' as result", msg.map_outputs(0));
        auto data = std::make_shared<RawData>();
-       data->assign_filename(worker.get_work_dir());
+       data->assign_filename(globals);
        if (!rename_output(msg.map_outputs(0), data->get_filename())) {
            return;
        }
-       data->init_from_file(worker.get_work_dir());
+       data->init_from_file(globals);
        finish(data);
        return;
     }
@@ -268,11 +270,11 @@ void RunTask::create_result()
     for (int i = 0; i < output_size; i++) {
        logger->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
        auto data = std::make_shared<RawData>();
-       data->assign_filename(worker.get_work_dir());
+       data->assign_filename(globals);
        if (!rename_output(msg.map_outputs(i), data->get_filename())) {
              return;
        }
-       data->init_from_file(worker.get_work_dir());
+       data->init_from_file(globals);
        items[i] = std::move(data);
     }
     DataPtr output = std::make_shared<Array>(output_size, std::move(items));

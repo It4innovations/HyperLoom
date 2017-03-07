@@ -8,6 +8,8 @@
 
 namespace loom {
 
+class Globals;
+
 class RawData : public Data {
 
 public:
@@ -25,11 +27,11 @@ public:
     std::string get_filename() const override;
     size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const override;
 
-    char* init_empty(const std::string &work_dir, size_t size);
-    void init_from_string(const std::string &work_dir, const std::string &str);
-    void init_from_mem(const std::string &work_dir, const void *ptr, size_t size);
-    void init_from_file(const std::string &work_dir);
-    void assign_filename(const std::string &work_dir);
+    char* init_empty(loom::Globals &globals, size_t size);
+    void init_from_string(loom::Globals &globals, const std::string &str);
+    void init_from_mem(loom::Globals &globals, const void *ptr, size_t size);
+    void init_from_file(loom::Globals &globals);
+    void assign_filename(loom::Globals &globals);
 
 
 protected:
@@ -58,7 +60,7 @@ public:
 private:
    DataPtr result;
    char* ptr;
-   const std::string& worker_dir;
+   Globals& globals;
 };
 
 }

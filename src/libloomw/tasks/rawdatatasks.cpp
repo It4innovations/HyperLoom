@@ -16,7 +16,7 @@ using namespace loom;
 void ConstTask::start(DataVector &inputs)
 {
     auto output = std::make_shared<RawData>();
-    output->init_from_string(worker.get_work_dir(), task->get_config());
+    output->init_from_string(worker.get_globals(), task->get_config());
     finish(std::static_pointer_cast<Data>(output));
 }
 
@@ -52,7 +52,7 @@ DataPtr MergeJob::run() {
     }
 
     auto data = std::make_shared<RawData>();
-    char *dst = data->init_empty(work_dir, size);
+    char *dst = data->init_empty(globals, size);
 
     if (config.empty()) {
         for (auto& data : inputs) {
@@ -135,6 +135,6 @@ DataPtr SaveJob::run()
     fout.close();
 
     auto output = std::make_shared<RawData>();
-    output->init_empty(work_dir, 0);
+    output->init_empty(globals, 0);
     return output;
 }
