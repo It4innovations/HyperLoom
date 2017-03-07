@@ -15,6 +15,7 @@ class Worker;
 
 class Connection;
 class Data;
+class Globals;
 
 using DataPtr = std::shared_ptr<const Data>;
 using DataVector = std::vector<DataPtr>;
@@ -48,8 +49,9 @@ public:
     /** Get pointer to raw data, returns nullptr when it is not possible */
     virtual const char *get_raw_data() const;
 
-    /** Returns a filename if data obeject is mapped from file, empty string otherwise */
-    virtual std::string get_filename() const;
+    /** Map object to file and return its filename, if object cannot be mapped
+     * then return empty string */
+    virtual std::string map_as_file(loom::Globals &globals) const;
 
     virtual bool has_raw_data() const;
 

@@ -17,7 +17,7 @@ public:
     const char *get_raw_data() const override;
     bool has_raw_data() const override;
     std::string get_info() const override;
-    std::string get_filename() const override;
+    std::string map_as_file(Globals &globals) const override;
     size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const override;
 
 protected:

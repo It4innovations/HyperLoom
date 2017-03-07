@@ -58,6 +58,7 @@ void RunTask::start(DataVector &inputs)
    assert(msg.map_inputs_size() <= static_cast<int>(inputs.size()));
 
    std::unordered_map<std::string, std::string> variables;
+   Globals &globals = worker.get_globals();
 
    for (int i = 0; i < msg.map_inputs_size(); i++) {
       const std::string &name = msg.map_inputs(i);
@@ -70,7 +71,7 @@ void RunTask::start(DataVector &inputs)
       }
 
       std::string path = get_path(name);
-      std::string filename = inputs[i]->get_filename();
+      std::string filename = inputs[i]->map_as_file(globals);
       assert(!filename.empty());
       if (!task->get_inputs().empty()) {
         logger->debug("Creating symlink of '{}' for input id={} filename={}",
@@ -251,15 +252,15 @@ void RunTask::create_result()
     }
 
     Globals &globals = worker.get_globals();
-
     if (output_size == 1) {
        logger->debug("Returning file '{}'' as result", msg.map_outputs(0));
        auto data = std::make_shared<RawData>();
-       data->assign_filename(globals);
-       if (!rename_output(msg.map_outputs(0), data->get_filename())) {
+       std::string filename = data->assign_filename(globals);
+       assert(!filename.empty());
+       if (!rename_output(msg.map_outputs(0), filename)) {
            return;
        }
-       data->init_from_file(globals);
+       data->init_from_file();
        finish(data);
        return;
     }
@@ -270,11 +271,12 @@ void RunTask::create_result()
     for (int i = 0; i < output_size; i++) {
        logger->debug("Storing file '{}'' as index={}", msg.map_outputs(i), i);
        auto data = std::make_shared<RawData>();
-       data->assign_filename(globals);
-       if (!rename_output(msg.map_outputs(i), data->get_filename())) {
+       std::string filename = data->assign_filename(globals);
+       assert(!filename.empty());
+       if (!rename_output(msg.map_outputs(i), filename)) {
              return;
        }
-       data->init_from_file(globals);
+       data->init_from_file();
        items[i] = std::move(data);
     }
     DataPtr output = std::make_shared<Array>(output_size, std::move(items));

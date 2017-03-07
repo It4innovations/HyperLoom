@@ -6,21 +6,19 @@
 #include "../worker.h"
 
 
-#include <sstream>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <fstream>
 
 using namespace loom;
 using namespace loom::base;
 
-std::atomic<size_t> RawData::file_id_counter(1);
-
 RawData::RawData()
-    : data(nullptr), size(0)
+    : data(nullptr), size(0), is_mmap(false)
 {
 }
 
@@ -29,10 +27,21 @@ RawData::~RawData()
     logger->debug("Disposing raw data filename={} size={}", filename, size);
 
     if (filename.empty()) {
-        assert(data == nullptr);
+        if (data) {
+            assert(!is_mmap);
+            delete [] data;
+            data = nullptr;
+        }
     } else {
-        if (data != nullptr && munmap(data, size)) {
-            log_errno_abort("munmap");
+        if (data) {
+            if (!is_mmap) {
+                delete [] data;
+                data = nullptr;
+            } else {
+                if (munmap(data, size)) {
+                    log_errno_abort("munmap");
+                }
+            }
         }
         if (unlink(filename.c_str())) {
             log_errno_abort("unlink");
@@ -42,7 +51,7 @@ RawData::~RawData()
 
 std::string RawData::get_type_name() const
 {
-      return "loom/data";
+    return "loom/data";
 }
 
 size_t RawData::get_size() const {
@@ -53,6 +62,7 @@ const char *RawData::get_raw_data() const
 {
     std::lock_guard<std::mutex> lock(mutex);
     if (data == nullptr) {
+        assert(is_mmap);
         open();
     }
     return data;
@@ -65,12 +75,15 @@ bool RawData::has_raw_data() const {
 char* RawData::init_empty(Globals &globals, size_t size)
 {
     assert(data == nullptr);
-
-    if (filename.empty()) {
-        assign_filename(globals);
+    assert(filename.empty());
+    this->size = size;
+    is_mmap = size > MMAP_MIN_SIZE;
+    if (!is_mmap) {
+        data = new char[size];
+        return data;
     }
 
-    this->size = size;
+    filename = globals.create_data_filename();
 
     int fd = ::open(filename.c_str(), O_CREAT | O_RDWR,  S_IRUSR | S_IWUSR);
     if (fd < 0) {
@@ -91,26 +104,31 @@ char* RawData::init_empty(Globals &globals, size_t size)
     return data;
 }
 
-void RawData::assign_filename(Globals &globals)
+std::string RawData::assign_filename(Globals &globals)
 {
     assert(filename.empty());
-    int file_id = file_id_counter++;
-    std::stringstream s;
-    s << globals.get_work_dir() << "data/" << file_id;
-    filename = s.str();
+    filename = globals.create_data_filename();
+    return filename;
 }
 
-void RawData::init_from_file(Globals &globals)
+void RawData::init_from_file()
 {
+    assert(!filename.empty());
     assert(data == nullptr);
-    if (filename.empty()) {
-        assign_filename(globals);
-    }
+    is_mmap = true;
     size = file_size(filename.c_str());
 }
 
-std::string RawData::get_filename() const
+std::string RawData::map_as_file(Globals &globals) const
 {
+    std::lock_guard<std::mutex> lock(mutex);
+    if (filename.empty()) {
+        assert (data);
+        assert (!is_mmap);
+        filename = globals.create_data_filename();
+        std::ofstream f(filename.c_str());
+        f.write(data, size);
+    }
     return filename;
 }
 
@@ -138,7 +156,7 @@ void RawData::map(int fd, bool write) const
     assert(fd >= 0);
 
     if (size == 0) {
-       return;
+        return;
     }
 
     int flags = PROT_READ;
@@ -189,31 +207,31 @@ RawDataUnpacker::~RawDataUnpacker()
 
 DataUnpacker::Result RawDataUnpacker::get_initial_mode()
 {
-   return STREAM;
+    return STREAM;
 }
 
 DataUnpacker::Result RawDataUnpacker::on_stream_data(const char *data, size_t size, size_t remaining)
 {
-   if (ptr == nullptr) {
+    if (ptr == nullptr) {
         auto obj = std::make_shared<RawData>();
         size_t total_size = size + remaining;
         ptr = obj->init_empty(globals, total_size);
         memcpy(ptr, data, size);
         ptr += size;
         result = obj;
-   } else {
-       memcpy(ptr, data, size);
-       ptr += size;
-   }
+    } else {
+        memcpy(ptr, data, size);
+        ptr += size;
+    }
 
-   if (remaining == 0) {
-       return FINISHED;
-   } else {
-       return STREAM;
-   }
+    if (remaining == 0) {
+        return FINISHED;
+    } else {
+        return STREAM;
+    }
 }
 
 DataPtr RawDataUnpacker::finish()
 {
-   return result;
+    return result;
 }

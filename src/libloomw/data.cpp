@@ -27,7 +27,7 @@ const char * Data::get_raw_data() const
     return nullptr;
 }
 
-std::string Data::get_filename() const
+std::string Data::map_as_file(Globals &globals) const
 {
     return "";
 }

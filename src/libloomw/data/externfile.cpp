@@ -53,7 +53,7 @@ size_t ExternFile::serialize(Worker &worker, loom::base::SendBuffer &buffer, con
     assert(0); // TODO
 }
 
-std::string ExternFile::get_filename() const
+std::string ExternFile::map_as_file(Globals &globals) const
 {
     return filename;
 }

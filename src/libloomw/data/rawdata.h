@@ -11,6 +11,7 @@ namespace loom {
 class Globals;
 
 class RawData : public Data {
+    const size_t MMAP_MIN_SIZE = 64 * 1024; // 64kB
 
 public:
     RawData();
@@ -24,14 +25,14 @@ public:
 
     bool has_raw_data() const override;
     std::string get_info() const override;
-    std::string get_filename() const override;
+    std::string map_as_file(Globals &globals) const override;
     size_t serialize(Worker &worker, loom::base::SendBuffer &buffer, const DataPtr &data_ptr) const override;
 
     char* init_empty(loom::Globals &globals, size_t size);
     void init_from_string(loom::Globals &globals, const std::string &str);
     void init_from_mem(loom::Globals &globals, const void *ptr, size_t size);
-    void init_from_file(loom::Globals &globals);
-    void assign_filename(loom::Globals &globals);
+    void init_from_file();
+    std::string assign_filename(loom::Globals &globals);
 
 
 protected:
@@ -42,9 +43,8 @@ protected:
     mutable char *data;
     mutable std::mutex mutex;
     size_t size;
-    std::string filename;
-
-    static std::atomic<size_t> file_id_counter;
+    mutable std::string filename;
+    bool is_mmap;
 };
 
 
