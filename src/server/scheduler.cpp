@@ -13,7 +13,10 @@ using Score = int64_t;
 static constexpr Score SCORE_MIN = INT64_MIN;
 static constexpr Score UNIT_RECOMPUTE = INT64_MAX;
 
-static constexpr size_t MAX_SCHEDULED_TASKS_LIMIT = 6000;
+static constexpr size_t MIN_SCHEDULED_TASKS_LIMIT = 128;
+
+static constexpr size_t OVERBOOKING_LIMIT = 8;
+static constexpr size_t OVERBOOKING_FACTOR = 3;
 
 static constexpr size_t INPUT_UPDATE_LIMIT = 32;
 
@@ -172,14 +175,16 @@ TaskDistribution schedule(const ComputationState &cstate)
         return result;
     }
 
-    size_t total_free_cpus = 0;
-
     SContext context;
     context.worker_size = worker_size;
     context.workers.reserve(worker_size);
 
     int index = 0;
+    size_t total_free_cpus = 0;
+    size_t total_cpus = 0;
+
     for (auto &wc : worker_conns) {
+        total_cpus += wc->get_resource_cpus();
         int free_cpus = wc->get_free_cpus();
         total_free_cpus += free_cpus;
         wc->set_scheduler_index(index++);
@@ -187,10 +192,20 @@ TaskDistribution schedule(const ComputationState &cstate)
         context.workers.push_back(wc.get());
     }
 
-    size_t limit = MAX_SCHEDULED_TASKS_LIMIT;
+    size_t ptasks_size = cstate.get_pending_tasks().size();
 
-    if (total_free_cpus > limit) {
-        limit = total_free_cpus * 2;
+    if (ptasks_size > (total_cpus + 1) * OVERBOOKING_LIMIT) {
+        for (auto &wc : worker_conns) {
+            auto free_cpus = wc->get_scheduler_free_cpus();
+            free_cpus += wc->get_resource_cpus() * (OVERBOOKING_FACTOR - 1);
+            wc->set_scheduler_free_cpus(free_cpus);
+        }
+        total_free_cpus += (OVERBOOKING_FACTOR - 1) * total_cpus;
+    }
+
+    size_t limit = total_free_cpus * 5 + total_cpus;
+    if (limit < MIN_SCHEDULED_TASKS_LIMIT) {
+        limit = MIN_SCHEDULED_TASKS_LIMIT;
     }
 
     std::vector<std::unordered_set<loom::base::Id>> scheduled_moves(worker_size);
@@ -201,7 +216,7 @@ TaskDistribution schedule(const ComputationState &cstate)
 
     // Init units
 
-    size_t ptasks_size = cstate.get_pending_tasks().size();
+
     if (ptasks_size <= limit) {
         context.units.reserve(ptasks_size);
         context.score_table = std::make_unique<Score[]>(worker_size * ptasks_size);

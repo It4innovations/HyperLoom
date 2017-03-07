@@ -45,12 +45,10 @@ public:
 
     void add_free_cpus(int value) {
         free_cpus += value;
-        assert(free_cpus >= 0);
     }
 
     void remove_free_cpus(int value) {
         free_cpus -= value;
-        assert(free_cpus >= 0);
     }
 
     void set_scheduler_free_cpus(int value)
