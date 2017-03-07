@@ -64,16 +64,10 @@ void TaskNode::reset_owners()
 
 bool TaskNode::next_finished(TaskNode &node)
 {
-    size_t index = 0;
-    for (TaskNode *next_node : nexts) {
-        if (next_node == &node) {
-            nexts[index] = nexts[nexts.size() - 1];
-            nexts.pop_back();
-            return nexts.empty();
-        }
-        index++;
-    }
-    assert(0);
+    auto it = nexts.find(&node);
+    assert(it != nexts.end());
+    nexts.erase(it);
+    return nexts.empty();
 }
 
 void TaskNode::set_as_none(WorkerConnection *wc)

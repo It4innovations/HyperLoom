@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <assert.h>
 
 class WorkerConnection;
@@ -85,7 +86,7 @@ public:
         return task.inputs;
     }
 
-    const std::vector<TaskNode*>& get_nexts() const {
+    const std::unordered_multiset<TaskNode*>& get_nexts() const {
         return nexts;
     }
 
@@ -94,7 +95,7 @@ public:
     WorkerConnection* get_random_owner();
 
     void add_next(TaskNode *node) {
-        nexts.push_back(node);
+        nexts.insert(node);
     }
 
     TaskStatus get_worker_status(WorkerConnection *wc) {
@@ -170,7 +171,7 @@ public:
 private:
     loom::base::Id id;
     TaskDef task;
-    std::vector<TaskNode*> nexts;
+    std::unordered_multiset<TaskNode*> nexts;
     loom::base::Id client_id;
     std::unique_ptr<RuntimeState> state;
 };
