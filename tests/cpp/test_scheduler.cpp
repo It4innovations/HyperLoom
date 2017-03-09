@@ -322,7 +322,7 @@ TEST_CASE("basic-plan", "[scheduling]") {
       s.test_ready_nodes({0, 1});
 
       TaskDistribution d = schedule(s);
-      dump_dist(d);
+      //dump_dist(d);
       REQUIRE(d[w1].size() == 1);
       REQUIRE(d[w2].size() == 1);
       TaskNode *t1 = d[w1][0];
@@ -481,7 +481,7 @@ TEST_CASE("Plan2", "[scheduling]") {
 
          s.test_ready_nodes(std::vector<loom::base::Id>{5, 6, 7, 8});
          TaskDistribution d = schedule(s);
-         dump_dist(d);
+         //dump_dist(d);
 
          REQUIRE((d[w1] == nodes(s, {6})));
          REQUIRE((d[w2] == nodes(s, {8})));
@@ -576,7 +576,7 @@ TEST_CASE("big-plan", "[scheduling]") {
    for (auto& pair : d) {
       sum += pair.second.size();
    }
-   REQUIRE(sum == BIG_PLAN_WORKERS * CPUS);
+   REQUIRE(sum == BIG_PLAN_WORKERS * CPUS * 3);
 }
 
 TEST_CASE("big-simple-plan", "[scheduling]") {
@@ -607,7 +607,7 @@ TEST_CASE("big-simple-plan", "[scheduling]") {
    for (auto& pair : d) {
       sum += pair.second.size();
    }
-   REQUIRE(sum == BIG_PLAN_WORKERS * CPUS);
+   REQUIRE(sum == BIG_PLAN_WORKERS * CPUS * 3);
 }
 
 TEST_CASE("request-plan", "[scheduling]") {
@@ -702,7 +702,7 @@ TEST_CASE("continuation2", "[scheduling]") {
        auto w2 = simple_worker(server, "w2", 1);
        s.test_ready_nodes({0, 3, 4});
        TaskDistribution d = schedule(s);
-       dump_dist(d);
+       //dump_dist(d);
        REQUIRE(check_uvector(d[w1], nodes(s, {3, 4})));
        REQUIRE(check_uvector(d[w2], nodes(s, {0})));
    }
@@ -726,7 +726,7 @@ TEST_CASE("continuation", "[scheduling]") {
        s.test_ready_nodes({3, 4, 5, 6});
 
        TaskDistribution d = schedule(s);
-       dump_dist(d);
+       //dump_dist(d);
        REQUIRE((check_uvector(d[w1], nodes(s, {3, 5})) || (check_uvector(d[w1], nodes(s, {4, 6})))));
        REQUIRE((check_uvector(d[w2], nodes(s, {3, 5})) || (check_uvector(d[w2], nodes(s, {4, 6})))));
    }
@@ -743,7 +743,7 @@ TEST_CASE("continuation", "[scheduling]") {
        s.test_ready_nodes({3, 4, 5, 6});
 
        TaskDistribution d = schedule(s);
-       dump_dist(d);
+       //dump_dist(d);
        REQUIRE((check_uvector(d[w1], nodes(s, {3, 5}))));
        REQUIRE((check_uvector(d[w3], nodes(s, {4, 6}))));
    }
@@ -760,7 +760,7 @@ TEST_CASE("continuation", "[scheduling]") {
        s.test_ready_nodes({3, 4, 5, 6});
 
        TaskDistribution d = schedule(s);
-       dump_dist(d);
+       //dump_dist(d);
        REQUIRE((check_uvector(d[w1], nodes(s, {3, 4})) || (check_uvector(d[w1], nodes(s, {5, 6})))));
        REQUIRE((check_uvector(d[w2], nodes(s, {3, 4})) || (check_uvector(d[w2], nodes(s, {5, 6})))));
    }
@@ -803,7 +803,7 @@ TEST_CASE("continuation", "[scheduling]") {
 }
 
 
-TEST_CASE("benchmark1", "[benchmark]") {
+TEST_CASE("benchmark1", "[benchmark][!hide]") {
     using namespace std::chrono;
     const size_t CPUS = 24;
 
@@ -839,7 +839,7 @@ TEST_CASE("benchmark1", "[benchmark]") {
 }
 
 
-TEST_CASE("benchmark2", "[benchmark]") {
+TEST_CASE("benchmark2", "[benchmark][!hide]") {
     using namespace std::chrono;
     const size_t CPUS = 24;
 
