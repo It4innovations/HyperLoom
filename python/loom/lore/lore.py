@@ -15,6 +15,8 @@ def parse_args():
                         metavar="TRACE_PATH",
                         type=str,
                         help="Path to report")
+    parser.add_argument("--full", action="store_true",
+                        help="full report")
     return parser.parse_args()
 
 
@@ -25,7 +27,7 @@ def main():
         sys.stderr.write("Directory '{}' not found\n".format(args.trace_path))
 
     report = Report(args.trace_path)
-    html.create_html(report, "output.html")
+    html.create_html(report, "output.html", args.full)
 
 
 if __name__ == "__main__":

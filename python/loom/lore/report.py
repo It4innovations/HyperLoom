@@ -100,6 +100,11 @@ class Report:
         group_names.sort()
         self.group_names = group_names
 
+        self.end_time = max(task_frame["start_time"].max(),
+                            task_frame["end_time"].max(),
+                            max(w.monitoring["time"].max()
+                                for w in self.workers.values()))
+
     @property
     def worker_list(self):
         result = list(self.workers.values())
