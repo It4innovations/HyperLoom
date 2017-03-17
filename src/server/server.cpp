@@ -96,26 +96,6 @@ void Server::on_task_failed(Id id, WorkerConnection *wc, const std::string &erro
     task_manager.on_task_failed(id, wc, error_msg);
 }
 
-
-void Server::inform_about_task_error(Id id, WorkerConnection &wconn, const std::string &error_msg)
-{
-    using namespace loom::pb::comm;
-    logger->error("Task id={} failed on worker {}: {}",
-                id, wconn.get_address(), error_msg);
-
-    ClientResponse msg;
-    msg.set_type(ClientResponse_Type_ERROR);
-    Error *error = msg.mutable_error();
-
-    error->set_id(id);
-    error->set_worker(wconn.get_address());
-    error->set_error_msg(error_msg);
-
-    if (client_connection) {
-        client_connection->send_message(msg);
-    }
-}
-
 void Server::send_dictionary(loom::base::Socket &socket)
 {
     using namespace loom::pb::comm;

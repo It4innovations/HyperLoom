@@ -9,14 +9,13 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <assert.h>
+#include <bitset>
 
 class WorkerConnection;
 class TaskNode;
 
-enum class TaskPolicy {
-  STANDARD = 1,
-  SIMPLE = 2,
-  SCHEDULER = 3
+enum class TaskFlags : size_t {
+  RESULT
 };
 
 struct TaskDef
@@ -25,7 +24,7 @@ struct TaskDef
     std::vector<TaskNode*> inputs;
     loom::base::Id task_type;
     std::string config;
-    TaskPolicy policy;
+    std::bitset<1> flags;
 };
 
 enum class TaskStatus {
@@ -50,19 +49,21 @@ public:
         size_t remaining_inputs;
     };
 
-    TaskNode(loom::base::Id id, loom::base::Id client_id, TaskDef &&task);
+    TaskNode(loom::base::Id id, TaskDef &&task);
 
     loom::base::Id get_id() const {
         return id;
     }
 
-    loom::base::Id get_client_id() const {
-        return client_id;
-    }
-
     bool has_state() const {
         return state != nullptr;
     }
+
+    inline bool is_result() const {
+        return task.flags.test(static_cast<size_t>(TaskFlags::RESULT));
+    }
+
+    void reset_result_flag();
 
     inline size_t get_size() const {
         //assert(state);
@@ -172,7 +173,6 @@ private:
     loom::base::Id id;
     TaskDef task;
     std::unordered_multiset<TaskNode*> nexts;
-    loom::base::Id client_id;
     std::unique_ptr<RuntimeState> state;
 };
 

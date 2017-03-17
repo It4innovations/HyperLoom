@@ -22,7 +22,7 @@ def test_py_call(loom_env):
     d = tasks.const("12345")
     p = tasks.py_call(tasks.py_value(f), (c, d))
     q = tasks.py_call(tasks.py_value(g))
-    result1, result2 = loom_env.submit((p, q))
+    result1, result2 = loom_env.submit_and_gather((p, q))
 
     assert result1 == b"ABC, 3, 12345, 5"
     assert result2 == b"Test"
@@ -42,7 +42,7 @@ def test_py_task(loom_env):
     a = tasks.const("1234")
     b = t1()
     c = t2(a, b)
-    result = loom_env.submit(c)
+    result = loom_env.submit_and_gather(c)
     assert result == b"1234ABC"
 
 
@@ -65,7 +65,7 @@ def test_py_context_task(loom_env):
     a = tasks.const("1234")
     b = t1()
     c = t2(a)
-    ra, rb = loom_env.submit((b, c))
+    ra, rb = loom_env.submit_and_gather((b, c))
     assert 0 <= int(ra)
     assert rb == b"1234"
 
@@ -92,7 +92,7 @@ def test_py_direct_args(loom_env):
     a3 = t2({"x": 10}, None, True, c, c, c, c)
     a4 = t3(3, c)
 
-    r1, r2, r3, r4 = loom_env.submit((a1, a2, a3, a4))
+    r1, r2, r3, r4 = loom_env.submit_and_gather((a1, a2, a3, a4))
     assert r1 == b"123ABC"
     assert r2 == b"3"
     assert r3 == b"7"
@@ -109,7 +109,7 @@ def test_py_redirect1(loom_env):
     c = tasks.const("ABC")
     d = tasks.const("12345")
     a = tasks.py_call(tasks.py_value(f), (c, d))
-    result = loom_env.submit(a)
+    result = loom_env.submit_and_gather(a)
     assert result == b"ABC12345"
 
 
@@ -123,7 +123,7 @@ def test_py_redirect2(loom_env):
     c = tasks.const("abcdef")
     d = tasks.const("/")
     a = tasks.py_call(tasks.py_value(f), (c, d))
-    result = loom_env.submit(a)
+    result = loom_env.submit_and_gather(a)
     assert b"bin\n" in result
     assert b"usr\n" in result
 
@@ -137,7 +137,7 @@ def test_py_redirect3(loom_env):
 
     c = tasks.const("DataData")
     a = tasks.py_call(tasks.py_value(f), (c,))
-    result = loom_env.submit(a)
+    result = loom_env.submit_and_gather(a)
     assert b"DataData" in result
 
 
@@ -151,7 +151,7 @@ def test_py_fail_too_many_args(loom_env):
     a = tasks.py_call(tasks.py_value(g), (c,))
 
     with pytest.raises(TaskFailed):
-        loom_env.submit(a)
+        loom_env.submit_and_gather(a)
 
 
 def test_py_fail_too_few_args(loom_env):
@@ -164,7 +164,7 @@ def test_py_fail_too_few_args(loom_env):
     a = tasks.py_call(tasks.py_value(f), ())
 
     with pytest.raises(TaskFailed):
-        loom_env.submit(a)
+        loom_env.submit_and_gather(a)
 
 
 def test_py_fail_invalid_result(loom_env):
@@ -177,7 +177,7 @@ def test_py_fail_invalid_result(loom_env):
     a = tasks.py_call(tasks.py_value(f), ())
 
     with pytest.raises(TaskFailed):
-        loom_env.submit(a)
+        loom_env.submit_and_gather(a)
 
 
 def test_py_multiple_return(loom_env):
@@ -191,7 +191,7 @@ def test_py_multiple_return(loom_env):
     b = tasks.const("BBBB")
     c = t1(a, b)
 
-    result = loom_env.submit(c)
+    result = loom_env.submit_and_gather(c)
     assert result == [b"A", b"x", b"BBBB", b"yyy", [b"BBBB", b"BBBB", b"z"]]
 
 
@@ -218,7 +218,7 @@ def test_py_array(loom_env):
     array = tasks.array_make((a, b, c))
     x = t1(array)
 
-    result = loom_env.submit(x)
+    result = loom_env.submit_and_gather(x)
     assert result == b"BBBBABBBBCCCCCCC"
 
 
@@ -242,17 +242,17 @@ def test_py_value(loom_env):
     v2 = tasks.py_value(("30", None))
 
     t = to_str(v)
-    result = loom_env.submit(t)
+    result = loom_env.submit_and_gather(t)
     assert result == b"[(1, 2)]"
 
     t = to_tuple(v)
-    result = loom_env.submit(t)
+    result = loom_env.submit_and_gather(t)
     assert result == ((1, 2),)
 
     v.resource_request = cpu1
     v2.resource_request = cpu1
     t = join(v, v2)
-    result = loom_env.submit(t)
+    result = loom_env.submit_and_gather(t)
     assert result == [[(1, 2)], ("30", None)]
 
 
@@ -265,7 +265,7 @@ def test_py_wrap_wrapped(loom_env):
     loom_env.start(2)
     v = tasks.py_value("ABC")
     t = task(v)
-    result = loom_env.submit(t)
+    result = loom_env.submit_and_gather(t)
     assert result == "ABC"
 
 
@@ -277,7 +277,7 @@ def test_py_task_deserialization(loom_env):
 
     loom_env.start(2)
     ts = [f(), tasks.run("ls"), f(), f(), f()]
-    result = loom_env.submit(ts)
+    result = loom_env.submit_and_gather(ts)
     assert len(result) == 5
 
 
@@ -286,4 +286,4 @@ def test_py_task_deserialization3(loom_env):
     loom_env.start(2)
     objs = tuple(tasks.py_value(str(i + 1000)) for i in range(100))
     x = tasks.array_make(objs)
-    loom_env.submit(x)
+    loom_env.submit_and_gather(x)

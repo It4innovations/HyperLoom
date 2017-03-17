@@ -16,4 +16,4 @@ def test_index_transfer(loom_env):
     x = tasks.get(d, 0)
     r1 = tasks.get(x, 0)
     r2 = tasks.get(x, 1)
-    assert loom_env.submit((r1, r2)) == [b"AAA\n", b"BBB\n"]
+    assert loom_env.submit_and_gather((r1, r2)) == [b"AAA\n", b"BBB\n"]

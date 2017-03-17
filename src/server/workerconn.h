@@ -68,6 +68,18 @@ public:
         return scheduler_index;
     }
 
+    bool is_blocked() const {
+       return n_residual_tasks > 0;
+    }
+
+    void change_residual_tasks(int value) {
+       n_residual_tasks += value;
+    }
+
+    void free_resources(TaskNode &node);
+
+    void residual_task_finished(loom::base::Id id, bool success);
+
     void create_trace(const std::string &trace_path);
 
 private:
@@ -81,6 +93,7 @@ private:
     std::vector<int> data_types;
 
     int worker_id;
+    int n_residual_tasks;
 
     int scheduler_index;
     int scheduler_free_cpus;

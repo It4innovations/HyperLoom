@@ -23,6 +23,7 @@ LOOM_TEST_DATA_DIR = os.path.join(LOOM_TESTDIR, "testdata")
 sys.path.insert(0, LOOM_PYTHON)
 
 import loom.client as client  # noqa
+from loom.client import Task  # noqa
 
 VALGRIND = False
 
@@ -114,6 +115,7 @@ class LoomEnv(Env):
 
     def check_final_state(self):
         time.sleep(0.15)
+        self.check_stats()
         filenames = glob.glob(
             os.path.join(LOOM_TEST_BUILD_DIR, "worker-*/**/*"), recursive=True)
         runs = 0
@@ -136,13 +138,13 @@ class LoomEnv(Env):
             self.check_stats()
         return self._client
 
-    def submit(self, results, check_timeout=None):
-        result = self.client.submit(results)
-        self.check_stats()
-        if check_timeout:
-            time.sleep(check_timeout)
-        self.check_final_state()
-        return result
+    def submit_and_gather(self, tasks):
+        if isinstance(tasks, Task):
+            future = self.client.submit_one(tasks)
+            return self.client.gather_one(future)
+        else:
+            futures = self.client.submit(tasks)
+            return self.client.gather(futures)
 
     def set_trace(self, trace_path):
         self.client.set_trace(self.get_filename(trace_path))
@@ -162,10 +164,14 @@ class LoomEnv(Env):
         thread.start()
         self.cleanups.append(lambda: thread.cancel())
 
+    def close_client(self):
+        self._client.close()
+        self._client = None
+
     def terminate(self):
         if self._client:
             self._client.terminate()
-            time.sleep(0.1)
+            time.sleep(0.15)
             self._client = None
 
 

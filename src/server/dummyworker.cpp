@@ -84,7 +84,7 @@ void DWConnection::on_message(const char *buffer, size_t size)
          logger->debug("DummyWorker: Resending data to client");
          auto& server = worker.get_server();
          assert(server.has_client_connection());
-         server.get_client_connection().send(std::move(send_buffer));
+         server.get_client_connection()->send(std::move(send_buffer));
       }
       return;
    }
@@ -98,8 +98,6 @@ void DWConnection::on_message(const char *buffer, size_t size)
    remaining_messages = msg.n_messages();
 
    auto data_id = msg.id();
-   auto client_id = worker.server.get_task_manager().pop_result_client_id(data_id);
-   msg.set_id(client_id);
    logger->debug("DummyWorker: Capturing data for client data_id={} (messages={})", data_id, remaining_messages);
 
    ClientResponse cmsg;

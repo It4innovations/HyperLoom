@@ -7,6 +7,7 @@
 #include "libloom/log.h"
 
 #include <algorithm>
+#include <assert.h>
 #include <limits.h>
 
 using namespace loom;
@@ -80,88 +81,79 @@ void TaskManager::remove_node(TaskNode &node)
 
 void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc)
 {
-    TaskNode *node = cstate.get_node_ptr(id);
-    if (node == nullptr) {
-        if (!check_trash(id, wc, true)) {
-            logger->critical("Finished unknown node id={} on worker={}", id, wc->get_address());
-            abort();
-        }
-        if (cstate.has_pending_nodes()) {
-            server.need_task_distribution();
-        }
-        return;
-    }
+   if (unlikely(wc->is_blocked())) {
+      wc->residual_task_finished(id, true);
+      return;
+   }
+   TaskNode &node = cstate.get_node(id);
+   node.set_as_finished(wc, size, length);
 
-    node->set_as_finished(wc, size, length);
-
-    /*auto &trace = server.get_trace();
+   /*auto &trace = server.get_trace();
     if (trace) {
         trace->trace_task_end(*node, wc);
     }*/
 
-    if (cstate.is_result(id)) {
-        logger->debug("Job id={} [RESULT] finished", id);
-        WorkerConnection *owner = node->get_random_owner();
+   if (node.is_result()) {
+      logger->debug("Job id={} [RESULT] finished", id);
+      /*WorkerConnection *owner = node->get_random_owner();
         assert(owner);
-        owner->send_data(id, server.get_dummy_worker().get_address());
-        if (cstate.is_finished()) {
-            logger->debug("Plan is finished");
-        }
-    } else {
-        assert(!node->get_nexts().empty());
-        logger->debug("Job id={} finished (size={}, length={})", id, size, length);
-    }
+        owner->send_data(id, server.get_dummy_worker().get_address());*/
 
-    for (TaskNode *input_node : node->get_inputs()) {
-        if (input_node->next_finished(*node)) {
-            remove_node(*input_node);
-        }
-    }
-    if (!node->get_nexts().empty()) {
-        for (TaskNode *nn : node->get_nexts()) {
-           if (nn->input_is_ready()) {
-              if (nn->get_task_def().policy == TaskPolicy::SCHEDULER) {
-                 assert(0);
-                 //expand_node(node);
-              } else {
-                 cstate.add_pending_node(*nn);
-              }
-           }
-        }
-    } else {
+      ClientConnection *cc = server.get_client_connection();
+      if (cc) {
+         cc->send_info_about_finished_result(node);
+      }
+   } else {
+      assert(!node.get_nexts().empty());
+      logger->debug("Job id={} finished (size={}, length={})", id, size, length);
+   }
+
+   for (TaskNode *input_node : node.get_inputs()) {
+      if (input_node->next_finished(node) && !input_node->is_result()) {
+         remove_node(*input_node);
+      }
+   }
+   if (!node.get_nexts().empty()) {
+      for (TaskNode *nn : node.get_nexts()) {
+         if (nn->input_is_ready()) {
+            cstate.add_pending_node(*nn);
+         }
+      }
+   } /*else {
         remove_node(*node);
-    }
+    }*/
 
-    if (cstate.has_pending_nodes()) {
-        server.need_task_distribution();
-    }
+   if (cstate.has_pending_nodes()) {
+      server.need_task_distribution();
+   }
 }
 
 void TaskManager::on_data_transferred(Id id, WorkerConnection *wc)
 {
-    TaskNode *node = cstate.get_node_ptr(id);
-    if (node == nullptr) {
-        if (!check_trash(id, wc, true)) {
-            logger->critical("Transferred unknown node id={} on worker={}", id, wc->get_address());
-            abort();
-        }
-        return;
-    }
-    logger->debug("Data id={} transferred to {}", id, wc->get_address());
-    node->set_as_transferred(wc);
+   if (unlikely(wc->is_blocked())) {
+      wc->residual_task_finished(id, true);
+      return;
+   }
+   TaskNode &node = cstate.get_node(id);
+   logger->debug("Data id={} transferred to {}", id, wc->get_address());
+   node.set_as_transferred(wc);
 }
 
 void TaskManager::on_task_failed(Id id, WorkerConnection *wc, const std::string &error_msg)
 {
-    if (check_trash(id, wc, false)) {
-        if (cstate.has_pending_nodes()) {
-            server.need_task_distribution();
-        }
-        return;
+   if (unlikely(wc->is_blocked())) {
+      wc->residual_task_finished(id, false);
+      return;
+   }
+   logger->error("Task id={} failed on worker {}: {}",
+                  id, wc->get_address(), error_msg);
+
+    auto cc = server.get_client_connection();
+    if (cc) {
+        cc->send_task_failed(id, *wc, error_msg);
     }
 
     TaskNode &node = cstate.get_node(id);
-    server.inform_about_task_error(id, *wc, error_msg);
     node.set_as_none(wc);
     trash_all_tasks();
 
@@ -205,44 +197,36 @@ void TaskManager::run_task_distribution()
 }
 
 void TaskManager::trash_all_tasks()
-{
-    std::vector<loom::base::Id> running;
-    cstate.foreach_node([&running](std::unique_ptr<TaskNode> &task) {
+{    
+    cstate.foreach_node([](std::unique_ptr<TaskNode> &task) {
         if (task->has_state()) {
-            task->foreach_owner([&task](WorkerConnection *wc) {
-                wc->remove_data(task->get_id());
+            task->foreach_worker([&task](WorkerConnection *wc, TaskStatus &status) {
+                if (status == TaskStatus::OWNER) {
+                  wc->remove_data(task->get_id());
+                } else if (status == TaskStatus::RUNNING) {
+                  wc->change_residual_tasks(1);
+                  wc->free_resources(*task);
+                  logger->debug("Residual task id={} on worker={}", task->get_id(), wc->get_worker_id());
+                } else {
+                   assert(status == TaskStatus::TRANSFER);
+                   wc->change_residual_tasks(1);
+                   logger->debug("Residual transfer id={} on worker={}", task->get_id(), wc->get_worker_id());
+                }
+                status = TaskStatus::NONE;
             });
-            if (task->is_active()) {
-                task->reset_owners();
-                running.push_back(task->get_id());
-            }
+
         }
     });
-
-    for (auto id : running) {
-        logger->debug("Trashing id={}", id);
-        trash[id] = cstate.pop_node(id);
-    }
-
     cstate.clear_all();
 }
 
-bool TaskManager::check_trash(Id id, WorkerConnection *wc, bool success)
+void TaskManager::release_node(TaskNode *node)
 {
-    auto it = trash.find(id);
-    if (it == trash.end()) {
-        return false;
-    }
-    logger->debug("Trashed node id={} from worker={}", id, wc->get_address());
-    TaskNode &node = *it->second;
-    node.set_as_none(wc);
-
-    if (!node.is_active()) {
-        logger->debug("Trashed node id={} cleaned", id);
-        if (success) {
-            wc->remove_data(id);
-        }
-        trash.erase(it);
-    }
-    return true;
+   if (node->get_nexts().empty()) {
+      remove_node(*node);
+      return;
+   } else {
+      logger->debug("Removing result flag id={}", node->get_id());
+      node->reset_result_flag();
+   }
 }

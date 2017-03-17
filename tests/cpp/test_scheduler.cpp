@@ -62,6 +62,7 @@ static loom::pb::comm::Plan make_simple_plan(Server &server)
 {
    using namespace loom::pb::comm;
    Plan plan;
+   plan.set_id_base(0);
    add_cpu_request(server, plan, 1);
    Task *n1 = new_task(plan, 0);
    Task *n2 = new_task(plan, 0);
@@ -83,6 +84,7 @@ static loom::pb::comm::Plan make_plan2(Server &server)
 {
    using namespace loom::pb::comm;
    Plan plan;
+   plan.set_id_base(0);
    add_cpu_request(server, plan, 1);
 
    new_task(plan, 0); // n0
@@ -124,6 +126,7 @@ static loom::pb::comm::Plan make_plan3(Server &server)
 {
    using namespace loom::pb::comm;
    Plan plan;
+   plan.set_id_base(0);
    add_cpu_request(server, plan, 1);
 
    new_task(plan, 0); // n0
@@ -166,6 +169,7 @@ static loom::pb::comm::Plan make_plan4(Server &server)
 {
    using namespace loom::pb::comm;
    Plan plan;
+   plan.set_id_base(0);
    add_cpu_request(server, plan, 1);
 
    new_task(plan, 0); // n0
@@ -201,6 +205,7 @@ static loom::pb::comm::Plan make_big_plan(Server &server, size_t plan_size)
 {
    using namespace loom::pb::comm;
    Plan plan;
+   plan.set_id_base(0);
    add_cpu_request(server, plan, 1);
 
    for (size_t i = 0; i < plan_size; i++) {
@@ -230,6 +235,7 @@ static loom::pb::comm::Plan make_big_trivial_plan(Server &server, size_t plan_si
 {
    using namespace loom::pb::comm;
    Plan plan;
+   plan.set_id_base(0);
    add_cpu_request(server, plan, 1);
 
    for (size_t i = 0; i < plan_size; i++) {
@@ -247,6 +253,7 @@ static loom::pb::comm::Plan make_request_plan(Server &server)
 {
    using namespace loom::pb::comm;
    Plan plan;
+   plan.set_id_base(0);
    add_cpu_request(server, plan, 1); // 0
    add_cpu_request(server, plan, 2); // 1
    add_cpu_request(server, plan, 3); // 2

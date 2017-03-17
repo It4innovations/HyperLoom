@@ -46,7 +46,7 @@ def test_cv_iris(loom_env):
             predict.append(task)
 
         loom_env.set_trace("mytrace")
-        results = loom_env.submit(predict)
+        results = loom_env.submit_and_gather(predict)
 
         assert len(results) == CHUNKS
         for line in results:

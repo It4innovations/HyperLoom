@@ -22,7 +22,8 @@ WorkerConnection::WorkerConnection(Server &server,
       address(address),
       task_types(task_types),
       data_types(data_types),
-      worker_id(worker_id)
+      worker_id(worker_id),
+      n_residual_tasks(0)
 {
     logger->info("Worker {} connected (cpus={})", address, resource_cpus);
     if (this->socket) {
@@ -68,8 +69,8 @@ void WorkerConnection::send_task(const TaskNode &task)
 {
     using namespace loom::pb::comm;
     auto id = task.get_id();
-    logger->debug("Assigning task id={} (client_id={}) to address={} cpus={}",
-                  id, task.get_client_id(), address, task.get_n_cpus());
+    logger->debug("Assigning task id={} to address={} cpus={}",
+                  id, address, task.get_n_cpus());
 
     WorkerCommand msg;
     msg.set_type(WorkerCommand_Type_TASK);
@@ -105,6 +106,23 @@ void WorkerConnection::remove_data(Id id)
     msg.set_type(WorkerCommand_Type_REMOVE);
     msg.set_id(id);
     send_message(*socket, msg);
+}
+
+void WorkerConnection::free_resources(TaskNode &node)
+{
+   add_free_cpus(node.get_n_cpus());
+}
+
+void WorkerConnection::residual_task_finished(Id id, bool success)
+{
+   logger->debug("Residual tasks id={} finished on {}", id, address);
+   change_residual_tasks(-1);
+   if (success) {
+      remove_data(id);
+   }
+   if (!is_blocked()) {
+      server.need_task_distribution();
+   }
 }
 
 void WorkerConnection::create_trace(const std::string &trace_path)

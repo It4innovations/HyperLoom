@@ -176,7 +176,6 @@ TaskDistribution schedule(const ComputationState &cstate)
     }
 
     SContext context;
-    context.worker_size = worker_size;
     context.workers.reserve(worker_size);
 
     int index = 0;
@@ -184,18 +183,28 @@ TaskDistribution schedule(const ComputationState &cstate)
     size_t total_cpus = 0;
 
     for (auto &wc : worker_conns) {
-        total_cpus += wc->get_resource_cpus();
-        int free_cpus = wc->get_free_cpus();
-        total_free_cpus += free_cpus;
-        wc->set_scheduler_index(index++);
-        wc->set_scheduler_free_cpus(free_cpus);
-        context.workers.push_back(wc.get());
+       if (unlikely(wc->is_blocked())) {
+          worker_size--;
+          continue;
+       }
+       total_cpus += wc->get_resource_cpus();
+       int free_cpus = wc->get_free_cpus();
+       total_free_cpus += free_cpus;
+       wc->set_scheduler_index(index++);
+       wc->set_scheduler_free_cpus(free_cpus);
+       context.workers.push_back(wc.get());
     }
+
+    if (worker_size == 0) {
+       return result;
+    }
+
+    context.worker_size = worker_size;
 
     size_t ptasks_size = cstate.get_pending_tasks().size();
 
     if (ptasks_size > (total_cpus + 1) * OVERBOOKING_LIMIT) {
-        for (auto &wc : worker_conns) {
+        for (auto &wc : context.workers) {
             auto free_cpus = wc->get_scheduler_free_cpus();
             free_cpus += wc->get_resource_cpus() * (OVERBOOKING_FACTOR - 1);
             wc->set_scheduler_free_cpus(free_cpus);

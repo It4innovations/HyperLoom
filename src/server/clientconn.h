@@ -3,7 +3,7 @@
 
 #include "libloom/pbutils.h"
 #include "libloom/socket.h"
-
+#include "tasknode.h"
 
 namespace loom {
 class SendBuffer;
@@ -27,7 +27,18 @@ public:
        loom::base::send_message(*socket, msg);
     }
 
+    void send_info_about_finished_result(const TaskNode &task);
+
+    void send_task_failed(loom::base::Id id, WorkerConnection &wconn, const std::string &error_msg);
+    void send_error(const std::string &error_msg);
+
 protected:
+
+    void fetch(loom::base::Id id);
+    void release(loom::base::Id id);
+
+    TaskNode *get_result_node(loom::base::Id id);
+
     Server &server;
     std::unique_ptr<loom::base::Socket> socket;
 };

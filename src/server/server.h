@@ -46,9 +46,8 @@ public:
         return connections;
     }
 
-    ClientConnection& get_client_connection() {
-        assert(client_connection.get() != nullptr);
-        return *client_connection;
+    ClientConnection* get_client_connection() {
+        return client_connection.get();
     }
 
     bool has_client_connection() const {
@@ -64,7 +63,6 @@ public:
         return dictionary;
     }
 
-    void inform_about_task_error(loom::base::Id id, WorkerConnection &wconn, const std::string &error_msg);
     void on_task_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
 
     loom::base::Id new_id(int count = 1) {

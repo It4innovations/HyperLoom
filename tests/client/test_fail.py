@@ -12,7 +12,7 @@ def test_invalid_program(loom_env):
     a = tasks.run("/usr/bin/non-existing-program")
 
     with pytest.raises(client.TaskFailed):
-        loom_env.submit(a)
+        loom_env.submit_and_gather(a)
 
 
 def test_program_failed(loom_env):
@@ -20,7 +20,7 @@ def test_program_failed(loom_env):
     a = tasks.run("ls /non-existing-dictionary")
 
     with pytest.raises(client.TaskFailed):
-        loom_env.submit(a)
+        loom_env.submit_and_gather(a)
 
 
 def test_output_failed(loom_env):
@@ -28,7 +28,7 @@ def test_output_failed(loom_env):
     a = tasks.run("ls /", outputs=["xxx"])
 
     with pytest.raises(client.TaskFailed):
-        loom_env.submit(a)
+        loom_env.submit_and_gather(a)
 
 
 def test_get_failed(loom_env):
@@ -39,7 +39,7 @@ def test_get_failed(loom_env):
     array = tasks.array_make((a, b, c))
     x = tasks.get(array, 3)
     with pytest.raises(client.TaskFailed):
-        loom_env.submit(x)
+        loom_env.submit_and_gather(x)
 
 
 def test_recover1(loom_env):
@@ -47,11 +47,11 @@ def test_recover1(loom_env):
     for i in range(10):
         a = tasks.run("ls /non-existing-dictionary")
         with pytest.raises(client.TaskFailed):
-            loom_env.submit(a)
+            loom_env.submit_and_gather(a)
         b = tasks.const("XYZ")
         c = tasks.const("12345")
         d = tasks.merge((b, c))
-        assert loom_env.submit(d) == b"XYZ12345"
+        assert loom_env.submit_and_gather(d) == b"XYZ12345"
 
 
 def recover2(loom_env, n):
@@ -85,8 +85,8 @@ def recover2(loom_env, n):
 
     for i in range(6):
         with pytest.raises(client.TaskFailed):
-            loom_env.submit(x4)
-        assert loom_env.submit(d) == b"XYZ12345"
+            loom_env.submit_and_gather(x4)
+        assert loom_env.submit_and_gather(d) == b"XYZ12345"
 
 
 def test_recover2_1(loom_env):
@@ -118,4 +118,4 @@ def test_fail_and_report(loom_env):
     loom_env.start(4)
     a = tasks.const("ABC")
     with pytest.raises(client.TaskFailed):
-        loom_env.submit((sleep(), sleep(), sleep(), fail(a)))
+        loom_env.submit_and_gather((sleep(), sleep(), sleep(), fail(a)))

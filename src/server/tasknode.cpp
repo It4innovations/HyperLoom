@@ -3,10 +3,16 @@
 #include "workerconn.h"
 #include "libloom/log.h"
 
-TaskNode::TaskNode(loom::base::Id id, loom::base::Id client_id, TaskDef &&task)
-    : id(id), task(std::move(task)), client_id(client_id)
+TaskNode::TaskNode(loom::base::Id id, TaskDef &&task)
+    : id(id), task(std::move(task))
 {
 
+}
+
+void TaskNode::reset_result_flag()
+{
+   assert(is_result());
+   task.flags.reset(static_cast<size_t>(TaskFlags::RESULT));
 }
 
 bool TaskNode::is_computed() const {
@@ -23,6 +29,9 @@ bool TaskNode::is_computed() const {
 
 WorkerConnection *TaskNode::get_random_owner()
 {
+    if (!state) {
+        return nullptr;
+    }
     for(auto &pair : state->workers) {
         if (pair.second == TaskStatus::OWNER) {
             return pair.first;
@@ -82,7 +91,7 @@ void TaskNode::set_as_none(WorkerConnection *wc)
 void TaskNode::set_as_finished(WorkerConnection *wc, size_t size, size_t length)
 {
     assert(get_worker_status(wc) == TaskStatus::RUNNING);
-    wc->add_free_cpus(get_n_cpus());
+    wc->free_resources(*this);
     set_worker_status(wc, TaskStatus::OWNER);
     state->size = size;
     state->length = length;

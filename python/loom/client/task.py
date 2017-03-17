@@ -1,18 +1,9 @@
 
-from ..pb import comm_pb2
-
-
-POLICY_STANDARD = comm_pb2.Task.POLICY_STANDARD
-POLICY_SIMPLE = comm_pb2.Task.POLICY_SIMPLE
-POLICY_SCHEDULER = comm_pb2.Task.POLICY_SCHEDULER
-
-
 class Task(object):
 
     task_type = None
     inputs = ()
     config = ""
-    policy = POLICY_STANDARD
     resource_request = None
     label = None
     metadata = None

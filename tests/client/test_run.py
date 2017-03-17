@@ -33,7 +33,7 @@ def test_run_separated_1_cpu(loom_env):
     loom_env.start(1)
     args = pytestprog(0.3, stamp=True)
     ts = [tasks.run(args) for i in range(3)]
-    results = loom_env.submit(ts)
+    results = loom_env.submit_and_gather(ts)
 
     starts = []
 
@@ -55,7 +55,7 @@ def test_run_separated_4_cpu(loom_env):
     loom_env.start(1, cpus=4)
     args = pytestprog(0.3, stamp=True)
     ts = [tasks.run(args) for i in range(4)]
-    results = loom_env.submit(ts)
+    results = loom_env.submit_and_gather(ts)
 
     starts = []
 
@@ -77,7 +77,7 @@ def test_run_separated_4cpu_tasks_4_cpu(loom_env):
     loom_env.start(1, cpus=4)
     args = pytestprog(0.3, stamp=True)
     ts = [tasks.run(args, request=tasks.cpus(4)) for i in range(4)]
-    results = loom_env.submit(ts)
+    results = loom_env.submit_and_gather(ts)
 
     starts = []
 
@@ -114,7 +114,7 @@ def test_run_double_lines(loom_env):
         #  print "Runnig for {}".format(i)
         cleanup()
         loom_env.start(i)
-        r = loom_env.submit(result)
+        r = loom_env.submit_and_gather(result)
         assert r == expect
 
 
@@ -131,7 +131,7 @@ def test_run_files(loom_env):
         inputs=[(b1, "input")])
 
     loom_env.start(1)
-    result = loom_env.submit(c1)
+    result = loom_env.submit_and_gather(c1)
 
     assert result == b"cdef" * 100
 
@@ -141,7 +141,7 @@ def test_run_variable2(loom_env):
     b = tasks.const("456")
     c = tasks.run("/bin/echo $xyz xyz $ab $c", inputs=[(a, "$xyz"), (b, "$c")])
     loom_env.start(1)
-    result = loom_env.submit(c)
+    result = loom_env.submit_and_gather(c)
     assert result == b"123 xyz $ab 456\n"
 
 
@@ -153,7 +153,7 @@ def test_run_hostname(loom_env):
     ts = [tasks.run("hostname") for i in range(TASKS_COUNT)]
     array = tasks.array_make(ts)
 
-    loom_env.submit(array)
+    loom_env.submit_and_gather(array)
 
 
 def test_run_chain(loom_env):
@@ -169,5 +169,5 @@ def test_run_chain(loom_env):
     b4 = tasks.run(pytestprog(0.01, file_in="in", file_out="test"),
                    inputs=[(b3, "in")], outputs=["test"])
     loom_env.start(1)
-    result = loom_env.submit(b4)
+    result = loom_env.submit_and_gather(b4)
     assert result == const

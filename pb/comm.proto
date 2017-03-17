@@ -7,17 +7,11 @@ option optimize_for = LITE_RUNTIME;
 // Plan
 
 message Task {
-	enum Policy {
-		POLICY_STANDARD = 1;
-		POLICY_SIMPLE = 2;
-		POLICY_SCHEDULER = 3;
-	}
-
 	required int32 task_type = 1;
 	required bytes config = 2;
 	repeated int32 input_ids = 3;
-	optional Policy policy = 4 [default = POLICY_STANDARD];
 	optional int32 resource_request_index = 5 [default = -1];
+	optional bool result = 6;
 
 	optional string label = 12;
         optional bytes metadata = 13;
@@ -35,7 +29,7 @@ message ResourceRequest {
 message Plan {
 	repeated ResourceRequest resource_requests = 1;
 	repeated Task tasks = 2;
-	repeated int32 result_ids = 3;
+	optional int32 id_base = 4;
 }
 
 // Server messages
@@ -114,14 +108,14 @@ message Announce {
 
 message DataHeader {
 	required int32 id = 1;
-  required int32 type_id = 3;
+	required int32 type_id = 3;
 	required int64 n_messages = 2;
 }
 
 message Error {
-	required int32 id = 1;
-	required string worker = 2;
-	required string error_msg = 3;
+	optional int32 id = 1;
+	optional string worker = 2;
+	optional string error_msg = 3;
 }
 
 message Stats {
@@ -132,23 +126,27 @@ message Stats {
 message ClientResponse {
 	enum Type {
 		DATA = 1;
-		// EVENT = 2;
-		ERROR = 3;
-		DICTIONARY = 4;
-		STATS = 5;
+		TASK_FINISHED = 2;
+		TASK_FAILED = 3;
+		ERROR = 4;
+		DICTIONARY = 10;
+		STATS = 11;
 	}
 	required Type type = 1;
 	optional DataHeader data = 2;
-	optional Error error = 4;
+	optional Error error = 4; // TASK_FAILED + ERROR
 	repeated string symbols = 5;
-  optional Stats stats = 6;
+	optional Stats stats = 6;
+	optional int32 id = 7; // TASK_FINISHED
 }
 
 message ClientRequest {
   enum Type {
-	  PLAN = 1;
-	  STATS = 2;
-    TRACE = 3;
+    PLAN = 1;
+    FETCH = 2;
+    RELEASE = 3;
+    STATS = 6;
+    TRACE = 7;
     TERMINATE = 10;
   }
 
@@ -157,6 +155,9 @@ message ClientRequest {
   // PLAN
   optional Plan plan = 2;
 
-  // REPORT
-  optional string trace_path = 6;
+  // FETCH + RELEASE
+  optional int32 id = 3;
+
+  // TRACE
+  optional string trace_path = 7;
 }

@@ -1,6 +1,6 @@
 
 from .connection import Connection
-from .task import Task
+from .future import Future
 from .plan import Plan
 
 from ..pb.comm_pb2 import Register
@@ -30,6 +30,10 @@ class TaskFailed(LoomException):
         LoomException.__init__(self, message)
 
 
+class LoomError(LoomException):
+    """Generic error in Loom system"""
+
+
 class Client(object):
     """The class that serves for connection to the server and submitting tasks
 
@@ -49,6 +53,8 @@ class Client(object):
         self.rawdata_id = None
 
         self.submit_id = 0
+        self.futures = {}
+        self.n_finished_tasks = 0
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((address, port))
@@ -76,6 +82,9 @@ class Client(object):
             "n_data_objects": cmsg.stats.n_data_objects
         }
 
+    def close(self):
+        self.connection.close()
+
     def terminate(self):
         """ Terminate server & workers """
         msg = ClientRequest()
@@ -89,62 +98,168 @@ class Client(object):
         msg.trace_path = os.path.abspath(trace_path)
         self._send_message(msg)
 
+    def wait_one(self, future):
+        if future.finished():
+            return
+        self._process_events(lambda f: f == future)
+
+    def wait(self, futures):
+        for f in futures:
+            f.wait()
+
+    def fetch_one(self, future):
+        def set_data(data_id, data):
+            assert future.task_id == data_id
+            future.set_result(data)
+            return True
+
+        if future.has_result:
+            return future._result
+
+        status = future.remote_status
+        if status == "running":
+            self.wait_one(future)
+        elif status == "finished":
+            pass
+        else:
+            raise Exception("Fetch called on invalid future")
+
+        self.wait_one(future)
+        msg = ClientRequest()
+        msg.type = ClientRequest.FETCH
+        msg.id = future.task_id
+        self._send_message(msg)
+        self._process_events(on_data=set_data)
+        return future._result
+
+    def gather_one(self, future):
+        result = self.fetch_one(future)
+        future.release()
+        return result
+
+    def fetch(self, futures):
+        results = {}
+        for f in self.as_completed(futures):
+            results[f] = self.fetch_one(f)
+        return [results[f] for f in futures]
+
+    def gather(self, futures):
+        results = {}
+        for f in self.as_completed(futures):
+            results[f] = self.fetch_one(f)
+            f.release()
+        return [results[f] for f in futures]
+
+    def as_completed(self, futures):
+        futures = set(futures)
+        n_finished_tasks = 0
+        while futures:
+            if n_finished_tasks != self.n_finished_tasks:
+                for f in futures:
+                    status = f.remote_status
+                    if status == "running":
+                        pass
+                    elif status == "finished":
+                        futures.remove(f)
+                        yield f
+                        break
+                    else:
+                        raise Exception("Fetch called on invalid future")
+                else:
+                    n_finished_tasks = self.n_finished_tasks
+                continue
+            f = self._process_events(lambda f: f in futures)
+            futures.remove(f)
+            n_finished_tasks += 1
+            yield f
+
+    def release(self, futures):
+        for f in futures:
+            self.release_one(f)
+
+    def release_one(self, future):
+        status = future.remote_status
+        if status == "finished":
+            msg = ClientRequest()
+            msg.type = ClientRequest.RELEASE
+            msg.id = future.task_id
+            self._send_message(msg)
+            future.remote_status = "released"
+        elif status == "released" or status == "canceled":
+            pass  # Do nothing, task is already released
+        elif status == "running":
+            future.remote_status = "canceled"
+        else:
+            raise Exception("Unknown status")
+
+    def _process_events(self, on_finished=None, on_data=None):
+        while True:
+            msg = self.connection.receive_message()
+            cmsg = ClientResponse()
+            cmsg.ParseFromString(msg)
+            t = cmsg.type
+            if t == ClientResponse.TASK_FINISHED:
+                self.n_finished_tasks += 1
+                future = self.futures.pop(cmsg.id)
+                future.set_finished()
+                if on_finished and on_finished(future):
+                    return future
+            elif t == ClientResponse.DATA:
+                data = self._receive_data(cmsg.data.type_id)
+                if on_data(cmsg.data.id, data):
+                    return data
+            elif t == ClientResponse.TASK_FAILED:
+                self.process_task_failed(cmsg)
+            elif t == ClientResponse.ERROR:
+                self.process_error(cmsg)
+            else:
+                print(t)
+                assert 0
+
+    def submit_one(self, task):
+        return self.submit((task,))[0]
+
     def submit(self, tasks):
-        """Submits task(s) to the server and waits for results
+        """Submits tasks to the server and ...
 
         Args:
-            tasks (Task or [Task]): Task(s) that are submitted
-
-        Raises:
-            loom.client.TaskFailed: When an execution of a task failes
-
+            tasks ([Task]): Tasks that are submitted
 
         Example:
             >>> from loom.client import Client, tasks
             >>> client = Client("server", 9010)
-            >>> task = tasks.const("Hello")
-            >>> client.submit(task)
-
+            >>> task1 = tasks.const("Hello")
+            >>> task2 = tasks.const("World")
+            >>> result = client.submit((task1, task2))
+            >>> print(client.gather(result))
         """
-        if isinstance(tasks, Task):
-            single_result = True
-            tasks = (tasks,)
-        else:
-            single_result = False
 
-        task_set = set(tasks)
+        id_base = self.submit_id
+        self.submit_id += len(tasks)
 
-        plan = Plan()
-        for task in task_set:
+        plan = Plan(id_base)
+        futures = self.futures
+        results = []
+        for task in tasks:
             plan.add(task)
+            task_id = plan.tasks[task]
+            future = futures.get(task_id)
+            if future is None:
+                future = Future(self, task_id)
+                futures[task_id] = future
+            results.append(future)
 
         msg = ClientRequest()
         msg.type = ClientRequest.PLAN
 
-        msg.plan.result_ids.extend(plan.tasks[t] for t in task_set)
-        expected = len(task_set)
         include_metadata = self.trace_path is not None
-        plan.set_message(msg.plan, self.symbols, include_metadata)
+        msg.plan.id_base = id_base
+        plan.set_message(
+            msg.plan, self.symbols, id_base,
+            frozenset(tasks), include_metadata)
 
         self._send_message(msg)
-
-        data = {}
-
-        while expected != len(data):
-            msg = self.connection.receive_message()
-            cmsg = ClientResponse()
-            cmsg.ParseFromString(msg)
-            if cmsg.type == ClientResponse.DATA:
-                data[cmsg.data.id] = self._receive_data(cmsg.data.type_id)
-            elif cmsg.type == ClientResponse.ERROR:
-                self.process_error(cmsg)
-            else:
-                assert 0
-
-        if single_result:
-            return data[plan.tasks[tasks[0]]]
-        else:
-            return [data[plan.tasks[t]] for t in tasks]
+        return results
 
     def _symbol_list(self):
         symbols = [None] * len(self.symbols)
@@ -164,10 +279,15 @@ class Client(object):
         self.rawdata_id = self.symbols.get("loom/data")
         self.pyobj_id = self.symbols.get("loom/pyobj")
 
-    def process_error(self, cmsg):
+    def process_task_failed(self, cmsg):
         assert cmsg.HasField("error")
         error = cmsg.error
         raise TaskFailed(error.id, error.worker, error.error_msg)
+
+    def process_error(self, cmsg):
+        assert cmsg.HasField("error")
+        error = cmsg.error
+        raise LoomError(error.error_msg)
 
     def _receive_data(self, type_id):
         if type_id == self.rawdata_id:

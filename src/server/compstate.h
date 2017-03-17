@@ -21,7 +21,6 @@ public:
     ComputationState(Server &server);
 
     void add_node(std::unique_ptr<TaskNode> &&node);
-    void set_final_node(loom::base::Id id);
     void add_worker(WorkerConnection* wc);
 
     void reserve_new_nodes(size_t size);
@@ -43,11 +42,6 @@ public:
     void remove_node(TaskNode &node);
 
     bool is_ready(const TaskNode &node);
-    bool is_finished() const;
-
-    bool is_result(loom::base::Id id) const {
-        return final_nodes.find(id) != final_nodes.end();
-    }
 
     int get_n_data_objects() const;
 
@@ -71,10 +65,8 @@ public:
     void add_pending_node(TaskNode &node);
 
 private:
-
     std::unordered_map<loom::base::Id, std::unique_ptr<TaskNode>> nodes;
     std::unordered_set<TaskNode*> pending_nodes;
-    std::unordered_map<loom::base::Id, loom::base::Id> final_nodes; // task_id -> client_id
 
     Server &server;
     loom::base::Id dslice_task_id;

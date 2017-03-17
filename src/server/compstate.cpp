@@ -33,11 +33,6 @@ void ComputationState::add_node(std::unique_ptr<TaskNode> &&node) {
     nodes.insert(std::make_pair(id, std::move(node)));
 }
 
-void ComputationState::set_final_node(Id id)
-{
-    final_nodes[id] = get_node(id).get_client_id();
-}
-
 /*void ComputationState::set_plan(Plan &&plan)
 {
     this->plan = std::move(plan);
@@ -64,7 +59,7 @@ TaskNode& ComputationState::get_node(Id id)
 {
     auto it = nodes.find(id);
     if (it == nodes.end()) {
-       logger->critical("Cannot find node for id={}", id);
+       logger->critical("Cannot find node id={}", id);
        abort();
     }
     return *it->second;
@@ -74,7 +69,7 @@ const TaskNode &ComputationState::get_node(Id id) const
 {
    auto it = nodes.find(id);
    if (it == nodes.end()) {
-      logger->critical("Cannot find node for id={}", id);
+      logger->critical("Cannot find node id={}", id);
       abort();
    }
    return *it->second;
@@ -93,11 +88,6 @@ void ComputationState::remove_node(TaskNode &node)
    auto it = nodes.find(node.get_id());
    assert(it != nodes.end());
    nodes.erase(it);
-}
-
-bool ComputationState::is_finished() const
-{
-    return nodes.empty();
 }
 
 int ComputationState::get_n_data_objects() const
@@ -258,27 +248,12 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
    }
 }*/
 
-
-static TaskPolicy read_task_policy(loom::pb::comm::Task_Policy policy) {
-    using namespace loom::pb::comm;
-    switch(policy) {
-        case Task_Policy_POLICY_STANDARD:
-            return TaskPolicy::STANDARD;
-        case Task_Policy_POLICY_SIMPLE:
-            return TaskPolicy::SIMPLE;
-        case Task_Policy_POLICY_SCHEDULER:
-            return TaskPolicy::SCHEDULER;
-        default:
-            loom::base::logger->critical("Invalid task policy");
-            exit(1);
-    }
-}
-
 loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
 {
     auto task_size = plan.tasks_size();
-    loom::base::Id id_base = server.new_id(task_size);
-    loom::base::logger->debug("Plan id range from={}, size={}", id_base, task_size);
+    assert(plan.has_id_base());
+    loom::base::Id id_base = plan.id_base();
+    loom::base::logger->debug("Plan: id_base={}, size={}", id_base, task_size);
 
     std::vector<int> resources;
     loom::base::Id resource_ncpus = server.get_dictionary().find_or_create("loom/resource/cpus");
@@ -299,11 +274,13 @@ loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
 
         def.task_type = pt.task_type();
         def.config = pt.config();
-        def.policy = read_task_policy(pt.policy());
+        if (pt.has_result() && pt.result()) {
+            def.flags.set(static_cast<size_t>(TaskFlags::RESULT));
+        }
 
         auto inputs_size = pt.input_ids_size();
         for (int j = 0; j < inputs_size; j++) {
-            def.inputs.push_back(&get_node(id_base + pt.input_ids(j)));
+            def.inputs.push_back(&get_node(pt.input_ids(j)));
         }
 
         int n_cpus = 0;
@@ -313,16 +290,8 @@ loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
             n_cpus = resources[pt.resource_request_index()];
         }
         def.n_cpus = n_cpus;
-        add_node(std::make_unique<TaskNode>(id, i, std::move(def)));
+        add_node(std::make_unique<TaskNode>(id, std::move(def)));
     }
-
-    final_nodes.reserve(final_nodes.size() + plan.result_ids_size());
-
-    for (int i = 0; i < plan.result_ids_size(); i++)
-    {
-        set_final_node(plan.result_ids(i) + id_base);
-    }
-
     return id_base;
 }
 
@@ -332,15 +301,6 @@ void ComputationState::test_ready_nodes(std::vector<Id> ids)
     for (auto id : ids) {
         pending_nodes.insert(&get_node(id));
     }
-}
-
-Id ComputationState::pop_result_client_id(Id id)
-{
-    auto it = final_nodes.find(id);
-    assert(it != final_nodes.end());
-    Id client_id = it->second;
-    final_nodes.erase(it);
-    return client_id;
 }
 
 std::unique_ptr<TaskNode> ComputationState::pop_node(Id id)
@@ -356,7 +316,6 @@ std::unique_ptr<TaskNode> ComputationState::pop_node(Id id)
 void ComputationState::clear_all()
 {
     pending_nodes.clear();
-    final_nodes.clear();
     nodes.clear();
 }
 

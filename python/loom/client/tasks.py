@@ -1,6 +1,5 @@
 
 from .task import Task, ResourceRequest
-from .task import POLICY_SCHEDULER, POLICY_SIMPLE
 
 import struct
 from ..pb import run_pb2 as loomrun
@@ -78,7 +77,6 @@ def dslice(input):
     """
     task = Task()
     task.task_type = SCHEDULER_DSLICE
-    task.policy = POLICY_SCHEDULER
     task.inputs = (input,)
     return task
 
@@ -114,7 +112,6 @@ def dget(input):
 
     task = Task()
     task.task_type = SCHEDULER_DGET
-    task.policy = POLICY_SCHEDULER
     task.inputs = (input,)
     return task
 
@@ -137,7 +134,6 @@ def const(data):
     task = Task()
     task.task_type = DATA_CONST
     task.config = data
-    task.policy = POLICY_SIMPLE
     return task
 
 
@@ -159,7 +155,6 @@ def merge(inputs, delimiter=""):
     task = Task()
     task.task_type = DATA_MERGE
     task.inputs = inputs
-    task.policy = POLICY_SIMPLE
     if delimiter:
         task.config = delimiter
     return task
@@ -182,7 +177,6 @@ def open(filename):
     task = Task()
     task.task_type = DATA_OPEN
     task.config = filename
-    task.policy = POLICY_SIMPLE
     return task
 
 
@@ -198,7 +192,6 @@ def split(input, char=None):
     task = Task()
     task.task_type = DATA_SPLIT
     task.inputs = (input,)
-    task.policy = POLICY_SIMPLE
     return task
 
 
@@ -278,7 +271,6 @@ def array_make(inputs):
     task = Task()
     task.task_type = ARRAY_MAKE
     task.inputs = inputs
-    task.policy = POLICY_SIMPLE
     return task
 
 
@@ -287,7 +279,6 @@ def size(input):
     task = Task()
     task.task_type = BASE_SIZE
     task.inputs = (input,)
-    task.policy = POLICY_SIMPLE
     return task
 
 
@@ -296,7 +287,6 @@ def length(input):
     task = Task()
     task.task_type = BASE_LENGTH
     task.inputs = (input,)
-    task.policy = POLICY_SIMPLE
     return task
 
 
@@ -315,7 +305,6 @@ def get(input, index):
     task.task_type = BASE_GET
     task.inputs = (input,)
     task.config = u64.pack(index)
-    task.policy = POLICY_SIMPLE
     return task
 
 
@@ -335,7 +324,6 @@ def slice(input, start, end):
     task.task_type = BASE_SLICE
     task.inputs = (input,)
     task.config = u64u64.pack(start, end)
-    task.policy = POLICY_SIMPLE
     return task
 
 
