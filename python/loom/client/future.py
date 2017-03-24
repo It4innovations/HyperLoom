@@ -19,6 +19,10 @@ class Future(object):
     def finished(self):
         return self.remote_status == "finished"
 
+    def active(self):
+        return self.remote_status == "running" \
+            or self.remote_status == "finished"
+
     def released(self):
         return self.remote_status == "released" \
             or self.remote_status == "cancel"

@@ -2,6 +2,7 @@
 from .connection import Connection
 from .future import Future
 from .plan import Plan
+from .task import Task
 
 from ..pb.comm_pb2 import Register
 from ..pb.comm_pb2 import ClientRequest, ClientResponse
@@ -235,12 +236,13 @@ class Client(object):
         """
 
         id_base = self.submit_id
-        self.submit_id += len(tasks)
 
         plan = Plan(id_base)
         futures = self.futures
         results = []
         for task in tasks:
+            if not isinstance(task, Task):
+                raise Exception("{} is not a task".format(task))
             plan.add(task)
             task_id = plan.tasks[task]
             future = futures.get(task_id)
@@ -249,13 +251,15 @@ class Client(object):
                 futures[task_id] = future
             results.append(future)
 
+        self.submit_id += plan.id_counter
+
         msg = ClientRequest()
         msg.type = ClientRequest.PLAN
 
         include_metadata = self.trace_path is not None
         msg.plan.id_base = id_base
         plan.set_message(
-            msg.plan, self.symbols, id_base,
+            msg.plan, self.symbols,
             frozenset(tasks), include_metadata)
 
         self._send_message(msg)

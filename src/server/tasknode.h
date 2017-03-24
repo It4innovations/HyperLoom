@@ -121,14 +121,22 @@ public:
         }
     }
 
-    inline bool input_is_ready() {
-        ensure_state();
+    inline bool input_is_ready(TaskNode *node) {
+         if (!state) {
+            create_state(node);
+        }
         assert(state->remaining_inputs > 0);
         return --state->remaining_inputs == 0;
     }
 
+    inline bool is_ready() const {
+       if (!state) {
+          return _slow_is_ready();
+       }
+       return state->remaining_inputs == 0;
+    }
 
-    void create_state();
+    void create_state(TaskNode *just_finishing_input = nullptr);
 
     template<typename F> inline void foreach_owner(const F &f) const {
         if (!state) {
@@ -168,12 +176,15 @@ public:
     // For unit testing
     void set_as_finished_no_check(WorkerConnection *wc, size_t size, size_t length);
 
+    std::string debug_str() const;
 
 private:
     loom::base::Id id;
     TaskDef task;
     std::unordered_multiset<TaskNode*> nexts;
     std::unique_ptr<RuntimeState> state;
+
+    bool _slow_is_ready() const;
 };
 
 

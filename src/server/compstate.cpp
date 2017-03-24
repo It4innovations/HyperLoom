@@ -22,24 +22,17 @@ ComputationState::ComputationState(Server &server) : server(server)
 void ComputationState::add_node(std::unique_ptr<TaskNode> &&node) {
     auto id = node->get_id();
 
-    if (node->get_inputs().empty()) {
-        pending_nodes.insert(node.get());
-    }
-
     for (TaskNode* input_node : node->get_inputs()) {
         input_node->add_next(node.get());
     }
 
-    nodes.insert(std::make_pair(id, std::move(node)));
-}
+    if (node->is_ready()) {
+        pending_nodes.insert(node.get());
+    }
 
-/*void ComputationState::set_plan(Plan &&plan)
-{
-    this->plan = std::move(plan);
-   auto task_ids = this->plan.get_init_tasks();
-   assert(!task_ids.empty());
-   add_ready_nodes(task_ids);
-}*/
+    auto result = nodes.insert(std::make_pair(id, std::move(node)));
+    assert(result.second); // Check that ID is fresh
+}
 
 void ComputationState::reserve_new_nodes(size_t size)
 {

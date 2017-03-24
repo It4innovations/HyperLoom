@@ -2,6 +2,7 @@ from loomenv import loom_env, LOOM_PYTHON  # noqa
 import loom.client.tasks as tasks  # noqa
 
 import time
+import pytest
 
 loom_env  # silence flake8
 
@@ -182,5 +183,61 @@ def test_reconnect2(loom_env):
     d = tasks.merge((a, b, c))
     result = loom_env.submit_and_gather(d)
     assert result == b"abcxyz123"
-
     loom_env.check_final_state()
+
+
+def test_future_reuse1(loom_env):
+    loom_env.start(1)
+    a = tasks.const("abc")
+    b = tasks.const("xyz")
+    c = tasks.merge((a, b))
+    f = loom_env.client.submit_one(c)
+
+    d = tasks.const("ijk")
+    g = tasks.merge((d, f))
+    result = loom_env.submit_and_gather(g)
+    assert result == b"ijkabcxyz"
+    assert f.gather() == b"abcxyz"
+    loom_env.check_final_state()
+
+
+def test_future_reuse2(loom_env):
+    loom_env.start(1)
+    a = tasks.const("abc")
+    f = loom_env.client.submit_one(a)
+
+    b = tasks.const("123")
+    g = loom_env.client.submit_one(b)
+
+    c = tasks.const("ijk")
+    h = tasks.merge((a, b, c))
+    result = loom_env.submit_and_gather((h, c))
+    assert result == [b"abc123ijk", b"ijk"]
+    f.release()
+    g.release()
+    loom_env.check_final_state()
+
+
+def test_future_reuse3(loom_env):
+    loom_env.start(3)
+    a = tasks.run("ls")
+    f = loom_env.client.submit_one(a)
+
+    COUNT = 1000
+    b = [tasks.run("ls") for i in range(COUNT)]
+    g = loom_env.client.submit(b)
+
+    result2 = f.fetch()
+    result = loom_env.submit_and_gather(tasks.merge(g))
+    loom_env.client.release(g)
+    f.release()
+    assert result2 * COUNT == result
+    loom_env.check_final_state()
+
+
+def test_future_submit(loom_env):
+    loom_env.start(1)
+    a = tasks.const("abc")
+    f = loom_env.client.submit_one(a)
+    with pytest.raises(Exception):
+        loom_env.client.submit_one(f)

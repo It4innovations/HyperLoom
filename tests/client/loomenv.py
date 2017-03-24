@@ -138,13 +138,15 @@ class LoomEnv(Env):
             self.check_stats()
         return self._client
 
-    def submit_and_gather(self, tasks):
+    def submit_and_gather(self, tasks, check=True):
         if isinstance(tasks, Task):
             future = self.client.submit_one(tasks)
             return self.client.gather_one(future)
         else:
             futures = self.client.submit(tasks)
             return self.client.gather(futures)
+        if check:
+            self.check_final_state()
 
     def set_trace(self, trace_path):
         self.client.set_trace(self.get_filename(trace_path))

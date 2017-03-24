@@ -115,7 +115,7 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
    }
    if (!node.get_nexts().empty()) {
       for (TaskNode *nn : node.get_nexts()) {
-         if (nn->input_is_ready()) {
+         if (nn->input_is_ready(&node)) {
             cstate.add_pending_node(*nn);
          }
       }
