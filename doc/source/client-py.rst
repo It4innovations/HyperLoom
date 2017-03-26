@@ -7,9 +7,8 @@ Basic usage
 
 The following code contains a simple example of Loom usage. It creates two
 constants and a task that merge them. Next, it creates a client and connect to
-the server and submits the plan. When the computation is finished, the
-``submit`` method returns with the result. It assumes that the server is running
-at address *localhost* on TCP port 9010.
+the server and submits the plan and waits for the results. It assumes that the
+server is running at address *localhost* on TCP port 9010.
 
 .. code-block:: python
 
@@ -20,25 +19,109 @@ at address *localhost* on TCP port 9010.
   task3 = tasks.merge((task1, task2))  # Merge two data objects together
 
   client = Client("localhost", 9010)   # Create a client
-  client.submit(task3)                 # Submit task; it returns b"Hello world!"
+  result = client.submit_one(task3)    # Submit task
+  print(result.gather())               # prints b"Hello world!"
 
+The full list of build-in tasks can be found in :ref:`PyClient_API_Tasks`.
+Method ``submit_one`` is non-blocking and returns instance of
+``loom.client.Future`` that represents a remote computation in Loom
+infrastructure. There are basic four operations that is provided by
+``loom.client.Future``:
 
-Submiting more tasks
-++++++++++++++++++++
+* ``wait()`` - The operation blocks the client until the task is not finished.
+* ``fetch()`` - The operation waits until the task is not finished, then it
+  downloads the content to the client (while the results also remains on
+  workers).
+* ``release()`` - It removes results from workers. This method is automatically
+  called in __del__ method of the object, hence you do not have to called it
+  manually. However, it is a good practice to explicitly call the method to
+  release resources as soon as possible and do not depend on garbage collecting
+  in the client.
+* ``gather()`` - Basically, it is a short cut for ``fetch()`` + ``release()``.
+  It downloads data to the client and removes them from the workers. For a
+  single future it is actually the same as calling ``fetch()`` followed by
+  ``release()`` but when we work with more futures it allows some optimizations.
 
-It is possible to submit more tasks at once. When the first argument of
-``submit`` is a list of tasks, then ``submit`` waits until all tasks are not
-completed.
+Submitting more tasks at once
++++++++++++++++++++++++++++++
+
+All previously mentioned methods have alternatives for working with
+more tasks/futures at once:
 
 .. code-block:: python
 
   from loom.client import Client, tasks
 
-  ts = [tasks.const(str(x) for x in range(100)]
-  client = Client("localhost", 9010)
-  client.submit(ts)  # returns [b"0", b"1", b"2", ... , b"99"]
+  task1 = tasks.const("Hello ")        # Create a plain object
+  task2 = tasks.const(" ")             # Create a plain object
+  task3 = tasks.const("world!")        # Merge two data objects together
 
-The full list of all tasks can be found in :ref:`PyClient_API_Tasks`.
+  client = Client("localhost", 9010)   # Create a client
+  results = client.submit(task3)       # Submit tasks; returns list of futures
+  print(client.gather(results))        # prints [b"Hello world!", b" ", b"world!"]
+
+In this case, we have replaced ``submit_one`` by method ``submit`` that takes a
+collection of tasks and we have called the method ``gather`` not on the future
+but directly on the client. Client also have methods ``wait``, ``relase``, and ``fetch``
+for collective future processing.
+
+When possible, it is recommdended to use collective processing futures, since it
+allows some optimizations in comparison of processing tasks/futures in a loop
+separately.
+
+
+Reusing futures as tasks inputs
++++++++++++++++++++++++++++++++
+
+Futures can be also used as input for tasks. This allows to use a gradual submitting,
+i.e. loom may already computes some part of the computation while the remaining plan
+is still composed.
+
+.. code-block:: python
+
+  task1 = ...                       # create a task
+  f1 = client.submit_one(task1)     # submit task   
+
+  task2 = ...                       # create a second task
+  taskA = tasks.merge((f1, tasks2)) # create task that uses f1 and taskA
+  fA = client.submit_one(f1)
+
+It does not matter if ``task1`` is finished yet or not, as far it is not released it can be used as an input. In other words, you can call ``wait`` and ``fetch`` on futures and they can be still used in tasks; however ``release`` or ``gather`` releas tasks from the workers and it cannot be used anymore.
+
+.. Important::
+
+   The following code is usually a bad pattern::
+
+     task1 = ...
+     task2 = tasks.run("program1", stdin=task1)
+     f2 = client.submit_one(task2)
+     task3 = tasks.run("program1", stdin=task1)
+     f3 = client.submit_one(task3)
+     client.gather((f2, f3))
+
+   Task ``task1`` is computed twice! Task ``task1`` is requested in both submissions
+   but we did not indicate that we want to reuse its result later.
+
+   The better code::
+
+     task1 = ...
+     f1 = client.submit_one(task1)
+     task2 = tasks.run("program1", stdin=f1)
+     f2 = client.submit_one(task2)
+     task3 = tasks.run("program1", stdin=f1)
+     f3 = client.submit_one(task3)
+     f1.relase()
+     client.gather((f2, f3))
+
+   or (without gradual submmiting)::
+
+     task1 = ...
+     task2 = tasks.run("program1", stdin=task1)
+     task3 = tasks.run("program1", stdin=task1)
+     f2, f3 = client.submit((task2, task3))
+     client.gather((f2, f3))
+
+   In both cases, ``task1`` is computed only once.
 
 
 Running external programs
@@ -172,7 +255,8 @@ an error that is propagated as ``TaskFailed`` exception in the client.
 
    task = tasks.run("ls /non-existent-path")
    try:
-      client.submit(task)
+      result = client.submit_one(task)
+      result.wait()
    except TaskFailed as e:
       print("Error: " + str(e))
 
@@ -202,7 +286,8 @@ use decorator ``py_task()``. This is demonstrated by the following code: ::
     task1 = tasks.cont("world")
     task2 = hello(task1)
 
-    client.submit(task2)  # returns b"Hello world"
+    result = client.submit_one(task2)
+    result.gather()  # returns b"Hello world"
 
 The ``hello`` function is seralized and sent to the server. The server executes
 the function on a worker that has necessary data.
@@ -235,7 +320,7 @@ hence the code above can be written also as: ::
     task2 = tasks.py_call(tasks.py_value(hello), (task1,))
     task2.label = "hello"
 
-    client.submit(task2)  # returns b"Hello world"
+    client.submit_one(task2)  # returns b"Hello world"
 
 
 .. _PyClient_redirects:
@@ -309,8 +394,8 @@ Let us consider the following example::
     t1 = repeat(2, c)
     t2 = repeat(3, c)
 
-    client.submit(t1)  # returns: b"ABCABC"
-    client.submit(t2)  # returns: b"ABCABCABC"
+    client.submit_one(t1).gather()  # returns: b"ABCABC"
+    client.submit_one(t2).gather()  # returns: b"ABCABCABC"
 
 
 .. Note::
@@ -328,7 +413,7 @@ arguments via ``py_call``::
 
     c = tasks.const("ABC")
     t1 = tasks.py_call(tasks.py_value(repeat), (c,), direct_args=(2,))
-    client.submit(t1)  # returns: b"ABCABC"
+    client.submit_one(t1).gather()  # returns: b"ABCABC"
 
 
 Python objects
@@ -351,7 +436,7 @@ PyObj can be used in ``py_task``. It has to be unwrapped from the wrapping objec
         return "Value of 'A' is " + d["A"]
 
     t = f(my_dict)
-    client.submit(t)  # returns b"Value of 'A' is B"
+    client.submit_one(t).gather()  # returns b"Value of 'A' is B"
 
 If we want to return a PyObj from py_task we have wrap it to avoid implicit conversion to
 Data objects::
@@ -399,7 +484,8 @@ Reports can be enabled by ``set_trace`` method as follows::
 
    task = ...
    client.set_trace("/path/to/mytrace")
-   client.submit(task)
+   result = client.submit_one(task)
+   ...
 
 The path provided to ``set_trace`` has to be placed on a network filesystem that
 is visible to server and all workers. It creates a directory
@@ -545,4 +631,5 @@ task type::
 
     ...
 
-    client.submit(t2)
+    result = client.submit_one(t2)
+    result.gather()

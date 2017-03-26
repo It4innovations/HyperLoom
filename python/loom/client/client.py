@@ -84,6 +84,7 @@ class Client(object):
         }
 
     def close(self):
+        """Terminates connection to the server"""
         self.connection.close()
 
     def terminate(self):
@@ -93,6 +94,7 @@ class Client(object):
         self._send_message(msg)
 
     def set_trace(self, trace_path):
+        """ Enables tracing mode """
         self.trace_path = trace_path
         msg = ClientRequest()
         msg.type = ClientRequest.TRACE
@@ -100,15 +102,32 @@ class Client(object):
         self._send_message(msg)
 
     def wait_one(self, future):
+        """
+        Waits until the future is not finished.
+
+        Note:
+           It does *not* download future's result to the client.
+        """
         if future.finished():
             return
         self._process_events(lambda f: f == future)
 
     def wait(self, futures):
+        """
+        Waits until the futures are not finished.
+
+        Note:
+           It does *not* download results to the client.
+        """
         for f in futures:
             f.wait()
 
     def fetch_one(self, future):
+        """
+        Waits until the future is not finished and
+        then fetches the result from workers.
+        """
+
         def set_data(data_id, data):
             assert future.task_id == data_id
             future.set_result(data)
@@ -134,17 +153,31 @@ class Client(object):
         return future._result
 
     def gather_one(self, future):
+        """
+        Waits until the future is not finished and
+        then fetches the result from workers.
+        The future is released at the end.
+        """
         result = self.fetch_one(future)
         future.release()
         return result
 
     def fetch(self, futures):
+        """
+        Waits until the futures are not finished and
+        then fetches results from workers.
+        """
         results = {}
         for f in self.as_completed(futures):
             results[f] = self.fetch_one(f)
         return [results[f] for f in futures]
 
     def gather(self, futures):
+        """
+        Waits until the futures are not finished and
+        then fetches results from workers.
+        It removes the results as they are finished
+        """
         results = {}
         for f in self.as_completed(futures):
             results[f] = self.fetch_one(f)
@@ -152,6 +185,9 @@ class Client(object):
         return [results[f] for f in futures]
 
     def as_completed(self, futures):
+        """
+        Returns iterator with futures as they are completed
+        """
         futures = set(futures)
         n_finished_tasks = 0
         while futures:
@@ -175,10 +211,16 @@ class Client(object):
             yield f
 
     def release(self, futures):
+        """
+        Releases a list of futures
+        """
         for f in futures:
             self.release_one(f)
 
     def release_one(self, future):
+        """
+        Releases a future
+        """
         status = future.remote_status
         if status == "finished":
             msg = ClientRequest()
@@ -218,10 +260,24 @@ class Client(object):
                 assert 0
 
     def submit_one(self, task):
+        """Submits a task to the server and returns a future
+
+        Args:
+            task (Task): submitted task
+
+        Example:
+            >>> from loom.client import Client, tasks
+            >>> client = Client("server", 9010)
+            >>> task1 = tasks.const("Hello")
+            >>> task2 = tasks.const("World")
+            >>> task3 = tasks.merge((task1, task2))
+            >>> result = client.submit(task3)
+            >>> print(result.gather())
+        """
         return self.submit((task,))[0]
 
     def submit(self, tasks):
-        """Submits tasks to the server and ...
+        """Submits tasks to the server and returns list of futures
 
         Args:
             tasks ([Task]): Tasks that are submitted
