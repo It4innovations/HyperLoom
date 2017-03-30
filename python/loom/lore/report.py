@@ -131,7 +131,7 @@ class Report:
         with open(filename) as f:
             it = split_lines(f)
             assert next(it) == ["TRACE", "server"]
-            assert next(it) == ["VERSION", "0"]
+            assert next(it)[0] == "VERSION"
 
             time = 0
             for line in it:

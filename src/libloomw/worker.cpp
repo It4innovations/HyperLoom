@@ -22,6 +22,8 @@
 #include "libloom/pbutils.h"
 #include "libloom/fsutils.h"
 
+#include "loom_define.h"
+
 #include <stdlib.h>
 #include <sstream>
 #include <unistd.h>
@@ -44,7 +46,7 @@ Worker::Worker(uv_loop_t *loop,
     } else {
         spdlog::set_level(spdlog::level::info);
     }
-    logger->info("New worker; listening on port {}", config.get_port());
+    logger->info("New loom worker; version={}; port={}", LOOM_VERSION, config.get_port());
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     ensure_py_init();

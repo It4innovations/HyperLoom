@@ -2,6 +2,10 @@ project(loom-rt)
 cmake_minimum_required(VERSION 2.8)
 enable_testing()
 
+file (STRINGS "version" LOOM_VERSION)
+
+message(STATUS "Loom version: " ${LOOM_VERSION})
+
 # LibUV
 find_path(LIBUV_INCLUDE_DIR uv.h
 	  HINTS ${PC_LIBUV_INCLUDEDIR} ${PC_LIBUV_INCLUDE_DIRS}

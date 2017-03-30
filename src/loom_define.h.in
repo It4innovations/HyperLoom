@@ -1,0 +1,6 @@
+#ifndef LOOM_DEFINE_H
+#define LOOM_DEFINE_H
+
+#define LOOM_VERSION "@LOOM_VERSION@"
+
+#endif // LOOM_DEFINE_H

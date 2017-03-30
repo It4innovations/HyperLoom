@@ -6,6 +6,8 @@
 #include "libloom/fsutils.h"
 #include "pb/comm.pb.h"
 
+#include "loom_define.h"
+
 #include <sstream>
 
 using namespace loom;
@@ -18,6 +20,7 @@ Server::Server(uv_loop_t *loop, int port)
       id_counter(0),
       task_distribution_active(false)
 {
+    loom::base::logger->info("Starting loom server; version={}", LOOM_VERSION);
     /* Since the server do not implement fully resource management, we forces
      * symbol for the only schedulable resouce: loom/resource/cpus */
     dictionary.find_or_create("loom/resource/cpus");
@@ -172,7 +175,7 @@ void Server::create_trace(const std::string &trace_path)
     }
 
     trace->entry("TRACE", "server");
-    trace->entry("VERSION", 0);
+    trace->entry("VERSION", LOOM_VERSION);
 
     for (auto &symbol : dictionary.get_all_symbols()) {
         trace->entry("SYMBOL", symbol);
