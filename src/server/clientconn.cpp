@@ -60,7 +60,7 @@ void ClientConnection::on_message(const char *buffer, size_t size)
         logger->info("Plan submitted tasks={}", plan.tasks_size());
 
         if (server.get_trace()) {
-            server.create_file_in_trace_dir("0.plan", buffer, size);
+            server.create_file_in_trace_dir(std::to_string(id_base) + ".plan", buffer, size);
             server.get_trace()->entry("SUBMIT", id_base);
         }
         return;
@@ -86,36 +86,6 @@ void ClientConnection::on_message(const char *buffer, size_t size)
         logger->critical("Invalid request type");
         exit(1);
     }
-
-    /*else if (request.type() == ClientRequest_Type_FETCH) {
-        fetch(request.id());
-    } else if (request.type() == ClientRequest_Type_PLAN) {
-        logger->debug("Plan received");
-        const Plan &plan = request.plan();
-        loom::base::Id id_base = task_manager.add_plan(plan);
-        logger->info("Plan submitted tasks={}", plan.tasks_size());
-
-        if (server.get_trace()) {
-            server.create_file_in_trace_dir("0.plan", buffer, size);
-            server.get_trace()->entry("SUBMIT", id_base);
-        }
-    } else if (request.type() == ClientRequest_Type_STATS) {
-        logger->debug("Stats request");
-        ClientResponse cmsg;
-        cmsg.set_type(ClientResponse_Type_STATS);
-        Stats *stats = cmsg.mutable_stats();
-        stats->set_n_workers(server.get_connections().size());
-        stats->set_n_data_objects(server.get_task_manager().get_n_of_data_objects());
-        send_message(cmsg);
-    } else if (request.type() == ClientRequest_Type_TRACE) {
-        server.create_trace(request.trace_path());
-    } else if (request.type() == ClientRequest_Type_TERMINATE) {
-        logger->info("Server terminated by client");
-        server.terminate();
-    } else {
-        logger->critical("Invalid request type");
-        exit(1);
-    }*/
 }
 
 void ClientConnection::send_info_about_finished_result(const TaskNode &task)

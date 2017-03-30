@@ -24,6 +24,8 @@ sys.path.insert(0, LOOM_PYTHON)
 
 import loom.client as client  # noqa
 from loom.client import Task  # noqa
+from loom.lore.report import Report  # noqa
+from loom.lore.html import create_html  # noqa
 
 VALGRIND = False
 
@@ -175,6 +177,11 @@ class LoomEnv(Env):
             self._client.terminate()
             time.sleep(0.15)
             self._client = None
+
+    def lore(self, dirname):
+        dirname = self.get_filename(dirname)
+        report = Report(dirname)
+        create_html(report, self.get_filename("output.html"), True)
 
 
 def cleanup():

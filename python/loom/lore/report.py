@@ -75,14 +75,15 @@ class Report:
 
         self.workers = {}
         self.symbols = []
-        self.id_base = None
+        self.id_bases = []
         self.scheduler_times = None
 
         tasks = {}
         self.parse_server_file(tasks)
         for worker_id in self.workers:
             self.parse_worker_file(worker_id, tasks)
-        self.parse_plan_file(tasks)
+        for id_base in self.id_bases:
+            self.parse_plan_file(tasks, id_base)
         print("Loaded {} tasks".format(len(tasks)))
 
         task_frame = pd.DataFrame(
@@ -148,10 +149,10 @@ class Report:
                 elif command == "SYMBOL":
                     self.symbols.append(line[1])
                 elif command == "SUBMIT":
-                    self.id_base = to_int(line[1])
+                    self.id_bases.append(to_int(line[1]))
                 else:
                     raise Exception("Unknown line: {}".format(line))
-        if self.id_base is None:
+        if not self.id_bases:
             raise Exception("No submit occurs")
         if len(start_time) == len(end_time) + 1:
             start_time.pop()
@@ -205,16 +206,15 @@ class Report:
                                               "cpu": monitoring_cpu,
                                               "mem": monitoring_mem})
 
-    def parse_plan_file(self, tasks):
-        filename = self.get_filename("0.plan")
+    def parse_plan_file(self, tasks, id_base):
+        filename = self.get_filename("{}.plan".format(id_base))
         print("Reading", filename, "...")
-        id_base = self.id_base
         with open(filename, "br") as f:
             request = comm_pb2.ClientRequest()
             request.ParseFromString(f.read())
             for i, pt in enumerate(request.plan.tasks):
                 task = _get_task(tasks, i + id_base)
-                times = [_get_task(tasks, i2 + id_base).end_time
+                times = [_get_task(tasks, i2).end_time
                          for i2 in pt.input_ids]
                 if all(time is not None for time in times):
                     if times:

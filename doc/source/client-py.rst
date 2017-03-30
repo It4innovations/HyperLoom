@@ -110,7 +110,6 @@ It does not matter if ``task1`` is finished yet or not, as far it is not release
      f2 = client.submit_one(task2)
      task3 = tasks.run("program1", stdin=f1)
      f3 = client.submit_one(task3)
-     f1.relase()
      client.gather((f2, f3))
 
    or (without gradual submmiting)::
