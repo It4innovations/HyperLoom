@@ -1,0 +1,14 @@
+loom-master:
+  build: ./
+  dockerfile: Dockerfile
+  command: /loom/_build/src/server/loom-server
+  ports:
+    - 9010:9010
+
+loom-worker:
+  build: ./
+  dockerfile: Dockerfile
+  links:
+    - loom-master
+  command: /loom/_build/src/worker/loom-worker loom-master 9010
+
