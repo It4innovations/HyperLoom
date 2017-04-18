@@ -6,7 +6,7 @@ Extending worker
    The API in the following section is not yet fully stable.
    It may be changed in the near future.
 
-Loom infrastructure offers by default a set of operations for basic manipulation
+HyperLoom infrastructure offers by default a set of operations for basic manipulation
 with data objects and running and external programs. One of this task is also
 task `loom/py_call` (it can be used via ``tasks.py_call`` or ``tasks.py_task``
 in Python client). This task allows to executed arbitrary Python codes and the
@@ -17,7 +17,7 @@ efficiency, since worker extensions can be written in C++. Moreover, this
 approach is more powerfull than py_call, since not only tasks but also new data
 objects may be introduced.
 
-On the implementation level, Loom contains a C++ library **libloom** that
+On the implementation level, HyperLoom contains a C++ library **libloom** that
 implements the worker in an extensible way.
 
 .. _Extending_new_tasks:
@@ -74,7 +74,7 @@ thread. The subclass has to implement ``run()`` method that is executed when the
 task is fired. It should return data object or ``nullptr`` when an error occurs.
 
 The following code defines ``main`` function for the modified worker. It is
-actually the same code as for the worker distributed with Loom except the
+actually the same code as for the worker distributed with HyperLoom except the
 registartion of our new task. Each task has to be registered under a symbol.
 Symbols for buildin tasks, data objects and resource requests starts with prefix
 `loom/`. To avoid name clashes, it is good practice to introduce new prefix, in

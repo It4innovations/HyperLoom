@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Loom documentation build configuration file, created by
+# HyperLoom documentation build configuration file, created by
 # sphinx-quickstart on Sun Nov 13 23:32:34 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -55,9 +55,9 @@ master_doc = 'index'
 numfig = True
 
 # General information about the project.
-project = u'Loom'
-copyright = u'2016, Loom Team'
-author = u'Loom Team'
+project = u'HyperLoom'
+copyright = u'2016, HyperLoom Team'
+author = u'HyperLoom Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -141,7 +141,7 @@ html_theme = 'sphinx_rtd_theme'
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = u'Loom v0.2'
+# html_title = u'HyperLoom v0.6'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #

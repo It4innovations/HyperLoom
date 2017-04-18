@@ -5,7 +5,7 @@ Python client
 Basic usage
 -----------
 
-The following code contains a simple example of Loom usage. It creates two
+The following code contains a simple example of HyperLoom usage. It creates two
 constants and a task that merge them. Next, it creates a client and connect to
 the server and submits the plan and waits for the results. It assumes that the
 server is running at address *localhost* on TCP port 9010.
@@ -24,7 +24,7 @@ server is running at address *localhost* on TCP port 9010.
 
 The full list of build-in tasks can be found in :ref:`PyClient_API_Tasks`.
 Method ``submit_one`` is non-blocking and returns instance of
-``loom.client.Future`` that represents a remote computation in Loom
+``loom.client.Future`` that represents a remote computation in HyperLoom
 infrastructure. There are basic four operations that is provided by
 ``loom.client.Future``:
 
@@ -52,13 +52,13 @@ more tasks/futures at once:
 
   from loom.client import Client, tasks
 
-  task1 = tasks.const("Hello ")        # Create a plain object
-  task2 = tasks.const(" ")             # Create a plain object
-  task3 = tasks.const("world!")        # Merge two data objects together
+  task1 = tasks.const("Hello ")                     # Create a plain object
+  task2 = tasks.const(" ")                          # Create a plain object
+  task3 = tasks.const("world!")                     # Merge two data objects together
 
-  client = Client("localhost", 9010)   # Create a client
-  results = client.submit(task3)       # Submit tasks; returns list of futures
-  print(client.gather(results))        # prints [b"Hello world!", b" ", b"world!"]
+  client = Client("localhost", 9010)                # Create a client
+  results = client.submit((task1, task2, task3))    # Submit tasks; returns list of futures
+  print(client.gather(results))                     # prints [b"Hello world!", b" ", b"world!"]
 
 In this case, we have replaced ``submit_one`` by method ``submit`` that takes a
 collection of tasks and we have called the method ``gather`` not on the future
@@ -74,7 +74,7 @@ Reusing futures as tasks inputs
 +++++++++++++++++++++++++++++++
 
 Futures can be also used as input for tasks. This allows to use a gradual submitting,
-i.e. loom may already computes some part of the computation while the remaining plan
+i.e. HyperLoom may already computes some part of the computation while the remaining plan
 is still composed.
 
 .. code-block:: python
@@ -228,7 +228,7 @@ In previous examples, we have always used a constant arguments for programs;
 however, programs arguments can be also parametrized by data objects. When an
 input data object is mapped to a file name that starts with character `$` then
 no file is mapped, but the variable with the same name can be used in
-arguments. Loom expands the variable before the execution of the task.
+arguments. HyperLoom expands the variable before the execution of the task.
 
 The following example executes program `ls` where the first argument is
 obtained from data object.
@@ -273,7 +273,7 @@ This program prints the following:
 Python functions in plans
 -------------------------
 
-Loom allows to execute directly python functions as tasks. The easiest way is to
+HyperLoom allows to execute directly python functions as tasks. The easiest way is to
 use decorator ``py_task()``. This is demonstrated by the following code: ::
 
     from loom.client import tasks
@@ -350,7 +350,7 @@ Task context
 ------------
 
 Python task can configured to obtain a ``Context`` object as the first argument.
-It provides interface for interacting with the Loom worker.
+It provides interface for interacting with the HyperLoom worker.
 The following example demonstrates logging through context object::
 
     from loom.client import tasks
@@ -373,13 +373,13 @@ Direct arguments
 ----------------
 
 Direct arguments serve for the Python task configuration without necessity to
-create loom tasks. From the user perspective it works in a similar way as
+create HyperLoom tasks. From the user perspective it works in a similar way as
 context -- they introduces extra parameters. The values for parameters are set
 when the task is called. They can be arbitrary serializable objects and they are
 passed to the function when the py_task is called. Direct arguments are always
 passed as the first n arguments of the function. They are specified only by a
 number, i.e. how many first n arguments are direct (the rest arguments are
-considered normal loom tasks).
+considered normal HyperLoom tasks).
 
 Let us consider the following example::
 
@@ -418,7 +418,7 @@ arguments via ``py_call``::
 Python objects
 --------------
 
-Data objects in loom can be directly a Python objects. A constant value can be created
+Data objects in HyperLoom can be directly a Python objects. A constant value can be created
 by ``tasks.py_value``::
 
     from loom.client import tasks
@@ -453,9 +453,9 @@ Data objects::
         return [ctx.wrap({"A", (1,2,3)}), "Hello"]
 
 The first example returns a plain object. The second example returns PyObj. The third one returns
-Loom array with PyObj and plain object.
+HyperLoom array with PyObj and plain object.
 
-.. Important:: Loom always assumes that all data objects are immutable.
+.. Important:: HyperLoom always assumes that all data objects are immutable.
                Therefore, modyfing unwrapped objects from PyObj leads to highly
                undefined behavior. It is recommended to store only immutable
                objects (strings, tuples, frozensets, ...) in PyObj to prevent
@@ -478,7 +478,7 @@ Loom array with PyObj and plain object.
 Reports
 -------
 
-Reporting system serves for debugging and profiling the Loom programs.
+Reporting system serves for debugging and profiling the HyperLoom programs.
 Reports can be enabled by ``set_trace`` method as follows::
 
    task = ...
@@ -560,7 +560,7 @@ simultenously more light weight tasks than cores available for the worker.
 Dynamic slice & get
 -------------------
 
-Loom scheduler recognizes two special tasks that dynamically modify the plan --
+HyperLoom scheduler recognizes two special tasks that dynamically modify the plan --
 **dynamic slice** and **dynamic get**. They dynamically create new tasks
 according the length of a data object and the current number of workers and
 their resources. The goal is to obtain an optimal number of tasks to utilize the
@@ -608,7 +608,7 @@ the data object produced by ``x``::
 Own tasks
 ---------
 
-Module ``tasks`` contains tasks provided by the worker distributed with Loom. If
+Module ``tasks`` contains tasks provided by the worker distributed with HyperLoom. If
 we extend a worker by our own special tasks, we also need a way how to call them
 from the client.
 

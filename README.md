@@ -1,18 +1,23 @@
-# Loom
+# HyperLoom
 
-Loom is a framework for distributed computation, mainly focused on scientific
-pipelines.
+HyperLoom is a platform for defining and executing workflow pipelines in a distributed environment. HyperLoom aims to be a highly scalable framework that is able to efficiently execute millions of interconnected tasks on hundreds of computational nodes.
 
-  * BSD license
-  * High-level Python interface, back-end written in C++
-  * Peer-to-peer data sharing between workers
-  * Low latency & low task overhead to process hundred thousands of tasks
+HyperLoom features:
+
+  * Optimized dynamic scheduling with low overhead.
+  * In-memory data storage with a direct access over the network with a low I/O footprint.
+  * Direct worker-to-worker data transfer for low server overhead.
+  * Third party application support.
+  * Data-location aware scheduling reducing inter-node network traffic.
+  * C++ core with a Python client enabling high performance available through a simple API.
+  * High scalability and native HPC support.
+  * BSD license.
 
 ## Quickstart
 
-Execute a Loom pipeline in 4 easy steps:
+Execute your first HyperLoom pipeline in 4 easy steps using [Docker](https://docs.docker.com/):
 
-### 1. Deploy virtualized Loom infrastructure
+### 1. Deploy virtualized HyperLoom infrastructure
 
 ```
 docker-compose up
@@ -20,7 +25,7 @@ docker-compose up
 
 Note that before re-running `docker-compose up` you need to run `docker-compose down` to delete containers state.
 
-### 2. Install Loom client (virtualenv)
+### 2. Install HyperLoom client (virtualenv)
 
 ```
 virtualenv -p python3 loom_client_env
@@ -55,3 +60,15 @@ print(result)                        # Prints b"Hello world!"
 ```
 python3 pipeline.py
 ```
+
+## Documentation
+
+You can build the full documentation from the [doc](./doc) subdirectory by running `make html`.
+
+## Acknowledgements
+
+This project has received funding from the European Union’s Horizon 2020 Research and Innovation programme under Grant Agreement No. 671555. This work was also supported by The Ministry of Education, Youth and Sports from the National Programme of Sustainability (NPU II) project „IT4Innovations excellence in science - LQ1602“ and by the IT4Innovations infrastructure which is supported from the Large Infrastructures for Research, Experimental Development and Innovations project „IT4Innovations National Supercomputing Center – LM2015070“.
+
+## License
+
+See the [LICENSE](./LICENSE) file.
