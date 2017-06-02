@@ -1,9 +1,8 @@
 FROM it4i/loombuilder:latest
 
-RUN apt-get update -y && apt-get install -y git
+ADD . /loom
 
-RUN git clone https://code.it4i.cz/ADAS/loom.git && \
-    cd loom && \
+RUN cd loom && \
     mkdir _build && \
     cd _build && \
     cmake .. && \
