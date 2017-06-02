@@ -50,13 +50,13 @@ protected:
     {
         UV_CHECK(status);
         ThreadTaskInstance *ttinstance = static_cast<ThreadTaskInstance*>(req->data);
-        bool redirect = (bool)ttinstance->job.get_task_redirect();
         const std::string &err = ttinstance->job.get_error_message();
         if (err.empty()) {
+            auto &redirect = ttinstance->job.get_task_redirect();
             if (ttinstance->result && !redirect) {
                 ttinstance->finish(ttinstance->result);
             } else if (!ttinstance->result && redirect) {
-                ttinstance->redirect(std::move(ttinstance->job.get_task_redirect()));
+                ttinstance->redirect(std::move(redirect));
             } else {
                  ttinstance->fail("ThreadTaskInstace::run returned nullptr or incosistent returned values");
             }
