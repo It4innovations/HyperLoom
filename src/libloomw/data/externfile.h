@@ -9,7 +9,7 @@ namespace loom {
 
 class ExternFile : public Data {
 public:
-    std::string get_type_name() const;
+    std::string get_type_name() const override;
     ExternFile(const std::string &filename);
     ~ExternFile();
 

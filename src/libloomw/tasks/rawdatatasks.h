@@ -19,7 +19,7 @@ class MergeJob : public loom::ThreadJob
 public:
     using ThreadJob::ThreadJob;
 
-    bool check_run_in_thread();
+    bool check_run_in_thread() override;
     DataPtr run() override;
 };
 
