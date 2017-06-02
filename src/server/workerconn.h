@@ -5,6 +5,7 @@
 #include "libloom/types.h"
 
 #include <assert.h>
+#include <string>
 
 class Server;
 class TaskNode;

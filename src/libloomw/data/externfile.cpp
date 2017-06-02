@@ -3,6 +3,7 @@
 #include "libloom/fsutils.h"
 #include "libloom/log.h"
 
+#include <unistd.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>

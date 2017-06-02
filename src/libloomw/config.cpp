@@ -1,4 +1,5 @@
 #include "config.h"
+#include <stdlib.h>
 
 loom::Config::Config()
     : work_dir("/tmp"), cpus(0), debug(false), pinning(true)

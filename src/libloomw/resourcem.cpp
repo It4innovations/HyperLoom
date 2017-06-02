@@ -2,6 +2,8 @@
 
 #include "libloom/log.h"
 
+#include <unistd.h>
+
 using loom::base::logger;
 
 loom::ResourceManager::ResourceManager()

@@ -6,6 +6,7 @@
 #include <uv.h>
 #include <memory>
 #include <vector>
+#include <functional>
 
 namespace loom {
 namespace base {
