@@ -4,7 +4,9 @@
 #include <libloom/log.h>
 
 #include <unistd.h>
+#ifndef __APPLE__
 #include <sys/sysinfo.h>
+#endif
 
 using namespace loom;
 
@@ -30,6 +32,9 @@ double read_cpu_time(long hz)
 
 int read_mem_usage_percent()
 {
+#ifdef __APPLE__
+    return 50;
+#else
     struct sysinfo mem_info;
     if (sysinfo (&mem_info) < 0) {
         return 0;
@@ -37,6 +42,7 @@ int read_mem_usage_percent()
 
     double total = mem_info.totalram - mem_info.freeram;
     return static_cast<int>(total / mem_info.totalram * 100);
+#endif
 }
 
 WorkerTrace::WorkerTrace(uv_loop_t *loop)
