@@ -50,7 +50,7 @@ protected:
     {
         UV_CHECK(status);
         ThreadTaskInstance *ttinstance = static_cast<ThreadTaskInstance*>(req->data);
-        bool redirect = ttinstance->job.get_task_redirect();
+        bool redirect = (bool)ttinstance->job.get_task_redirect();
         const std::string &err = ttinstance->job.get_error_message();
         if (err.empty()) {
             if (ttinstance->result && !redirect) {
