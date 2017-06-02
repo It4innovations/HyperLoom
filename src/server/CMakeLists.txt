@@ -27,6 +27,6 @@ add_executable(loom-server
                $<TARGET_OBJECTS:loom-server-lib>
                main.cpp)
 
-target_link_libraries(loom-server libloom)
+target_link_libraries(loom-server libloom ${ARGP_LIBRARIES})
 
 install (TARGETS loom-server DESTINATION bin)
