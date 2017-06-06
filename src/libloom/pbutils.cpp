@@ -7,7 +7,7 @@ std::unique_ptr<loom::base::SendBufferItem> loom::base::message_to_item(google::
 {
       auto size = msg.ByteSize();
       auto item = new loom::base::MemItemWithSz(size);
-      msg.SerializeToArray(item, size);
+      msg.SerializeToArray(item->get_ptr(), size);
       return std::unique_ptr<loom::base::SendBufferItem>(item);
 }
 
