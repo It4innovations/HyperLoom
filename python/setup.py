@@ -5,7 +5,7 @@ import os
 
 def read_version():
     with open(os.path.dirname(__file__) + "../version") as f:
-        return f.readline()
+        return f.readline().rstrip()
 
 LOOM_VERSION=read_version()
 print("LOOM_VERSION =", LOOM_VERSION)
