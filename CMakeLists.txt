@@ -16,6 +16,8 @@ find_path(LIBUV_INCLUDE_DIR uv.h
 find_library(LIBUV_LIBRARY
              NAMES libuv uv)
 
+         include_directories(${LIBUV_INCLUDE_DIR})
+
 mark_as_advanced(LIBUV_INCLUDE_DIR LIBUV_LIBRARY)
 
 # Protobuffers
@@ -28,7 +30,7 @@ find_package(PythonLibs 3.4 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 # argp
-find_package(argp)
+find_package(Argp)
 include_directories(${ARGP_INCLUDE_PATH})
 
 add_subdirectory(pb)
