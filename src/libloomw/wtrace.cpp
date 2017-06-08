@@ -4,7 +4,12 @@
 #include <libloom/log.h>
 
 #include <unistd.h>
-#ifndef __APPLE__
+#ifdef __APPLE__
+#include <mach/vm_statistics.h>
+#include <mach/mach_types.h>
+#include <mach/mach_init.h>
+#include <mach/mach_host.h>
+#else
 #include <sys/sysinfo.h>
 #endif
 
@@ -33,7 +38,32 @@ double read_cpu_time(long hz)
 int read_mem_usage_percent()
 {
 #ifdef __APPLE__
-    return 50;
+    vm_size_t page_size;
+    mach_port_t mach_port;
+    mach_msg_type_number_t count;
+    vm_statistics64_data_t vm_stats;
+
+    mach_port = mach_host_self();
+    count = sizeof(vm_stats) / sizeof(natural_t);
+    int usage;
+    if (KERN_SUCCESS == host_page_size(mach_port, &page_size) &&
+        KERN_SUCCESS == host_statistics64(mach_port, HOST_VM_INFO,
+                                        (host_info64_t)&vm_stats, &count))
+    {
+        long long free_memory = static_cast<int64_t>(vm_stats.free_count) *
+                                static_cast<int64_t>(page_size);
+
+        long long used_memory = (static_cast<int64_t>(vm_stats.active_count) +
+                                 static_cast<int64_t>(vm_stats.inactive_count) +
+                                 static_cast<int64_t>(vm_stats.wire_count)) *
+                                static_cast<int64_t>(page_size);
+        double total = static_cast<double>(free_memory + used_memory);
+        usage = static_cast<int>(used_memory / total * 100);
+    } else {
+        base::logger->warn("Cannot read memory utilizaton");
+        usage = -1;
+    }
+    return usage;
 #else
     struct sysinfo mem_info;
     if (sysinfo (&mem_info) < 0) {
