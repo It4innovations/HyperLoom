@@ -116,7 +116,7 @@ class LoomEnv(Env):
         assert stats["n_data_objects"] == 0
 
     def check_final_state(self):
-        time.sleep(0.15)
+        time.sleep(0.25)
         self.check_stats()
         filenames = glob.glob(
             os.path.join(LOOM_TEST_BUILD_DIR, "worker-*/**/*"), recursive=True)

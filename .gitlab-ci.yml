@@ -34,7 +34,7 @@ test_pytest:
   image: it4i/loombuilder:latest
   script:
     - cd tests/client
-    - py.test -x -v --timeout=60
+    - py.test -x -v --timeout=20
   artifacts:
     when: on_failure
     paths:
