@@ -2,7 +2,7 @@
    sphinx-quickstart on Sun Nov 13 23:32:34 2016.
 
 HyperLoom
-====
+=========
 
 User guide
 ----------
