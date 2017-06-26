@@ -5,6 +5,7 @@
 #include "data.h"
 
 #include <memory>
+#include <functional>
 
 namespace loom {
 
