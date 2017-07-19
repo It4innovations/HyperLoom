@@ -63,7 +63,9 @@ python3 pipeline.py
 
 ## Documentation
 
-You can build the full documentation from the [doc](./doc) subdirectory by running `make html`.
+Compiled version of the documenation is available [here](http://loom-it4i.readthedocs.io/en/latest/intro.html).
+
+You can also build the full documentation from the sources in the [doc](./doc) subdirectory by running `make html`.
 
 ## Acknowledgements
 
