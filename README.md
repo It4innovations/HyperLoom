@@ -1,17 +1,24 @@
+![logo](./doc/source/logo.png)
+
 # HyperLoom
 
-HyperLoom is a platform for defining and executing workflow pipelines in a distributed environment. HyperLoom aims to be a highly scalable framework that is able to efficiently execute millions of interconnected tasks on hundreds of computational nodes.
+HyperLoom is a platform for defining and executing workflow pipelines in large-scale distributed environments.
+
+HyperLoom implements its own schedulling algorithm optimized for execution of millions of interconnected tasks on hundreds of computational nodes. HyperLoom also includes a thin Python client module that allows to easily define and execute the pipelines on HyperLoom infrastructure. 
 
 HyperLoom features:
 
-  * Optimized dynamic scheduling with low overhead.
-  * In-memory data storage with a direct access over the network with a low I/O footprint.
-  * Direct worker-to-worker data transfer for low server overhead.
+  * In-memory data processing reducing I/O footprint.
+  * Direct worker-to-worker data transfer reducing server overhead.
   * Third party application support.
-  * Data-location aware scheduling reducing inter-node network traffic.
-  * C++ core with a Python client enabling high performance available through a simple API.
+  * Data-location aware scheduling algorithm reducing inter-node network traffic.
+  * C++ core with a Python client enabling high performance through a simple API.
   * High scalability and native HPC support.
   * BSD license.
+
+
+## Architecture
+![architecture](./doc/source/arch.png)
 
 ## Quickstart
 
@@ -63,7 +70,7 @@ python3 pipeline.py
 
 ## Documentation
 
-Compiled version of the documenation is available [here](http://loom-it4i.readthedocs.io/en/latest/intro.html).
+Compiled version of the documentation is available [here](http://loom-it4i.readthedocs.io/en/latest/intro.html).
 
 You can also build the full documentation from the sources in the [doc](./doc) subdirectory by running `make html`.
 
