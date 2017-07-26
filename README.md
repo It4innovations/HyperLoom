@@ -8,14 +8,15 @@ HyperLoom implements its own schedulling algorithm optimized for execution of mi
 
 HyperLoom features:
 
-  * In-memory data processing reducing I/O footprint.
+  * In-memory data processing reducing filesystem load.
   * Direct worker-to-worker data transfer reducing server overhead.
-  * Third party application support.
+  * Support for execution of third party applications.
   * Data-location aware scheduling algorithm reducing inter-node network traffic.
   * C++ core with a Python client enabling high performance through a simple API.
   * High scalability and native HPC support.
   * BSD license.
 
+For more information see the [full documentation](http://loom-it4i.readthedocs.io/en/latest/intro.html).
 
 ## Architecture
 ![architecture](./doc/source/arch.png)
@@ -70,9 +71,30 @@ python3 pipeline.py
 
 ## Documentation
 
-Compiled version of the documentation is available [here](http://loom-it4i.readthedocs.io/en/latest/intro.html).
+The compiled version of the documentation is available [here](http://loom-it4i.readthedocs.io/en/latest/intro.html).
 
 You can also build the full documentation from the sources in the [doc](./doc) subdirectory by running `make html`.
+
+## Benchmarks
+HyperLoom scalability for a pharmaceutical machine-learning pipeline running on 1, 8, 16 and 64 nodes (24 CPUs each).
+
+The picture below shows the execution times of different task types in the pipeline.
+
+![task_duration](./doc/source/task_duration.png)
+
+### Strong Scaling
+
+Pipeline for strong scaling experiments contained ~460000 tasks in all of the cases.
+
+![sse](./doc/source/sse.png)
+![sset](./doc/source/sset.png)
+
+### Weak Scaling
+
+Pipeline for weak scaling experiments contained from ~12500 tasks (1 node) to ~800000 tasks (64 nodes).
+
+![wse](./doc/source/wse.png)
+![wset](./doc/source/wset.png)
 
 ## Acknowledgements
 
