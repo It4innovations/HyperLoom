@@ -38,7 +38,7 @@ Note that before re-running `docker-compose up` you need to run `docker-compose 
 ```
 virtualenv -p python3 loom_client_env
 source loom_client_env/bin/activate
-pip3 install cloudpickle protobuf
+pip3 install -r python/requirements.txt
 cd ./python
 chmod +x generate.sh
 ./generate.sh
