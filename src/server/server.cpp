@@ -81,9 +81,19 @@ void Server::remove_freshconnection(FreshConnection &conn)
     fresh_connections.erase(i);
 }
 
-void Server::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc)
+void Server::on_checkpoint_finished(loom::base::Id id, WorkerConnection *wc)
 {
-    task_manager.on_task_finished(id, size, length, wc);
+    task_manager.on_checkpoint_finished(id, wc);
+}
+
+void Server::on_checkpoint_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg)
+{
+    task_manager.on_checkpoint_failed(id, wc, error_msg);
+}
+
+void Server::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc, bool checkpointing)
+{
+    task_manager.on_task_finished(id, size, length, wc, checkpointing);
 }
 
 void Server::on_data_transferred(loom::base::Id id, WorkerConnection *wc)

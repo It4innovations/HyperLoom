@@ -23,7 +23,8 @@ WorkerConnection::WorkerConnection(Server &server,
       task_types(task_types),
       data_types(data_types),
       worker_id(worker_id),
-      n_residual_tasks(0)
+      n_residual_tasks(0),
+      running_checkpoints(0)
 {
     logger->info("Worker {} connected (cpus={})", address, resource_cpus);
     if (this->socket) {
@@ -48,19 +49,35 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
     WorkerResponse msg;
     msg.ParseFromArray(buffer, size);
 
-    if (msg.type() == WorkerResponse_Type_FINISHED) {
-        server.on_task_finished(msg.id(), msg.size(), msg.length(), this);
+    auto type = msg.type();
+    if (type == WorkerResponse_Type_FINISHED) {
+        server.on_task_finished(msg.id(), msg.size(), msg.length(), this, false);
         return;
     }
 
-    if (msg.type() == WorkerResponse_Type_TRANSFERED) {
+    if (type == WorkerResponse_Type_FINISHED_AND_CHECKPOINTING) {
+        server.on_task_finished(msg.id(), msg.size(), msg.length(), this, true);
+        return;
+    }
+
+    if (type == WorkerResponse_Type_TRANSFERED) {
         server.on_data_transferred(msg.id(), this);
         return;
     }
 
-    if (msg.type() == WorkerResponse_Type_FAILED) {
+    if (type == WorkerResponse_Type_FAILED) {
         assert(msg.has_error_msg());
         server.on_task_failed(msg.id(), this, msg.error_msg());
+        return;
+    }
+
+    if (type == WorkerResponse_Type_CHECKPOINT_FINISHED) {
+        server.on_checkpoint_finished(msg.id(), this);
+        return;
+    }
+
+    if (type == WorkerResponse_Type_CHECKPOINT_FAILED) {
+        server.on_checkpoint_failed(msg.id(), this, msg.error_msg());
         return;
     }
 }
@@ -79,6 +96,7 @@ void WorkerConnection::send_task(const TaskNode &task)
     msg.set_task_type(def.task_type);
     msg.set_task_config(def.config);
     msg.set_n_cpus(def.n_cpus);
+    msg.set_checkpoint_path(def.checkpoint_path);
 
     for (TaskNode *input_node : task.get_inputs()) {
         msg.add_task_inputs(input_node->get_id());
@@ -113,13 +131,27 @@ void WorkerConnection::free_resources(TaskNode &node)
    add_free_cpus(node.get_n_cpus());
 }
 
-void WorkerConnection::residual_task_finished(Id id, bool success)
+void WorkerConnection::residual_task_finished(Id id, bool success, bool checkpointing)
 {
    logger->debug("Residual tasks id={} finished on {}", id, address);
    change_residual_tasks(-1);
+
+   if (checkpointing) {
+       running_checkpoints += 1;
+   }
+
    if (success) {
       remove_data(id);
    }
+   if (!is_blocked()) {
+      server.need_task_distribution();
+   }
+}
+
+void WorkerConnection::residual_checkpoint_finished(Id id)
+{
+   logger->debug("Residual checkpoint id={} finished on {}", id, address);
+   running_checkpoints -= 1;
    if (!is_blocked()) {
       server.need_task_distribution();
    }

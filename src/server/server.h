@@ -56,7 +56,7 @@ public:
 
     void add_resend_task(loom::base::Id id);
 
-    void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc);
+    void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc, bool checkpointing);
     void on_data_transferred(loom::base::Id id, WorkerConnection *wc);
 
     loom::base::Dictionary& get_dictionary() {
@@ -87,6 +87,9 @@ public:
     std::unique_ptr<ServerTrace>& get_trace() {
         return trace;
     }
+
+    void on_checkpoint_finished(loom::base::Id id, WorkerConnection *wc);
+    void on_checkpoint_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
 
 private:
 

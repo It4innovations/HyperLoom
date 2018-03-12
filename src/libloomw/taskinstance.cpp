@@ -54,9 +54,9 @@ void TaskInstance::fail_libuv(const std::string &error_msg, int error_code)
 void TaskInstance::finish(const DataPtr &output)
 {
    assert(output);
-   worker.publish_data(get_id(), output);
+   worker.publish_data(get_id(), output, task->get_checkpoint_path());
    assert(output);
-   worker.task_finished(*this, output);
+   worker.task_finished(*this, output, !task->get_checkpoint_path().empty());
 }
 
 void TaskInstance::redirect(std::unique_ptr<TaskDescription> tdesc)

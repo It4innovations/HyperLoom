@@ -69,6 +69,8 @@ class Plan(object):
             msg_t.task_type = symbols[task.task_type]
             msg_t.input_ids.extend(self.get_id(t) for t in task.inputs)
             msg_t.result = task in results
+            if task.checkpoint_path:
+                msg_t.checkpoint_path = task.checkpoint_path
             if task.resource_request:
                 msg_t.resource_request_index = \
                     requests.index(task.resource_request)

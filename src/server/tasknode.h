@@ -19,7 +19,8 @@ enum class TaskDefFlags : size_t {
 };
 
 enum class TaskNodeFlags : size_t {
-    FINISHED
+    FINISHED,
+    CHECKPOINT
 };
 
 struct TaskDef
@@ -29,6 +30,7 @@ struct TaskDef
     loom::base::Id task_type;
     std::string config;
     std::bitset<1> flags;
+    std::string checkpoint_path;
 };
 
 enum class TaskStatus {
@@ -60,6 +62,17 @@ public:
         return flags.test(static_cast<size_t>(TaskNodeFlags::FINISHED));
     }
 
+    inline bool has_checkpoint() const {
+        return flags.test(static_cast<size_t>(TaskNodeFlags::CHECKPOINT));
+    }
+
+    bool has_defined_checkpoint() const {
+        return !task.checkpoint_path.empty();
+    }
+
+    void set_checkpoint() {
+        flags.set(static_cast<size_t>(TaskNodeFlags::CHECKPOINT));
+    }
 
     void reset_result_flag();
 
@@ -157,12 +170,11 @@ private:
     std::unordered_multiset<TaskNode*> nexts;
 
     // Runtime info
-    std::bitset<1> flags;
+    std::bitset<2> flags;
     WorkerMap<TaskStatus> workers;
     size_t size;
     size_t length;
     size_t remaining_inputs;
-
     bool _slow_is_ready() const;
 };
 

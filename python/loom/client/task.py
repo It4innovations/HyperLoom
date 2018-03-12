@@ -1,3 +1,6 @@
+import os.path
+from .errors import LoomError
+
 
 class Task(object):
 
@@ -7,6 +10,12 @@ class Task(object):
     resource_request = None
     label = None
     metadata = None
+    checkpoint_path = None
+
+    def validate(self):
+        if self.checkpoint_path is not None \
+                and not os.path.isabs(self.checkpoint_path):
+            raise LoomError("Checkpoint has to be absolute path")
 
     def __repr__(self):
         if self.label:

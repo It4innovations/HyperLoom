@@ -48,6 +48,8 @@ add_library(libloomw
             resalloc.cpp
             task.cpp
             task.h
+            checkpointwriter.h
+            checkpointwriter.cpp
             wtrace.cpp
             wtrace.h
             taskdesc.h

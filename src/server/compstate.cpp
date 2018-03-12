@@ -267,6 +267,7 @@ loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
 
         def.task_type = pt.task_type();
         def.config = pt.config();
+        def.checkpoint_path = pt.checkpoint_path();
         if (pt.has_result() && pt.result()) {
             def.flags.set(static_cast<size_t>(TaskDefFlags::RESULT));
         }

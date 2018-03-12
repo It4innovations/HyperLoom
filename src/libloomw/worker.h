@@ -52,12 +52,13 @@ public:
         return true;
     }
 
-    void task_finished(TaskInstance &task_instance, const DataPtr &data);
+    void task_finished(TaskInstance &task_instance, const DataPtr &data, bool checkpointing);
     void task_failed(TaskInstance &task_instance, const std::string &error_msg);
     void data_transferred(base::Id task_id);
 
     void task_redirect(TaskInstance &task, std::unique_ptr<TaskDescription> new_task_desc);
-    void publish_data(base::Id id, const DataPtr &data);
+    void publish_data(base::Id id, const DataPtr &data, const std::string &checkpoint_path);
+    void write_checkpoint(base::Id id, const DataPtr &data, const std::string &checkpoint_path);
     void remove_data(base::Id id);
 
     bool has_data(base::Id id) const
@@ -128,6 +129,8 @@ public:
 
     void on_dictionary_updated();
 
+    void checkpoint_written(base::Id id);
+    void checkpoint_failed(base::Id id, const std::string &error_msg);
 private:
     void register_worker();
     void create_trace(const std::string &trace_path, loom::base::Id worker_id);

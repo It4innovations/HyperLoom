@@ -12,27 +12,9 @@ import struct
 import cloudpickle
 import os
 
+from .errors import LoomError, LoomException, TaskFailed  # noqa
+
 LOOM_PROTOCOL_VERSION = 2
-
-
-class LoomException(Exception):
-    """Base class for Loom exceptions"""
-    pass
-
-
-class TaskFailed(LoomException):
-    """Exception when scheduler informs about failure of a task"""
-
-    def __init__(self, id, worker, error_msg):
-        self.id = id
-        self.worker = worker
-        self.error_msg = error_msg
-        message = "Task id={} failed: {}".format(id, error_msg)
-        LoomException.__init__(self, message)
-
-
-class LoomError(LoomException):
-    """Generic error in Loom system"""
 
 
 class Client(object):
@@ -297,6 +279,7 @@ class Client(object):
         futures = self.futures
         results = []
         for task in tasks:
+            task.validate()
             if not isinstance(task, Task):
                 raise Exception("{} is not a task".format(task))
             plan.add(task)

@@ -23,6 +23,7 @@
 #include "libloom/fsutils.h"
 
 #include "loom_define.h"
+#include "checkpointwriter.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -283,10 +284,36 @@ void Worker::start_task(std::unique_ptr<Task> task, ResourceAllocation &&ra)
     t->start(input_data);
 }
 
-void Worker:: publish_data(Id id, const DataPtr &data)
+void Worker::checkpoint_written(Id id) {
+    logger->debug("Checkpoint written id={}", id);
+    if (server_conn.is_connected()) {
+        loom::pb::comm::WorkerResponse msg;
+        msg.set_type(loom::pb::comm::WorkerResponse_Type_CHECKPOINT_FINISHED);
+        msg.set_id(id);
+        send_message(server_conn, msg);
+    }
+}
+
+void Worker::checkpoint_failed(Id id, const std::string &error_msg) {
+    logger->debug("Cannot write checkpoint id={}, error={}", id, error_msg);
+    if (server_conn.is_connected()) {
+        loom::pb::comm::WorkerResponse msg;
+        msg.set_type(loom::pb::comm::WorkerResponse_Type_CHECKPOINT_FAILED);
+        msg.set_id(id);
+        msg.set_error_msg(error_msg);
+        send_message(server_conn, msg);
+    }
+}
+
+void Worker:: publish_data(Id id, const DataPtr &data, const std::string &checkpoint_path)
 {
     logger->debug("Publishing data id={} size={} info={}", id, data->get_size(), data->get_info());
     public_data[id] = data;
+
+    if (!checkpoint_path.empty()) {
+        write_checkpoint(id, data, checkpoint_path);
+    }
+
     check_waiting_tasks(id);
 }
 
@@ -519,12 +546,18 @@ void Worker::task_redirect(TaskInstance &task,
     t->start(new_task_desc->inputs);
 }
 
-void Worker::task_finished(TaskInstance &task, const DataPtr &data)
+void Worker::write_checkpoint(Id id, const DataPtr &data, const std::string &checkpoint_path)
+{
+    CheckPointWriter *writer = new CheckPointWriter(*this, id, data, checkpoint_path);
+    writer->start();
+}
+
+void Worker::task_finished(TaskInstance &task, const DataPtr &data, bool checkpointing)
 {
     using namespace loom::pb::comm;
     if (server_conn.is_connected()) {
         WorkerResponse msg;
-        msg.set_type(WorkerResponse_Type_FINISHED);
+        msg.set_type(checkpointing ? WorkerResponse_Type_FINISHED_AND_CHECKPOINTING : WorkerResponse_Type_FINISHED);
         msg.set_id(task.get_id());
         msg.set_size(data->get_size());
         msg.set_length(data->get_length());
@@ -571,7 +604,8 @@ void Worker::on_message(const char *data, size_t size)
         auto task = std::make_unique<Task>(msg.id(),
                                            msg.task_type(),
                                            msg.task_config(),
-                                           msg.n_cpus());
+                                           msg.n_cpus(),
+                                           msg.checkpoint_path());
         for (int i = 0; i < msg.task_inputs_size(); i++) {
             Id task_id = msg.task_inputs(i);
             task->add_input(task_id);

@@ -16,8 +16,8 @@ class Worker;
 class Task {
 
 public:
-    Task(base::Id id, int task_type, const std::string &config, int n_cpus)
-        : id(id), task_type(task_type), config(config), n_cpus(n_cpus), n_unresolved(0) {}
+    Task(base::Id id, int task_type, const std::string &config, int n_cpus, const std::string &checkpoint_path)
+        : id(id), task_type(task_type), config(config), n_cpus(n_cpus), n_unresolved(0), checkpoint_path(checkpoint_path) {}
 
     Task(base::Id id, int task_type, std::string &&config, int n_cpus)
         : id(id), task_type(task_type), config(std::move(config)), n_cpus(n_cpus), n_unresolved(0) {}
@@ -47,6 +47,10 @@ public:
         return n_cpus;
     }
 
+    const std::string& get_checkpoint_path() const {
+        return checkpoint_path;
+    }
+
     const std::vector<base::Id>& get_inputs() const {
         return inputs;
     }
@@ -61,6 +65,7 @@ protected:
     int n_cpus;
     size_t n_unresolved;
     std::unordered_set<base::Id> unresolved_set;
+    std::string checkpoint_path;
 };
 
 }

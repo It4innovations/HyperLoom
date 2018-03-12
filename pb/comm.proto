@@ -12,6 +12,7 @@ message Task {
 	repeated int32 input_ids = 3;
 	optional int32 resource_request_index = 5 [default = -1];
 	optional bool result = 6;
+  optional string checkpoint_path = 7;
 
 	optional string label = 12;
         optional bytes metadata = 13;
@@ -73,6 +74,7 @@ message WorkerCommand {
 	optional string task_config = 4;
 	repeated int32 task_inputs = 5;
 	optional int32 n_cpus = 6;
+	optional string checkpoint_path = 7;
 
 	// SEND
 	optional string address = 10;
@@ -88,8 +90,11 @@ message WorkerCommand {
 message WorkerResponse {
 	enum Type {
 		FINISHED = 1;
-		TRANSFERED = 2;
-		FAILED = 3;
+		FINISHED_AND_CHECKPOINTING = 2;
+		TRANSFERED = 3;
+		FAILED = 4;
+		CHECKPOINT_FINISHED = 5;
+		CHECKPOINT_FAILED = 6;
 	}
 	required Type type = 1;
 	required int32 id = 2;
@@ -98,7 +103,7 @@ message WorkerResponse {
 	optional uint64 size = 3;
 	optional uint64 length = 4;
 
-	// FAILED
+	// FAILED + CHECKPOINT_FAILED
 	optional string error_msg = 100;
 }
 

@@ -79,10 +79,10 @@ void TaskManager::remove_node(TaskNode &node)
     cstate.remove_node(node);
 }
 
-void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc)
+void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc, bool checkpointing)
 {
    if (unlikely(wc->is_blocked())) {
-      wc->residual_task_finished(id, true);
+      wc->residual_task_finished(id, true, checkpointing);
       return;
    }
    TaskNode &node = cstate.get_node(id);
@@ -93,19 +93,22 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
         trace->trace_task_end(*node, wc);
     }*/
 
-   if (node.is_result()) {
+   // Task with checkpoints is "finished" for worker only if
+   // checkpoint is written
+   if (!checkpointing && node.is_result()) {
       logger->debug("Job id={} [RESULT] finished", id);
-      /*WorkerConnection *owner = node->get_random_owner();
-        assert(owner);
-        owner->send_data(id, server.get_dummy_worker().get_address());*/
 
       ClientConnection *cc = server.get_client_connection();
       if (cc) {
-         cc->send_info_about_finished_result(node);
+           cc->send_info_about_finished_result(node);
       }
    } else {
-      assert(!node.get_nexts().empty());
+      assert(checkpointing || !node.get_nexts().empty());
       logger->debug("Job id={} finished (size={}, length={})", id, size, length);
+   }
+
+   if (checkpointing) {
+        wc->change_running_checkpoints(1);
    }
 
    for (TaskNode *input_node : node.get_inputs()) {
@@ -113,6 +116,7 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
          remove_node(*input_node);
       }
    }
+
    if (!node.get_nexts().empty()) {
       for (TaskNode *nn : node.get_nexts()) {
          if (nn->input_is_ready(&node)) {
@@ -131,7 +135,7 @@ void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length
 void TaskManager::on_data_transferred(Id id, WorkerConnection *wc)
 {
    if (unlikely(wc->is_blocked())) {
-      wc->residual_task_finished(id, true);
+      wc->residual_task_finished(id, true, false);
       return;
    }
    TaskNode &node = cstate.get_node(id);
@@ -142,7 +146,7 @@ void TaskManager::on_data_transferred(Id id, WorkerConnection *wc)
 void TaskManager::on_task_failed(Id id, WorkerConnection *wc, const std::string &error_msg)
 {
    if (unlikely(wc->is_blocked())) {
-      wc->residual_task_finished(id, false);
+      wc->residual_task_finished(id, false, false);
       return;
    }
    logger->error("Task id={} failed on worker {}: {}",
@@ -160,6 +164,41 @@ void TaskManager::on_task_failed(Id id, WorkerConnection *wc, const std::string 
     if (cstate.has_pending_nodes()) {
         server.need_task_distribution();
     }
+}
+
+void TaskManager::on_checkpoint_finished(Id id, WorkerConnection *wc)
+{
+    if (unlikely(wc->is_blocked())) {
+       wc->residual_checkpoint_finished(id);
+       return;
+    }
+    logger->debug("Checkpoint id={} finished on worker {}", id, wc->get_address());
+    wc->change_running_checkpoints(-1);
+    TaskNode &node = cstate.get_node(id);
+    assert(node.has_defined_checkpoint());
+    node.set_checkpoint();
+
+    if (node.is_result()) {
+        ClientConnection *cc = server.get_client_connection();
+        if (cc) {
+             cc->send_info_about_finished_result(node);
+        }
+    }
+}
+
+void TaskManager::on_checkpoint_failed(Id id, WorkerConnection *wc, const std::string &error_msg)
+{
+    if (unlikely(wc->is_blocked())) {
+       return;
+    }
+    logger->error("Checkpoint id={} failed on worker {}: {}",
+                   id, wc->get_address(), error_msg);
+    wc->change_running_checkpoints(-1);
+    auto cc = server.get_client_connection();
+    if (cc) {
+        cc->send_task_failed(id, *wc, error_msg);
+    }
+    trash_all_tasks();
 }
 
 void TaskManager::run_task_distribution()

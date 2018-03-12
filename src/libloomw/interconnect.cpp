@@ -54,7 +54,7 @@ void InterConnection::finish_receive()
 {
     logger->debug("Interconnect: Data id={} received", unpacking_data_id);
     worker.data_transferred(unpacking_data_id);
-    worker.publish_data(unpacking_data_id, unpacker->finish());
+    worker.publish_data(unpacking_data_id, unpacker->finish(), "");
 
     auto &trace = worker.get_trace();
     if (trace) {

@@ -70,16 +70,21 @@ public:
     }
 
     bool is_blocked() const {
-       return n_residual_tasks > 0;
+       return n_residual_tasks > 0 && running_checkpoints > 0;
     }
 
     void change_residual_tasks(int value) {
        n_residual_tasks += value;
     }
 
+    void change_running_checkpoints(int value) {
+        n_residual_checkpoints += value;
+    }
+
     void free_resources(TaskNode &node);
 
-    void residual_task_finished(loom::base::Id id, bool success);
+    void residual_task_finished(loom::base::Id id, bool success, bool checkpointing);
+    void residual_checkpoint_finished(loom::base::Id id);
 
     void create_trace(const std::string &trace_path);
 
@@ -95,6 +100,8 @@ private:
 
     int worker_id;
     int n_residual_tasks;
+    int n_residual_checkpoints;
+    int running_checkpoints;
 
     int scheduler_index;
     int scheduler_free_cpus;
