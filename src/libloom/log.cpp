@@ -10,7 +10,7 @@ using namespace loom::base;
 
 namespace loom {
 namespace base {
-std::shared_ptr<spdlog::logger> logger = spdlog::stdout_logger_mt("net", true);
+std::shared_ptr<spdlog::logger> logger = spdlog::stdout_logger_mt("net");
 }}
 
 void loom::base::report_uv_error(int error_code, int line_number, const char *filename)

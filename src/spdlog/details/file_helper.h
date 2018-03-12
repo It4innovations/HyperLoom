@@ -7,21 +7,19 @@
 
 // Helper class for file sink
 // When failing to open a file, retry several times(5) with small delay between the tries(10 ms)
-// Can be set to auto flush on every line
 // Throw spdlog_ex exception on errors
 
-#include <spdlog/details/os.h>
-#include <spdlog/details/log_msg.h>
+#include "../details/log_msg.h"
+#include "../details/os.h"
 
+#include <cerrno>
 #include <chrono>
 #include <cstdio>
 #include <string>
 #include <thread>
+#include <tuple>
 
-namespace spdlog
-{
-namespace details
-{
+namespace spdlog { namespace details {
 
 class file_helper
 {
@@ -30,23 +28,18 @@ public:
     const int open_tries = 5;
     const int open_interval = 10;
 
-    explicit file_helper(bool force_flush) :
-        _fd(nullptr),
-        _force_flush(force_flush)
-    {}
+    explicit file_helper() = default;
 
-    file_helper(const file_helper&) = delete;
-    file_helper& operator=(const file_helper&) = delete;
+    file_helper(const file_helper &) = delete;
+    file_helper &operator=(const file_helper &) = delete;
 
     ~file_helper()
     {
         close();
     }
 
-
-    void open(const filename_t& fname, bool truncate = false)
+    void open(const filename_t &fname, bool truncate = false)
     {
-
         close();
         auto *mode = truncate ? SPDLOG_FILENAME_T("wb") : SPDLOG_FILENAME_T("ab");
         _filename = fname;
@@ -55,10 +48,10 @@ public:
             if (!os::fopen_s(&_fd, fname, mode))
                 return;
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(open_interval));
+            details::os::sleep_for_millis(open_interval);
         }
 
-        throw spdlog_ex("Failed opening file " + os::filename_to_str(_filename) + " for writing");
+        throw spdlog_ex("Failed opening file " + os::filename_to_str(_filename) + " for writing", errno);
     }
 
     void reopen(bool truncate)
@@ -66,7 +59,6 @@ public:
         if (_filename.empty())
             throw spdlog_ex("Failed re opening file - was not opened before");
         open(_filename, truncate);
-
     }
 
     void flush()
@@ -76,60 +68,72 @@ public:
 
     void close()
     {
-        if (_fd)
+        if (_fd != nullptr)
         {
             std::fclose(_fd);
             _fd = nullptr;
         }
     }
 
-    void write(const log_msg& msg)
+    void write(const log_msg &msg)
     {
-
         size_t msg_size = msg.formatted.size();
         auto data = msg.formatted.data();
         if (std::fwrite(data, 1, msg_size, _fd) != msg_size)
-            throw spdlog_ex("Failed writing to file " + os::filename_to_str(_filename));
-
-        if (_force_flush)
-            std::fflush(_fd);
+            throw spdlog_ex("Failed writing to file " + os::filename_to_str(_filename), errno);
     }
 
-    long size()
+    size_t size() const
     {
-        if (!_fd)
+        if (_fd == nullptr)
+        {
             throw spdlog_ex("Cannot use size() on closed file " + os::filename_to_str(_filename));
-
-        auto pos = ftell(_fd);
-        if (fseek(_fd, 0, SEEK_END) != 0)
-            throw spdlog_ex("fseek failed on file " + os::filename_to_str(_filename));
-
-        auto file_size = ftell(_fd);
-
-        if(fseek(_fd, pos, SEEK_SET) !=0)
-            throw spdlog_ex("fseek failed on file " + os::filename_to_str(_filename));
-
-        if (file_size == -1)
-            throw spdlog_ex("ftell failed on file " + os::filename_to_str(_filename));
-
-        return file_size;
+        }
+        return os::filesize(_fd);
     }
 
-    const filename_t& filename() const
+    const filename_t &filename() const
     {
         return _filename;
     }
 
-    static bool file_exists(const filename_t& name)
+    static bool file_exists(const filename_t &fname)
     {
+        return os::file_exists(fname);
+    }
 
-        return os::file_exists(name);
+    //
+    // return file path and its extension:
+    //
+    // "mylog.txt" => ("mylog", ".txt")
+    // "mylog" => ("mylog", "")
+    // "mylog." => ("mylog.", "")
+    // "/dir1/dir2/mylog.txt" => ("/dir1/dir2/mylog", ".txt")
+    //
+    // the starting dot in filenames is ignored (hidden files):
+    //
+    // ".mylog" => (".mylog". "")
+    // "my_folder/.mylog" => ("my_folder/.mylog", "")
+    // "my_folder/.mylog.txt" => ("my_folder/.mylog", ".txt")
+    static std::tuple<filename_t, filename_t> split_by_extenstion(const spdlog::filename_t &fname)
+    {
+        auto ext_index = fname.rfind('.');
+
+        // no valid extension found - return whole path and empty string as extension
+        if (ext_index == filename_t::npos || ext_index == 0 || ext_index == fname.size() - 1)
+            return std::make_tuple(fname, spdlog::filename_t());
+
+        // treat casese like "/etc/rc.d/somelogfile or "/abc/.hiddenfile"
+        auto folder_index = fname.rfind(details::os::folder_sep);
+        if (folder_index != fname.npos && folder_index >= ext_index - 1)
+            return std::make_tuple(fname, spdlog::filename_t());
+
+        // finally - return a valid base and extension tuple
+        return std::make_tuple(fname.substr(0, ext_index), fname.substr(ext_index));
     }
 
 private:
-    FILE* _fd;
+    FILE *_fd{nullptr};
     filename_t _filename;
-    bool _force_flush;
 };
-}
-}
+}} // namespace spdlog::details
