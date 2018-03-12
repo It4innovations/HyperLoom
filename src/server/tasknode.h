@@ -14,8 +14,12 @@
 class WorkerConnection;
 class TaskNode;
 
-enum class TaskFlags : size_t {
+enum class TaskDefFlags : size_t {
   RESULT
+};
+
+enum class TaskNodeFlags : size_t {
+    FINISHED
 };
 
 struct TaskDef
@@ -42,37 +46,29 @@ class TaskNode {
 
 public:
 
-    struct RuntimeState {
-        WorkerMap<TaskStatus> workers;
-        size_t size;
-        size_t length;
-        size_t remaining_inputs;
-    };
-
     TaskNode(loom::base::Id id, TaskDef &&task);
 
     loom::base::Id get_id() const {
         return id;
     }
 
-    bool has_state() const {
-        return state != nullptr;
+    inline bool is_result() const {
+        return task.flags.test(static_cast<size_t>(TaskDefFlags::RESULT));
     }
 
-    inline bool is_result() const {
-        return task.flags.test(static_cast<size_t>(TaskFlags::RESULT));
+    bool is_computed() const {
+        return flags.test(static_cast<size_t>(TaskNodeFlags::FINISHED));
     }
+
 
     void reset_result_flag();
 
     inline size_t get_size() const {
-        //assert(state);
-        return state->size;
+        return size;
     }
 
     inline size_t get_length() const {
-        //assert(state);
-        return state->length;
+        return length;
     }
 
     int get_n_cpus() const {
@@ -91,7 +87,6 @@ public:
         return nexts;
     }
 
-    bool is_computed() const;
     bool is_active() const;
     WorkerConnection* get_random_owner();
 
@@ -100,49 +95,28 @@ public:
     }
 
     TaskStatus get_worker_status(WorkerConnection *wc) {
-        if (!state) {
-            return TaskStatus::NONE;
-        }
-        auto i = state->workers.find(wc);
-        if (i == state->workers.end()) {
+        auto i = workers.find(wc);
+        if (i == workers.end()) {
             return TaskStatus::NONE;
         }
         return i->second;
     }
 
     void set_worker_status(WorkerConnection *wc, TaskStatus status) {
-        ensure_state();
-        state->workers[wc] = status;
-    }
-
-    inline void ensure_state() {
-        if (!state) {
-            create_state();
-        }
+        workers[wc] = status;
     }
 
     inline bool input_is_ready(TaskNode *node) {
-         if (!state) {
-            create_state(node);
-        }
-        assert(state->remaining_inputs > 0);
-        return --state->remaining_inputs == 0;
+        assert(remaining_inputs > 0);
+        return --remaining_inputs == 0;
     }
 
     inline bool is_ready() const {
-       if (!state) {
-          return _slow_is_ready();
-       }
-       return state->remaining_inputs == 0;
+       return remaining_inputs == 0;
     }
 
-    void create_state(TaskNode *just_finishing_input = nullptr);
-
     template<typename F> inline void foreach_owner(const F &f) const {
-        if (!state) {
-            return;
-        }
-        for(auto &pair : state->workers) {
+        for(auto &pair : workers) {
             if (pair.second == TaskStatus::OWNER) {
                 f(pair.first);
             }
@@ -150,10 +124,7 @@ public:
     }
 
     template<typename F> inline void foreach_worker(const F &f) const {
-        if (!state) {
-            return;
-        }
-        for(auto &pair : state->workers) {
+        for(auto &pair : workers) {
             if (pair.second != TaskStatus::NONE) {
                 f(pair.first, pair.second);
             }
@@ -163,7 +134,7 @@ public:
     void reset_owners();
 
     const WorkerMap<TaskStatus>& get_workers() const {
-        return state->workers;
+        return workers;
     }
 
     bool next_finished(TaskNode &);
@@ -179,10 +150,18 @@ public:
     std::string debug_str() const;
 
 private:
+
+    // Declaration
     loom::base::Id id;
     TaskDef task;
     std::unordered_multiset<TaskNode*> nexts;
-    std::unique_ptr<RuntimeState> state;
+
+    // Runtime info
+    std::bitset<1> flags;
+    WorkerMap<TaskStatus> workers;
+    size_t size;
+    size_t length;
+    size_t remaining_inputs;
 
     bool _slow_is_ready() const;
 };

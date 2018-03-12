@@ -199,23 +199,20 @@ void TaskManager::run_task_distribution()
 void TaskManager::trash_all_tasks()
 {    
     cstate.foreach_node([](std::unique_ptr<TaskNode> &task) {
-        if (task->has_state()) {
-            task->foreach_worker([&task](WorkerConnection *wc, TaskStatus &status) {
-                if (status == TaskStatus::OWNER) {
-                  wc->remove_data(task->get_id());
-                } else if (status == TaskStatus::RUNNING) {
-                  wc->change_residual_tasks(1);
-                  wc->free_resources(*task);
-                  logger->debug("Residual task id={} on worker={}", task->get_id(), wc->get_worker_id());
-                } else {
-                   assert(status == TaskStatus::TRANSFER);
-                   wc->change_residual_tasks(1);
-                   logger->debug("Residual transfer id={} on worker={}", task->get_id(), wc->get_worker_id());
-                }
-                status = TaskStatus::NONE;
-            });
-
-        }
+        task->foreach_worker([&task](WorkerConnection *wc, TaskStatus status) {
+            if (status == TaskStatus::OWNER) {
+              wc->remove_data(task->get_id());
+            } else if (status == TaskStatus::RUNNING) {
+              wc->change_residual_tasks(1);
+              wc->free_resources(*task);
+              logger->debug("Residual task id={} on worker={}", task->get_id(), wc->get_worker_id());
+            } else {
+               assert(status == TaskStatus::TRANSFER);
+               wc->change_residual_tasks(1);
+               logger->debug("Residual transfer id={} on worker={}", task->get_id(), wc->get_worker_id());
+            }
+            status = TaskStatus::NONE;
+        });
     });
     cstate.clear_all();
 }

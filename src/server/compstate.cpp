@@ -268,7 +268,7 @@ loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
         def.task_type = pt.task_type();
         def.config = pt.config();
         if (pt.has_result() && pt.result()) {
-            def.flags.set(static_cast<size_t>(TaskFlags::RESULT));
+            def.flags.set(static_cast<size_t>(TaskDefFlags::RESULT));
         }
 
         auto inputs_size = pt.input_ids_size();

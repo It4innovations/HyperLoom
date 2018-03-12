@@ -128,7 +128,7 @@ static void compute_table(const TaskNode *node,
                 if (node == input_node) {
                     continue;
                 }
-                if (input_node->has_state()) {
+                if (input_node->is_computed()) {
                     Score score = score_from_next_size(input_node->get_size());
                     for (const auto &pair : input_node->get_workers()) {
                         WorkerConnection *wc = pair.first;
@@ -340,7 +340,7 @@ TaskDistribution schedule(const ComputationState &cstate)
                         continue;
                     }
                     for (TaskNode *input_node : next_node->get_inputs()) {
-                        if (input_node == best_node || input_node->has_state()) {
+                        if (input_node == best_node || input_node->is_computed()) {
                             continue;
                         }
                         auto it = context.units.find(input_node->get_id());
