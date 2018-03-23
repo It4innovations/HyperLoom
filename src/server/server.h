@@ -88,9 +88,10 @@ public:
         return trace;
     }
 
-    void on_checkpoint_finished(loom::base::Id id, WorkerConnection *wc);
-    void on_checkpoint_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
-
+    void on_checkpoint_write_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
+    void on_checkpoint_write_finished(loom::base::Id id, WorkerConnection *wc);
+    void on_checkpoint_load_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
+    void on_checkpoint_load_finished(loom::base::Id id, WorkerConnection *wc, size_t size, size_t length);
 private:
 
 

@@ -127,10 +127,16 @@ public:
         return trace;
     }
 
+
+
     void on_dictionary_updated();
 
+
+    void load_checkpoint(base::Id id, const std::string &path);
     void checkpoint_written(base::Id id);
-    void checkpoint_failed(base::Id id, const std::string &error_msg);
+    void checkpoint_write_failed(base::Id id, const std::string &error_msg);
+    void checkpoint_loaded(base::Id id, const DataPtr &Data);
+    void checkpoint_load_failed(base::Id id, const std::string &error_msg);
 private:
     void register_worker();
     void create_trace(const std::string &trace_path, loom::base::Id worker_id);

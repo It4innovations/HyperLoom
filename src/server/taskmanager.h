@@ -28,9 +28,10 @@ public:
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc, bool checkpointing);
     void on_data_transferred(loom::base::Id id, WorkerConnection *wc);
     void on_task_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
-    void on_checkpoint_finished(loom::base::Id id, WorkerConnection *wc);
-    void on_checkpoint_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
-
+    void on_checkpoint_write_finished(loom::base::Id id, WorkerConnection *wc);
+    void on_checkpoint_write_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
+    void on_checkpoint_load_finished(loom::base::Id id, WorkerConnection *wc, size_t size, size_t length);
+    void on_checkpoint_load_failed(loom::base::Id id, WorkerConnection *wc, const std::string &error_msg);
 
     int get_n_of_data_objects() const {
         return cstate.get_n_data_objects();
@@ -45,6 +46,7 @@ public:
     void trash_all_tasks();
     void release_node(TaskNode *node);
 
+    WorkerConnection *random_worker();
 
 private:
     Server &server;

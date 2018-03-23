@@ -61,3 +61,9 @@ int loom::base::make_path(const char *path, mode_t mode)
     }
     return 0;
 }
+
+bool loom::base::file_exists(const char *path)
+{
+    struct stat buffer;
+    return (stat(path, &buffer) == 0);
+}

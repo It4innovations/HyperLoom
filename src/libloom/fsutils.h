@@ -12,6 +12,7 @@ namespace base {
 
 int make_path(const char *path, mode_t mode);
 size_t file_size(const char *path);
+bool file_exists(const char *path);
 
 }
 }

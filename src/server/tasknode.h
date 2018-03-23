@@ -20,7 +20,9 @@ enum class TaskDefFlags : size_t {
 
 enum class TaskNodeFlags : size_t {
     FINISHED,
-    CHECKPOINT
+    CHECKPOINT,
+    PLANNED,
+    FLAGS_COUNT
 };
 
 struct TaskDef
@@ -37,6 +39,7 @@ enum class TaskStatus {
     NONE,
     RUNNING,
     TRANSFER,
+    LOADING,
     OWNER,
 };
 
@@ -72,6 +75,14 @@ public:
 
     void set_checkpoint() {
         flags.set(static_cast<size_t>(TaskNodeFlags::CHECKPOINT));
+    }
+
+    bool is_planned() const {
+        return flags.test(static_cast<size_t>(TaskNodeFlags::PLANNED));
+    }
+
+    void set_planned() {
+        flags.set(static_cast<size_t>(TaskNodeFlags::PLANNED));
     }
 
     void reset_result_flag();
@@ -119,6 +130,14 @@ public:
         workers[wc] = status;
     }
 
+    void set_remaining_inputs(int value) {
+        remaining_inputs = value;
+    }
+
+    int get_remaining_inputs() const {
+        return remaining_inputs;
+    }
+
     inline bool input_is_ready(TaskNode *node) {
         assert(remaining_inputs > 0);
         return --remaining_inputs == 0;
@@ -153,12 +172,18 @@ public:
     bool next_finished(TaskNode &);
 
     void set_as_finished(WorkerConnection *wc, size_t size, size_t length);
+    void set_as_loaded(WorkerConnection *wc, size_t size, size_t length);
     void set_as_running(WorkerConnection *wc);
+    void set_as_loading(WorkerConnection *wc);
     void set_as_transferred(WorkerConnection *wc);
     void set_as_none(WorkerConnection *wc);
 
     // For unit testing
     void set_as_finished_no_check(WorkerConnection *wc, size_t size, size_t length);
+    void set_not_needed() {
+        flags.reset(static_cast<size_t>(TaskNodeFlags::PLANNED));
+        flags.reset(static_cast<size_t>(TaskNodeFlags::FINISHED));
+    }
 
     std::string debug_str() const;
 
@@ -170,7 +195,7 @@ private:
     std::unordered_multiset<TaskNode*> nexts;
 
     // Runtime info
-    std::bitset<2> flags;
+    std::bitset<3> flags;
     WorkerMap<TaskStatus> workers;
     size_t size;
     size_t length;

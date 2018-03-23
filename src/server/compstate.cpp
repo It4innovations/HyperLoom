@@ -5,6 +5,7 @@
 
 #include "pb/comm.pb.h"
 #include "libloom/log.h"
+#include "libloom/fsutils.h"
 
 constexpr static double TRANSFER_COST_COEF = 1.0 / (1024 * 1024); // 1MB = 1cost
 
@@ -22,16 +23,43 @@ ComputationState::ComputationState(Server &server) : server(server)
 void ComputationState::add_node(std::unique_ptr<TaskNode> &&node) {
     auto id = node->get_id();
 
+    /*
     for (TaskNode* input_node : node->get_inputs()) {
         input_node->add_next(node.get());
     }
 
     if (node->is_ready()) {
         pending_nodes.insert(node.get());
-    }
+    }*/
 
     auto result = nodes.insert(std::make_pair(id, std::move(node)));
     assert(result.second); // Check that ID is fresh
+}
+
+void ComputationState::plan_node(TaskNode &node, std::vector<TaskNode *> &to_load) {
+    if (node.is_planned()) {
+        return;
+    }
+    node.set_planned();
+
+    if (!node.get_task_def().checkpoint_path.empty() && loom::base::file_exists(node.get_task_def().checkpoint_path.c_str())) {
+        node.set_checkpoint();
+        to_load.push_back(&node);
+        return;
+    }
+
+    int remaining_inputs = 0;
+    for (TaskNode *input_node : node.get_inputs()) {
+        plan_node(*input_node, to_load);
+        if (!input_node->is_computed()) {
+            remaining_inputs += 1;
+            input_node->add_next(&node);
+        }
+    }
+    node.set_remaining_inputs(remaining_inputs);
+    if (remaining_inputs == 0) {
+        pending_nodes.insert(&node);
+    }
 }
 
 void ComputationState::reserve_new_nodes(size_t size)
@@ -241,7 +269,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
    }
 }*/
 
-loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
+loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan, std::vector<TaskNode*> &to_load)
 {
     auto task_size = plan.tasks_size();
     assert(plan.has_id_base());
@@ -268,7 +296,9 @@ loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
         def.task_type = pt.task_type();
         def.config = pt.config();
         def.checkpoint_path = pt.checkpoint_path();
+        bool is_result = false;
         if (pt.has_result() && pt.result()) {
+            is_result = true;
             def.flags.set(static_cast<size_t>(TaskDefFlags::RESULT));
         }
 
@@ -284,7 +314,12 @@ loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan)
             n_cpus = resources[pt.resource_request_index()];
         }
         def.n_cpus = n_cpus;
-        add_node(std::make_unique<TaskNode>(id, std::move(def)));
+
+        auto new_node = std::make_unique<TaskNode>(id, std::move(def));
+        if (is_result) {
+            plan_node(*new_node.get(), to_load);
+        }
+        add_node(std::move(new_node));
     }
     return id_base;
 }

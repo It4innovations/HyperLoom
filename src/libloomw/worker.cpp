@@ -21,6 +21,7 @@
 #include "libloom/sendbuffer.h"
 #include "libloom/pbutils.h"
 #include "libloom/fsutils.h"
+#include "data/externfile.h"
 
 #include "loom_define.h"
 #include "checkpointwriter.h"
@@ -288,24 +289,47 @@ void Worker::checkpoint_written(Id id) {
     logger->debug("Checkpoint written id={}", id);
     if (server_conn.is_connected()) {
         loom::pb::comm::WorkerResponse msg;
-        msg.set_type(loom::pb::comm::WorkerResponse_Type_CHECKPOINT_FINISHED);
+        msg.set_type(loom::pb::comm::WorkerResponse_Type_CHECKPOINT_WRITTEN);
         msg.set_id(id);
         send_message(server_conn, msg);
     }
 }
 
-void Worker::checkpoint_failed(Id id, const std::string &error_msg) {
+void Worker::checkpoint_write_failed(Id id, const std::string &error_msg) {
     logger->debug("Cannot write checkpoint id={}, error={}", id, error_msg);
     if (server_conn.is_connected()) {
         loom::pb::comm::WorkerResponse msg;
-        msg.set_type(loom::pb::comm::WorkerResponse_Type_CHECKPOINT_FAILED);
+        msg.set_type(loom::pb::comm::WorkerResponse_Type_CHECKPOINT_WRITE_FAILED);
         msg.set_id(id);
         msg.set_error_msg(error_msg);
         send_message(server_conn, msg);
     }
 }
 
-void Worker:: publish_data(Id id, const DataPtr &data, const std::string &checkpoint_path)
+void Worker::checkpoint_loaded(Id id, const DataPtr &data) {
+    logger->debug("Checkpoint loaded id={}", id);
+    if (server_conn.is_connected()) {
+        loom::pb::comm::WorkerResponse msg;
+        msg.set_type(loom::pb::comm::WorkerResponse_Type_CHECKPOINT_LOADED);
+        msg.set_id(id);
+        msg.set_size(data->get_size());
+        msg.set_length(data->get_length());
+        send_message(server_conn, msg);
+    }
+}
+
+void Worker::checkpoint_load_failed(Id id, const std::string &error_msg) {
+    logger->debug("Cannot load checkpoint id={}, error={}", id, error_msg);
+    if (server_conn.is_connected()) {
+        loom::pb::comm::WorkerResponse msg;
+        msg.set_type(loom::pb::comm::WorkerResponse_Type_CHECKPOINT_LOAD_FAILED);
+        msg.set_id(id);
+        msg.set_error_msg(error_msg);
+        send_message(server_conn, msg);
+    }
+}
+
+void Worker::publish_data(Id id, const DataPtr &data, const std::string &checkpoint_path)
 {
     logger->debug("Publishing data id={} size={} info={}", id, data->get_size(), data->get_info());
     public_data[id] = data;
@@ -507,6 +531,20 @@ void Worker::remove_task(TaskInstance &task, bool free_resources)
     assert(0);
 }
 
+void Worker::load_checkpoint(Id id, const std::string &path) {
+    if (!file_exists(path.c_str())) {
+        std::stringstream s;
+        s << "File '" << path << "' does not exists";
+        std::string error = s.str();
+        logger->error("Cannot load checkpoint {}: {}", id, error);
+        checkpoint_load_failed(id, error);
+        return;
+    }
+    DataPtr data = std::make_shared<ExternFile>(path);
+    checkpoint_loaded(id, data);
+    publish_data(id, data, "");
+}
+
 void Worker::task_failed(TaskInstance &task, const std::string &error_msg)
 {
     logger->error("Task id={} failed: {}", task.get_id(), error_msg);
@@ -635,6 +673,12 @@ void Worker::on_message(const char *data, size_t size)
         if (msg.has_trace_path()) {
             create_trace(msg.trace_path(), msg.worker_id());
         }
+        break;
+    }
+    case comm::WorkerCommand_Type_LOAD_CHECKPOINT: {
+        logger->debug("Loading checkpoint id={} path={}", msg.id(), msg.checkpoint_path());
+        assert(msg.has_checkpoint_path());
+        load_checkpoint(msg.id(), msg.checkpoint_path());
         break;
     }
     case comm::WorkerCommand_Type_DICTIONARY: {

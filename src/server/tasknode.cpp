@@ -12,11 +12,7 @@ TaskNode::TaskNode(loom::base::Id id, TaskDef &&task)
       length(0),
       remaining_inputs(0)
 {
-    for (TaskNode *t : this->task.inputs) {
-        if (!t->is_computed()) {
-            remaining_inputs += 1;
-        }
-    }
+
 }
 
 void TaskNode::reset_result_flag()
@@ -79,6 +75,18 @@ void TaskNode::set_as_finished(WorkerConnection *wc, size_t size, size_t length)
     this->size = size;
     this->length = length;
     flags.set(static_cast<size_t>(TaskNodeFlags::FINISHED));
+}
+
+void TaskNode::set_as_loaded(WorkerConnection *wc, size_t size, size_t length) {
+    assert(get_worker_status(wc) == TaskStatus::LOADING);
+    set_worker_status(wc, TaskStatus::OWNER);
+    this->size = size;
+    this->length = length;
+    flags.set(static_cast<size_t>(TaskNodeFlags::FINISHED));
+}
+
+void TaskNode::set_as_loading(WorkerConnection *wc) {
+    set_worker_status(wc, TaskStatus::LOADING);
 }
 
 void TaskNode::set_as_finished_no_check(WorkerConnection *wc, size_t size, size_t length)

@@ -24,7 +24,8 @@ WorkerConnection::WorkerConnection(Server &server,
       data_types(data_types),
       worker_id(worker_id),
       n_residual_tasks(0),
-      running_checkpoints(0)
+      checkpoint_writes(0),
+      checkpoint_loads(0)
 {
     logger->info("Worker {} connected (cpus={})", address, resource_cpus);
     if (this->socket) {
@@ -71,13 +72,23 @@ void WorkerConnection::on_message(const char *buffer, size_t size)
         return;
     }
 
-    if (type == WorkerResponse_Type_CHECKPOINT_FINISHED) {
-        server.on_checkpoint_finished(msg.id(), this);
+    if (type == WorkerResponse_Type_CHECKPOINT_WRITTEN) {
+        server.on_checkpoint_write_finished(msg.id(), this);
         return;
     }
 
-    if (type == WorkerResponse_Type_CHECKPOINT_FAILED) {
-        server.on_checkpoint_failed(msg.id(), this, msg.error_msg());
+    if (type == WorkerResponse_Type_CHECKPOINT_WRITE_FAILED) {
+        server.on_checkpoint_write_failed(msg.id(), this, msg.error_msg());
+        return;
+    }
+
+    if (type == WorkerResponse_Type_CHECKPOINT_LOADED) {
+        server.on_checkpoint_load_finished(msg.id(), this, msg.size(), msg.length());
+        return;
+    }
+
+    if (type == WorkerResponse_Type_CHECKPOINT_LOAD_FAILED) {
+        server.on_checkpoint_load_failed(msg.id(), this, msg.error_msg());
         return;
     }
 }
@@ -116,6 +127,19 @@ void WorkerConnection::send_data(Id id, const std::string &address)
     send_message(*socket, msg);
 }
 
+void WorkerConnection::load_checkpoint(Id id, const std::string &checkpoint_path)
+{
+    checkpoint_loads += 1;
+    using namespace loom::pb::comm;
+    logger->debug("Command for {}: LOAD_CHECKPOINT id={} path={}", this->address, id, checkpoint_path);
+
+    WorkerCommand msg;
+    msg.set_type(WorkerCommand_Type_LOAD_CHECKPOINT);
+    msg.set_id(id);
+    msg.set_checkpoint_path(checkpoint_path);
+    send_message(*socket, msg);
+}
+
 void WorkerConnection::remove_data(Id id)
 {
     using namespace loom::pb::comm;
@@ -137,7 +161,7 @@ void WorkerConnection::residual_task_finished(Id id, bool success, bool checkpoi
    change_residual_tasks(-1);
 
    if (checkpointing) {
-       running_checkpoints += 1;
+       checkpoint_writes += 1;
    }
 
    if (success) {
@@ -151,7 +175,7 @@ void WorkerConnection::residual_task_finished(Id id, bool success, bool checkpoi
 void WorkerConnection::residual_checkpoint_finished(Id id)
 {
    logger->debug("Residual checkpoint id={} finished on {}", id, address);
-   running_checkpoints -= 1;
+   checkpoint_writes -= 1;
    if (!is_blocked()) {
       server.need_task_distribution();
    }

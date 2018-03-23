@@ -27,6 +27,14 @@ void loom::CheckPointWriter::_work_cb(uv_work_t *req)
         writer->error = "Writing checkpoint '" + path + "' failed. Cannot create " + tmp_path + ":" + strerror(errno);
         return;
     }
+
+    const char *ptr = writer->data->get_raw_data();
+
+    if (!ptr) {
+        writer->error = "Data '" + writer->data->get_info() + "' cannot be checkpointed";
+        return;
+    }
+
     fout.write(writer->data->get_raw_data(), writer->data->get_size());
     fout.close();
 
@@ -43,7 +51,7 @@ void loom::CheckPointWriter::_after_work_cb(uv_work_t *req, int status)
     if (writer->error.empty()) {
         writer->worker.checkpoint_written(writer->id);
     } else {
-        writer->worker.checkpoint_failed(writer->id, writer->error);
+        writer->worker.checkpoint_write_failed(writer->id, writer->error);
     }
     delete writer;
 }

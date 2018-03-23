@@ -317,10 +317,16 @@ static std::vector<TaskNode*> nodes(ComputationState &s, std::vector<loom::base:
     return result;
 }
 
+static void add_plan(ComputationState &s, const loom::pb::comm::Plan &plan) {
+    std::vector<TaskNode*> to_load;
+    s.add_plan(plan, to_load);
+    assert(to_load.empty());
+}
+
 TEST_CASE("basic-plan", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.add_plan(make_simple_plan(server));
+   add_plan(s, make_simple_plan(server));
 
    auto w1 = simple_worker(server, "w1");
    auto w2 = simple_worker(server, "w2");
@@ -388,7 +394,7 @@ TEST_CASE("basic-plan", "[scheduling]") {
 TEST_CASE("plan4", "[scheduling]") {
     Server server(NULL, 0);
     ComputationState s(server);
-    s.add_plan(make_plan4(server));
+    add_plan(s, make_plan4(server));
 
     SECTION("More narrow") {
         auto w1 = simple_worker(server, "w1", 1);
@@ -473,7 +479,7 @@ TEST_CASE("plan4", "[scheduling]") {
 TEST_CASE("Plan2", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.add_plan(make_plan2(server));
+   add_plan(s, make_plan2(server));
 
    SECTION("Two simple workers") {
       auto w1 = simple_worker(server, "w1");
@@ -562,7 +568,7 @@ TEST_CASE("big-plan", "[scheduling]") {
 
    Server server(NULL, 0);
    ComputationState s(server);
-   s.add_plan(make_big_plan(server, BIG_PLAN_SIZE));
+   add_plan(s, make_big_plan(server, BIG_PLAN_SIZE));
 
    std::vector<WorkerConnection*> ws;
    ws.reserve(BIG_PLAN_WORKERS);
@@ -593,7 +599,7 @@ TEST_CASE("big-simple-plan", "[scheduling]") {
 
    Server server(NULL, 0);
    ComputationState s(server);
-   s.add_plan(make_big_trivial_plan(server, BIG_PLAN_SIZE));
+   add_plan(s, make_big_trivial_plan(server, BIG_PLAN_SIZE));
 
    std::vector<WorkerConnection*> ws;
    ws.reserve(BIG_PLAN_WORKERS);
@@ -620,7 +626,7 @@ TEST_CASE("big-simple-plan", "[scheduling]") {
 TEST_CASE("request-plan", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.add_plan(make_request_plan(server));
+   add_plan(s, make_request_plan(server));
 
    SECTION("0 cpus - include free tasks") {
        auto w1 = simple_worker(server, "w1", 0);
@@ -693,7 +699,7 @@ TEST_CASE("request-plan", "[scheduling]") {
 TEST_CASE("continuation2", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.add_plan(make_plan2(server));
+   add_plan(s, make_plan2(server));
 
    /*SECTION("Stick together") {
        auto w1 = simple_worker(server, "w1", 2);
@@ -719,7 +725,7 @@ TEST_CASE("continuation2", "[scheduling]") {
 TEST_CASE("continuation", "[scheduling]") {
    Server server(NULL, 0);
    ComputationState s(server);
-   s.add_plan(make_plan3(server));
+   add_plan(s, make_plan3(server));
 
    SECTION("Stick together - inputs dominant") {
        auto w1 = simple_worker(server, "w1", 2);
@@ -821,7 +827,7 @@ TEST_CASE("benchmark1", "[benchmark][!hide]") {
         for (size_t n_workers = 10; n_workers < 600; n_workers *= 2) {
             Server server(NULL, 0);
             ComputationState s(server);
-            s.add_plan(plan);
+            add_plan(s, plan);
 
             std::vector<WorkerConnection*> ws;
             ws.reserve(n_workers);
@@ -845,7 +851,6 @@ TEST_CASE("benchmark1", "[benchmark][!hide]") {
     }
 }
 
-
 TEST_CASE("benchmark2", "[benchmark][!hide]") {
     using namespace std::chrono;
     const size_t CPUS = 24;
@@ -857,7 +862,7 @@ TEST_CASE("benchmark2", "[benchmark][!hide]") {
         for (size_t n_workers = 10; n_workers <= 160; n_workers *= 2) {
             Server server(NULL, 0);
             ComputationState s(server);
-            s.add_plan(plan);
+            add_plan(s, plan);
             std::vector<WorkerConnection*> ws;
             ws.reserve(n_workers);
             for (size_t i = 0; i < n_workers; i++) {

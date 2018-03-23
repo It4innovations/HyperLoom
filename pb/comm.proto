@@ -63,6 +63,7 @@ message WorkerCommand {
 		REMOVE = 3;
 		DICTIONARY = 8;
 		UPDATE = 9;
+    LOAD_CHECKPOINT = 10;
 	}
 	required Type type = 1;
 
@@ -74,6 +75,8 @@ message WorkerCommand {
 	optional string task_config = 4;
 	repeated int32 task_inputs = 5;
 	optional int32 n_cpus = 6;
+
+  // TASK + LOAD_CHECKPOINT
 	optional string checkpoint_path = 7;
 
 	// SEND
@@ -93,13 +96,15 @@ message WorkerResponse {
 		FINISHED_AND_CHECKPOINTING = 2;
 		TRANSFERED = 3;
 		FAILED = 4;
-		CHECKPOINT_FINISHED = 5;
-		CHECKPOINT_FAILED = 6;
+		CHECKPOINT_WRITTEN = 5;
+		CHECKPOINT_WRITE_FAILED = 6;
+		CHECKPOINT_LOADED = 7;
+		CHECKPOINT_LOAD_FAILED = 8;
 	}
 	required Type type = 1;
 	required int32 id = 2;
 
-	// FINISHED
+	// FINISHED + CHECKPOINT_LOADED
 	optional uint64 size = 3;
 	optional uint64 length = 4;
 

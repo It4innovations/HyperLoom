@@ -70,15 +70,23 @@ public:
     }
 
     bool is_blocked() const {
-       return n_residual_tasks > 0 && running_checkpoints > 0;
+       return n_residual_tasks > 0 && checkpoint_writes > 0;
     }
 
     void change_residual_tasks(int value) {
        n_residual_tasks += value;
     }
 
-    void change_running_checkpoints(int value) {
-        n_residual_checkpoints += value;
+    int get_checkpoint_loads() const {
+        return checkpoint_loads;
+    }
+
+    void change_checkpoint_writes(int value) {
+        checkpoint_writes += value;
+    }
+
+    void change_checkpoint_loads(int value) {
+        checkpoint_loads += value;
     }
 
     void free_resources(TaskNode &node);
@@ -87,6 +95,7 @@ public:
     void residual_checkpoint_finished(loom::base::Id id);
 
     void create_trace(const std::string &trace_path);
+    void load_checkpoint(loom::base::Id id, const std::string &checkpoint_path);
 
 private:
     Server &server;
@@ -101,7 +110,8 @@ private:
     int worker_id;
     int n_residual_tasks;
     int n_residual_checkpoints;
-    int running_checkpoints;
+    int checkpoint_writes;
+    int checkpoint_loads;
 
     int scheduler_index;
     int scheduler_free_cpus;
