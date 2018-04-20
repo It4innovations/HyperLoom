@@ -23,7 +23,7 @@ public:
         cstate.add_node(std::move(node));
     }*/
 
-    loom::base::Id add_plan(const loom::pb::comm::Plan &plan);
+    loom::base::Id add_plan(const loom::pb::comm::Plan &plan, bool load_checkpoints);
 
     void on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc, bool checkpointing);
     void on_data_transferred(loom::base::Id id, WorkerConnection *wc);

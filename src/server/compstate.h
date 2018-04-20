@@ -43,7 +43,7 @@ public:
 
     int get_n_data_objects() const;
 
-    loom::base::Id add_plan(const loom::pb::comm::Plan &plan, std::vector<TaskNode *> &to_load);
+    loom::base::Id add_plan(const loom::pb::comm::Plan &plan, bool load_checkpoints, std::vector<TaskNode *> &to_load);
     void test_ready_nodes(std::vector<loom::base::Id> ids);
 
     loom::base::Id pop_result_client_id(loom::base::Id id);
@@ -61,7 +61,7 @@ public:
     std::unique_ptr<TaskNode> pop_node(loom::base::Id id);
     void clear_all();
     void add_pending_node(TaskNode &node);    
-    void plan_node(TaskNode &node, std::vector<TaskNode*> &to_load);
+    void plan_node(TaskNode &node, bool load_checkpoints, std::vector<TaskNode*> &to_load);
 
 private:
     std::unordered_map<loom::base::Id, std::unique_ptr<TaskNode>> nodes;

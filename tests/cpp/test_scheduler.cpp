@@ -319,7 +319,7 @@ static std::vector<TaskNode*> nodes(ComputationState &s, std::vector<loom::base:
 
 static void add_plan(ComputationState &s, const loom::pb::comm::Plan &plan) {
     std::vector<TaskNode*> to_load;
-    s.add_plan(plan, to_load);
+    s.add_plan(plan, false, to_load);
     assert(to_load.empty());
 }
 

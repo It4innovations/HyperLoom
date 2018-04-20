@@ -23,26 +23,17 @@ ComputationState::ComputationState(Server &server) : server(server)
 void ComputationState::add_node(std::unique_ptr<TaskNode> &&node) {
     auto id = node->get_id();
 
-    /*
-    for (TaskNode* input_node : node->get_inputs()) {
-        input_node->add_next(node.get());
-    }
-
-    if (node->is_ready()) {
-        pending_nodes.insert(node.get());
-    }*/
-
     auto result = nodes.insert(std::make_pair(id, std::move(node)));
     assert(result.second); // Check that ID is fresh
 }
 
-void ComputationState::plan_node(TaskNode &node, std::vector<TaskNode *> &to_load) {
+void ComputationState::plan_node(TaskNode &node, bool load_checkpoints, std::vector<TaskNode *> &to_load) {
     if (node.is_planned()) {
         return;
     }
     node.set_planned();
 
-    if (!node.get_task_def().checkpoint_path.empty() && loom::base::file_exists(node.get_task_def().checkpoint_path.c_str())) {
+    if (load_checkpoints && !node.get_task_def().checkpoint_path.empty() && loom::base::file_exists(node.get_task_def().checkpoint_path.c_str())) {
         node.set_checkpoint();
         to_load.push_back(&node);
         return;
@@ -50,7 +41,7 @@ void ComputationState::plan_node(TaskNode &node, std::vector<TaskNode *> &to_loa
 
     int remaining_inputs = 0;
     for (TaskNode *input_node : node.get_inputs()) {
-        plan_node(*input_node, to_load);
+        plan_node(*input_node, load_checkpoints, to_load);
         if (!input_node->is_computed()) {
             remaining_inputs += 1;
             input_node->add_next(&node);
@@ -269,7 +260,7 @@ void ComputationState::make_expansion(std::vector<std::string> &configs,
    }
 }*/
 
-loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan, std::vector<TaskNode*> &to_load)
+loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan, bool load_checkpoints, std::vector<TaskNode*> &to_load)
 {
     auto task_size = plan.tasks_size();
     assert(plan.has_id_base());
@@ -317,7 +308,7 @@ loom::base::Id ComputationState::add_plan(const loom::pb::comm::Plan &plan, std:
 
         auto new_node = std::make_unique<TaskNode>(id, std::move(def));
         if (is_result) {
-            plan_node(*new_node.get(), to_load);
+            plan_node(*new_node.get(), load_checkpoints, to_load);
         }
         add_node(std::move(new_node));
     }

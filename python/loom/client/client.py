@@ -241,7 +241,7 @@ class Client(object):
                 print(t)
                 assert 0
 
-    def submit_one(self, task):
+    def submit_one(self, task, load=False):
         """Submits a task to the server and returns a future
 
         Args:
@@ -256,9 +256,9 @@ class Client(object):
             >>> result = client.submit(task3)
             >>> print(result.gather())
         """
-        return self.submit((task,))[0]
+        return self.submit((task,), load=load)[0]
 
-    def submit(self, tasks):
+    def submit(self, tasks, load=False):
         """Submits tasks to the server and returns list of futures
 
         Args:
@@ -294,7 +294,7 @@ class Client(object):
 
         msg = ClientRequest()
         msg.type = ClientRequest.PLAN
-
+        msg.load_checkpoints = load
         include_metadata = self.trace_path is not None
         msg.plan.id_base = id_base
         plan.set_message(

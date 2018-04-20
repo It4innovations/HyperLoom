@@ -51,4 +51,4 @@ def test_checkpoint_load(loom_env):
     x4 = tasks.merge((x3, x1, x2, t1, t2, t3))
     x4.checkpoint_path = path5
 
-    assert loom_env.submit_and_gather(x4) == b'[4][1][2]$t3$[3][1][2]$t3$'
+    assert loom_env.submit_and_gather(x4, load=True) == b'[4][1][2]$t3$[3][1][2]$t3$'

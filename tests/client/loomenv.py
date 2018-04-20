@@ -140,12 +140,12 @@ class LoomEnv(Env):
             self.check_stats()
         return self._client
 
-    def submit_and_gather(self, tasks, check=True):
+    def submit_and_gather(self, tasks, check=True, load=False):
         if isinstance(tasks, Task):
-            future = self.client.submit_one(tasks)
+            future = self.client.submit_one(tasks, load=load)
             return self.client.gather_one(future)
         else:
-            futures = self.client.submit(tasks)
+            futures = self.client.submit(tasks, load=load)
             return self.client.gather(futures)
         if check:
             self.check_final_state()

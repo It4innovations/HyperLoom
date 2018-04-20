@@ -56,8 +56,8 @@ void ClientConnection::on_message(const char *buffer, size_t size)
     case ClientRequest_Type_PLAN: {
         logger->debug("Plan received");
         const Plan &plan = request.plan();
-        loom::base::Id id_base = task_manager.add_plan(plan);
-        logger->info("Plan submitted tasks={}", plan.tasks_size());
+        loom::base::Id id_base = task_manager.add_plan(plan, request.load_checkpoints());
+        logger->info("Plan submitted tasks={}, load_checkpoints={}", plan.tasks_size(), request.load_checkpoints());
 
         if (server.get_trace()) {
             server.create_file_in_trace_dir(std::to_string(id_base) + ".plan", buffer, size);

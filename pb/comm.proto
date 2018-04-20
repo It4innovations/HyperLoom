@@ -164,6 +164,7 @@ message ClientRequest {
 
   // PLAN
   optional Plan plan = 2;
+  optional bool load_checkpoints = 4;
 
   // FETCH + RELEASE
   optional int32 id = 3;

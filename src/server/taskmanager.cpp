@@ -20,10 +20,10 @@ TaskManager::TaskManager(Server &server)
 {
 }
 
-loom::base::Id TaskManager::add_plan(const loom::pb::comm::Plan &plan)
+loom::base::Id TaskManager::add_plan(const loom::pb::comm::Plan &plan, bool load_checkpoints)
 {
     std::vector<TaskNode*> to_load;
-    loom::base::Id id_base = cstate.add_plan(plan, to_load);
+    loom::base::Id id_base = cstate.add_plan(plan, load_checkpoints, to_load);
     for (TaskNode *node : to_load) {
         WorkerConnection *wc = random_worker();
         node->set_as_loading(wc);
