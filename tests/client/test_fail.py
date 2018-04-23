@@ -1,5 +1,6 @@
 from loomenv import loom_env, LOOM_TESTPROG, LOOM_TEST_DATA_DIR  # noqa
 import loom.client.tasks as tasks  # noqa
+import time
 
 from loom import client
 import pytest
@@ -119,3 +120,30 @@ def test_fail_and_report(loom_env):
     a = tasks.const("ABC")
     with pytest.raises(client.TaskFailed):
         loom_env.submit_and_gather((sleep(), sleep(), sleep(), fail(a)))
+
+
+def test_crash_clean_worker(loom_env):
+    loom_env.start(2)
+    loom_env.kill_worker(0)
+
+    a = tasks.const("ABCDE")
+    b = tasks.const("123")
+    c = tasks.merge((a, b))
+    assert b"ABCDE123" == loom_env.submit_and_gather(c)
+
+
+def test_crash_running_worker(loom_env):
+
+    @tasks.py_task()
+    def sleep():
+        import time
+        time.sleep(1)
+        return b""
+
+    loom_env.start(2)
+    a = sleep()
+    b = sleep()
+    (fa, fb) = loom_env.client.submit((a, b))
+    time.sleep(0.3)
+    loom_env.kill_worker(0)
+    loom_env.client.gather((fa, fb))

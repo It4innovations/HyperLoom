@@ -46,6 +46,9 @@ public:
     void trash_all_tasks();
     void release_node(TaskNode *node);
 
+    void fail_task_on_worker(WorkerConnection &conn);
+    void worker_fail(WorkerConnection &conn);
+
     WorkerConnection *random_worker();
 
 private:

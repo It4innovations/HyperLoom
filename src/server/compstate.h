@@ -62,7 +62,7 @@ public:
     void clear_all();
     void add_pending_node(TaskNode &node);    
     void plan_node(TaskNode &node, bool load_checkpoints, std::vector<TaskNode*> &to_load);
-
+    void fail_task_on_worker(WorkerConnection &conn);
 private:
     std::unordered_map<loom::base::Id, std::unique_ptr<TaskNode>> nodes;
     std::unordered_set<TaskNode*> pending_nodes;

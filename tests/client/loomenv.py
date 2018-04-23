@@ -55,8 +55,15 @@ class Env():
     def kill_all(self):
         for fn in self.cleanups:
             fn()
-        for n, p in self.processes:
+        for _, p in self.processes:
             p.kill()
+
+    def kill(self, name):
+        for n, p in self.processes:
+            if n == name:
+                p.kill()
+                return
+        raise Exception("Unknown processes")
 
 
 class LoomEnv(Env):
@@ -114,6 +121,12 @@ class LoomEnv(Env):
         stats = self._client.get_stats()
         assert stats["n_workers"] == self.workers_count
         assert stats["n_data_objects"] == 0
+
+    def kill_worker(self, id):
+        assert self.workers_count > 0
+        self.kill("worker{}".format(id))
+        self.workers_count -= 1
+        time.sleep(0.02)
 
     def check_final_state(self):
         time.sleep(0.25)

@@ -48,6 +48,7 @@ void Server::add_worker_connection(std::unique_ptr<WorkerConnection> &&conn)
 
 void Server::remove_worker_connection(WorkerConnection &conn)
 {
+    task_manager.worker_fail(conn);
     auto i = std::find_if(
                 connections.begin(),
                 connections.end(),

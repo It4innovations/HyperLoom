@@ -331,6 +331,15 @@ void TaskManager::release_node(TaskNode *node)
    }
 }
 
+void TaskManager::worker_fail(WorkerConnection &conn)
+{
+    auto cc = server.get_client_connection();
+    if (cc) {
+        cc->send_task_failed(-1, conn, "Worker lost");
+    }
+    trash_all_tasks();
+}
+
 WorkerConnection *TaskManager::random_worker()
 {
     auto &connections = server.get_connections();
