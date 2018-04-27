@@ -287,3 +287,30 @@ def test_py_task_deserialization3(loom_env):
     objs = tuple(tasks.py_value(str(i + 1000)) for i in range(100))
     x = tasks.array_make(objs)
     loom_env.submit_and_gather(x)
+
+
+def test_rewrap_test(loom_env):
+    @tasks.py_task(context=True, n_direct_args=4)
+    def init(ctx):
+        content = [1, 2, 3]
+        return ctx.wrap(content)
+
+    @tasks.py_task(context=True)
+    def center(ctx, train_test):
+        train, test = [t.unwrap() for t in train_test]
+        return [ctx.wrap(t) for t in (train, test)]
+
+    @tasks.py_task(context=True)
+    def remove_empty_rows(ctx, train, test):
+        train = list(train.unwrap())
+        test = list(test.unwrap())
+        return [ctx.wrap(t) for t in (train, test)]
+
+    train = init()
+    test  = init()
+    mean_task = center(remove_empty_rows(train, test))
+    smurff_tasks = [mean_task]
+
+    loom_env.start(1)
+    futures = loom_env.client.submit(smurff_tasks)
+    results = loom_env.client.gather(futures)

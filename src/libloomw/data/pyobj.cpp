@@ -14,10 +14,7 @@ loom::PyObj::~PyObj()
 {
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
-
-    assert(obj->ob_refcnt == 1);
     Py_DecRef(obj);
-
     PyGILState_Release(gstate);
 }
 
