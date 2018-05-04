@@ -76,6 +76,7 @@ void TaskManager::remove_node(TaskNode &node)
         assert(status == TaskStatus::OWNER);
         wc->remove_data(id);
     });
+    node.reset_owners();
     cstate.remove_node(node);
 }
 
