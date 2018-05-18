@@ -86,6 +86,8 @@ void TaskManager::remove_node(TaskNode &node)
     });
     node.set_not_needed();
     //cstate.remove_node(node);
+    node.reset_owners();
+    cstate.remove_node(node);
 }
 
 void TaskManager::on_task_finished(loom::base::Id id, size_t size, size_t length, WorkerConnection *wc, bool checkpointing)
@@ -296,7 +298,7 @@ void TaskManager::run_task_distribution()
 }
 
 void TaskManager::trash_all_tasks()
-{    
+{
     for (auto &wc : server.get_connections()) {
         wc->change_residual_tasks(wc->get_checkpoint_loads());
         wc->change_checkpoint_loads(-wc->get_checkpoint_loads());
