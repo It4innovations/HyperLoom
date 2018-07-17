@@ -29,7 +29,7 @@ with HyperLoom)
 In **Debian** based distributions, dependencies can be installed by the
 following commands: ::
 
-    apt install libuv-dev libprotobuf-dev
+    apt install libuv1-dev libprotobuf-dev
     pip install cloudpickle
 
 .. Note::

@@ -8,7 +8,7 @@ import os
 
 
 def read_version():
-    with open(os.path.dirname(__file__) + "../version") as f:
+    with open(os.path.join(os.path.dirname(__file__), "..", "version")) as f:
         return f.readline().rstrip()
 
 
