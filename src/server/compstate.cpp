@@ -44,8 +44,8 @@ void ComputationState::plan_node(TaskNode &node, bool load_checkpoints, std::vec
         plan_node(*input_node, load_checkpoints, to_load);
         if (!input_node->is_computed()) {
             remaining_inputs += 1;
-            input_node->add_next(&node);
         }
+        input_node->add_next(&node);
     }
     node.set_remaining_inputs(remaining_inputs);
     if (remaining_inputs == 0) {
