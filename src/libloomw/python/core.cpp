@@ -38,12 +38,12 @@ void loom::ensure_py_init() {
 PyObject* loom::deserialize_pyobject(const void *mem, size_t size)
 {
    // Get cloudpickle
-   PyObject *cloudpickle = PyImport_ImportModule("cloudpickle");
+   PyObject *cloudpickle = PyImport_ImportModule("loom.wside.core");
    if(!cloudpickle) {
       return nullptr;
    }
 
-   PyObject *loads = PyObject_GetAttrString(cloudpickle, "loads");
+   PyObject *loads = PyObject_GetAttrString(cloudpickle, "unpickle");
    Py_DECREF(cloudpickle);
 
    if(!loads) {

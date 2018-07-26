@@ -1,6 +1,6 @@
 import cloudpickle
 import loom_c
-
+import threading
 
 class Context:
 
@@ -41,3 +41,11 @@ def execute(fn_obj, data, inputs, task_id):
         return fn_obj(context, *inputs)
     else:
         return fn_obj(*inputs)
+
+
+unpickle_lock = threading.Lock()
+
+
+def unpickle(data):
+    with unpickle_lock:
+        return cloudpickle.loads(data)
