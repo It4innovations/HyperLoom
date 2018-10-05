@@ -4,7 +4,7 @@
 
 HyperLoom is a platform for defining and executing workflow pipelines in large-scale distributed environments.
 
-HyperLoom implements its own schedulling algorithm optimized for execution of millions of interconnected tasks on hundreds of computational nodes. HyperLoom also includes a thin Python client module that allows to easily define and execute the pipelines on HyperLoom infrastructure. 
+HyperLoom implements its own schedulling algorithm optimized for execution of millions of interconnected tasks on hundreds of computational nodes. HyperLoom also includes a thin Python client module that allows to easily define and execute the pipelines on HyperLoom infrastructure.
 
 HyperLoom features:
 
@@ -27,7 +27,7 @@ Execute your first HyperLoom pipeline in 4 easy steps using [Docker](https://doc
 
 ### 1. Deploy virtualized HyperLoom infrastructure
 
-```
+```bash
 docker-compose up
 ```
 
@@ -49,7 +49,7 @@ python3 setup.py install
 
 Create a python file `pipeline.py` with the following content:
 
-```
+```python
 from loom.client import Client, tasks
 
 task1 = tasks.const("Hello ")        # Create a plain object
@@ -65,7 +65,7 @@ print(result)                        # Prints b"Hello world!"
 
 ### 4. Execute the pipeline
 
-```
+```bash
 python3 pipeline.py
 ```
 
@@ -75,7 +75,23 @@ The compiled version of the documentation is available [here](http://loom-it4i.r
 
 You can also build the full documentation from the sources in the [doc](./doc) subdirectory by running `make html`.
 
+## Citations
+
+Please use the following BibTeX record when refering to HyperLoom in scientific publications.
+
+```tex
+@inproceedings{cima2018hyperloom,
+  title={HyperLoom: A Platform for Defining and Executing Scientific Pipelines in Distributed Environments},
+  author={Cima, Vojt{\v{e}}ch and B{\"o}hm, Stanislav and Martinovi{\v{c}}, Jan and Dvorsk{\`y}, Ji{\v{r}}{\'\i} and Janurov{\'a}, Kate{\v{r}}ina and Aa, Tom Vander and Ashby, Thomas J and Chupakhin, Vladimir},
+  booktitle={Proceedings of the 9th Workshop and 7th Workshop on Parallel Programming and RunTime Management Techniques for Manycore Architectures and Design Tools and Architectures for Multicore Embedded Computing Platforms},
+  pages={1--6},
+  year={2018},
+  organization={ACM}
+}
+```
+
 ## Benchmarks
+
 HyperLoom scalability for a pharmaceutical machine-learning pipeline running on 1, 8, 16 and 64 nodes (24 CPUs each).
 
 The picture below shows the execution times of different task types in the pipeline.
