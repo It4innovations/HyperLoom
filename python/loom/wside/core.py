@@ -1,6 +1,7 @@
 import cloudpickle
 import loom_c
 import threading
+import traceback
 
 class Context:
 
@@ -29,23 +30,28 @@ class Context:
 
 
 def execute(fn_obj, data, inputs, task_id):
-    params = cloudpickle.loads(data)
-    if params:
-        inputs = tuple(params) + inputs
-    if isinstance(fn_obj, tuple):
-        fn_obj, has_context = fn_obj
-    else:
-        has_context = False
-    if has_context:
-        context = Context(task_id)
-        return fn_obj(context, *inputs)
-    else:
-        return fn_obj(*inputs)
-
+    try:
+        params = cloudpickle.loads(data)
+        if params:
+            inputs = tuple(params) + inputs
+        if isinstance(fn_obj, tuple):
+            fn_obj, has_context = fn_obj
+        else:
+            has_context = False
+        if has_context:
+            context = Context(task_id)
+            return fn_obj(context, *inputs)
+        else:
+            return fn_obj(*inputs)
+    except:
+        raise Exception(traceback.format_exc())
 
 unpickle_lock = threading.Lock()
 
 
 def unpickle(data):
-    with unpickle_lock:
-        return cloudpickle.loads(data)
+    try:
+        with unpickle_lock:
+            return cloudpickle.loads(data)
+    except:
+        raise Exception(traceback.format_exc())
