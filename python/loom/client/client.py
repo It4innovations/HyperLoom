@@ -290,7 +290,7 @@ class Client(object):
                 futures[task_id] = future
             results.append(future)
 
-        self.submit_id += plan.id_counter
+        self.submit_id = plan.id_counter
 
         msg = ClientRequest()
         msg.type = ClientRequest.PLAN
